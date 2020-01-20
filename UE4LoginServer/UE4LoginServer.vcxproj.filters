@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Network">
+      <UniqueIdentifier>{6d4555f4-9b14-488f-90d7-367516cbafa6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Database">
+      <UniqueIdentifier>{85689bb2-e8c0-43e9-9033-0c922cbfc307}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Network\InterServer">
+      <UniqueIdentifier>{c7cfa6d1-7d00-4475-84dd-6491c0d663f5}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="login_server_main.cpp" />
+    <ClCompile Include="Network\LoginServerEventHandler.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\LoginServerPacketCipher.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\LoginServerOutPacket.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="LoginServer.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Network\LoginServerEventHandler.hpp">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\LoginServerPacketCipher.hpp">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\LoginServerOutPacket.hpp">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="LoginServer.hpp" />
+  </ItemGroup>
+</Project>
