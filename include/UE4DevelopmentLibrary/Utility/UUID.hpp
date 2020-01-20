@@ -7,7 +7,6 @@
 
 class __UUID : public SerializeInterface
 {
-    friend class std::pair<int32_t, __UUID>;
 public:
     __UUID(const __UUID& rhs);
     void operator=(const __UUID& rhs);

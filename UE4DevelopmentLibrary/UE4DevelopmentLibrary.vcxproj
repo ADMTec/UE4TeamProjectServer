@@ -95,6 +95,7 @@
       <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -107,6 +108,7 @@
 copy "Exception\*.hpp" "..\include\$(ProjectName)\Exception\"
 copy "Database\*.hpp" "..\include\$(ProjectName)\Database\"
 copy "Nio\*.hpp" "..\include\$(ProjectName)\Nio\"
+copy "Server\*.hpp" "..\include\$(ProjectName)\Server\"
 copy "Stream\*.hpp" "..\include\$(ProjectName)\Stream\"
 copy "Time\*.hpp" "..\include\$(ProjectName)\Time\"
 copy "Thread\*.hpp" "..\include\$(ProjectName)\Thread\"
@@ -120,6 +122,7 @@ copy "Utility\*.hpp" "..\include\$(ProjectName)\Utility\"</Command>
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -130,6 +133,7 @@ copy "Utility\*.hpp" "..\include\$(ProjectName)\Utility\"</Command>
 copy "Exception\*.hpp" "..\include\$(ProjectName)\Exception\"
 copy "Database\*.hpp" "..\include\$(ProjectName)\Database\"
 copy "Nio\*.hpp" "..\include\$(ProjectName)\Nio\"
+copy "Server\*.hpp" "..\include\$(ProjectName)\Server\"
 copy "Stream\*.hpp" "..\include\$(ProjectName)\Stream\"
 copy "Time\*.hpp" "..\include\$(ProjectName)\Time\"
 copy "Thread\*.hpp" "..\include\$(ProjectName)\Thread\"
@@ -143,6 +147,7 @@ copy "Utility\*.hpp" "..\include\$(ProjectName)\Utility\"</Command>
       <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -153,6 +158,7 @@ copy "Utility\*.hpp" "..\include\$(ProjectName)\Utility\"</Command>
 copy "Exception\*.hpp" "..\include\$(ProjectName)\Exception\"
 copy "Database\*.hpp" "..\include\$(ProjectName)\Database\"
 copy "Nio\*.hpp" "..\include\$(ProjectName)\Nio\"
+copy "Server\*.hpp" "..\include\$(ProjectName)\Server\"
 copy "Stream\*.hpp" "..\include\$(ProjectName)\Stream\"
 copy "Time\*.hpp" "..\include\$(ProjectName)\Time\"
 copy "Thread\*.hpp" "..\include\$(ProjectName)\Thread\"
@@ -168,6 +174,7 @@ copy "Utility\*.hpp" "..\include\$(ProjectName)\Utility\"</Command>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -180,6 +187,7 @@ copy "Utility\*.hpp" "..\include\$(ProjectName)\Utility\"</Command>
 copy "Exception\*.hpp" "..\include\$(ProjectName)\Exception\"
 copy "Database\*.hpp" "..\include\$(ProjectName)\Database\"
 copy "Nio\*.hpp" "..\include\$(ProjectName)\Nio\"
+copy "Server\*.hpp" "..\include\$(ProjectName)\Server\"
 copy "Stream\*.hpp" "..\include\$(ProjectName)\Stream\"
 copy "Time\*.hpp" "..\include\$(ProjectName)\Time\"
 copy "Thread\*.hpp" "..\include\$(ProjectName)\Thread\"
@@ -212,6 +220,13 @@ copy "Utility\*.hpp" "..\include\$(ProjectName)\Utility\"</Command>
     <ClInclude Include="Nio\Private\NioContext.hpp" />
     <ClInclude Include="Nio\Private\NioSocket.hpp" />
     <ClInclude Include="Nio\Private\NioSystemClockTimer.hpp" />
+    <ClInclude Include="Server.hpp" />
+    <ClInclude Include="Server\ClientStorage.hpp" />
+    <ClInclude Include="Server\SessionAuthorityInfo.hpp" />
+    <ClInclude Include="Server\UE4BaseServer.hpp" />
+    <ClInclude Include="Server\UE4Client.hpp" />
+    <ClInclude Include="Server\UE4OutPacket.hpp" />
+    <ClInclude Include="Server\UE4PacketCipher.hpp" />
     <ClInclude Include="Stream.hpp" />
     <ClInclude Include="Stream\ByteStream.hpp" />
     <ClInclude Include="Stream\InputStream.hpp" />
@@ -225,6 +240,7 @@ copy "Utility\*.hpp" "..\include\$(ProjectName)\Utility\"</Command>
     <ClInclude Include="Time\Calendar.hpp" />
     <ClInclude Include="Time\Clock.hpp" />
     <ClInclude Include="Utility.hpp" />
+    <ClInclude Include="Utility\TextFileLineReader.hpp" />
     <ClInclude Include="Utility\TSingleton.hpp" />
     <ClInclude Include="Utility\UUID.hpp" />
   </ItemGroup>
@@ -249,12 +265,19 @@ copy "Utility\*.hpp" "..\include\$(ProjectName)\Utility\"</Command>
     <ClCompile Include="Nio\Private\NioContext.cpp" />
     <ClCompile Include="Nio\Private\NioSocket.cpp" />
     <ClCompile Include="Nio\Private\NioSystemClockTimer.cpp" />
+    <ClCompile Include="Server\ClientStorage.cpp" />
+    <ClCompile Include="Server\SessionAuthorityInfo.cpp" />
+    <ClCompile Include="Server\UE4BaseServer.cpp" />
+    <ClCompile Include="Server\UE4Client.cpp" />
+    <ClCompile Include="Server\UE4OutPacket.cpp" />
+    <ClCompile Include="Server\UE4PacketCipher.cpp" />
     <ClCompile Include="Stream\ByteStream.cpp" />
     <ClCompile Include="Stream\InputStream.cpp" />
     <ClCompile Include="Stream\OutputStream.cpp" />
     <ClCompile Include="Thread\Barrier.cpp" />
     <ClCompile Include="Time\Calendar.cpp" />
     <ClCompile Include="Time\Clock.cpp" />
+    <ClCompile Include="Utility\TextFileLineReader.cpp" />
     <ClCompile Include="Utility\UUID.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

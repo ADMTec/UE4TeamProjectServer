@@ -153,9 +153,13 @@ void NioChannel::Connection::BindFunction(int16_t opcode, const NioChannelEventH
     TryBindFunction(session_->GetEventHandler(), opcode, func);
 }
 
-void NioChannel::Connection::Connect(const char* ip, uint16_t port)
+bool NioChannel::Connection::Connect(const char* ip, uint16_t port)
 {
-    session_->Connect(ip, port);
+    bool result = session_->SyncConnect(ip, port);
+    if (result) {
+        session_->OnConnected();
+    }
+    return result;
 }
 
 void NioChannel::Connection::Send(NioOutPacket& out)
@@ -176,32 +180,32 @@ NioChannel::NioChannel(const std::shared_ptr<NioContext>& context)
 NioChannel::~NioChannel()
 {   
     {
-        std::shared_lock shared_lock(guest_pool_guard_);
-        for (auto& guest : guest_pool_) {
+        std::shared_lock shared_lock(connection_pool_guard_);
+        for (auto& guest : connection_pool_) {
             guest.Close();
         }
     }
-    std::unique_lock lock(guest_pool_guard_);
-    guest_pool_.clear();
+    std::unique_lock lock(connection_pool_guard_);
+    connection_pool_.clear();
 }
 
 void NioChannel::MakeReceiver(int identifier, uint16_t port, uint32_t max_connection)
 {
-    std::unique_lock lock(host_pool_guard_);
-    host_pool_.emplace_back(context_, identifier, port, max_connection);
+    std::unique_lock lock(receiver_pool_guard_);
+    receiver_pool_.emplace_back(context_, identifier, port, max_connection);
 }
 
 NioChannel::Receiver NioChannel::GetReceiver(int identifier)
 {
-    std::shared_lock lock(host_pool_guard_);
-    auto iter = std::find_if(host_pool_.begin(), host_pool_.end(),
+    std::shared_lock lock(receiver_pool_guard_);
+    auto iter = std::find_if(receiver_pool_.begin(), receiver_pool_.end(),
         [identifier](const NioChannel::Receiver& host) {
             if (host.IsValid()) {
                 return host.GetId() == identifier;
             }
             return false;
         });
-    if (iter != host_pool_.end()) {
+    if (iter != receiver_pool_.end()) {
         return *iter;
     } else {
         return NioChannel::Receiver();
@@ -210,33 +214,33 @@ NioChannel::Receiver NioChannel::GetReceiver(int identifier)
 
 void NioChannel::MakeConnection(int identifier)
 {
-    std::unique_lock lock(guest_pool_guard_);
-    guest_pool_.emplace_back(this->shared_from_this(), identifier);
+    std::unique_lock lock(connection_pool_guard_);
+    connection_pool_.emplace_back(this->shared_from_this(), identifier);
 }
 
 void NioChannel::CloseConnection(int identifier)
 {
-    std::unique_lock lock(guest_pool_guard_);
-    auto iter = std::find_if(guest_pool_.begin(), guest_pool_.end(),
+    std::unique_lock lock(connection_pool_guard_);
+    auto iter = std::find_if(connection_pool_.begin(), connection_pool_.end(),
         [identifier](const Connection& geust) {
             return geust.GetId() == identifier;
         });
-    if (iter != guest_pool_.end()) {
-        guest_pool_.erase(iter);
+    if (iter != connection_pool_.end()) {
+        connection_pool_.erase(iter);
     }
 }
 
 NioChannel::Connection NioChannel::GetConnection(int identifier)
 {
-    std::shared_lock lock(guest_pool_guard_);
-    auto iter = std::find_if(guest_pool_.begin(), guest_pool_.end(),
+    std::shared_lock lock(connection_pool_guard_);
+    auto iter = std::find_if(connection_pool_.begin(), connection_pool_.end(),
         [identifier](const Connection& guest) {
             if (guest.IsValid()) {
                 return guest.GetId() == identifier;
             }
             return false;
         });
-    if (iter != guest_pool_.end()) {
+    if (iter != connection_pool_.end()) {
         return *iter;
     } else {
         return Connection();

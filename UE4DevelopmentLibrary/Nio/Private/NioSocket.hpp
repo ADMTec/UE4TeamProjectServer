@@ -16,7 +16,7 @@ public:
 public:
     NioSocket(NioContext& io_context);
     virtual ~NioSocket();
-
+    bool SyncConnect(const char* server_ip, uint16_t port);
     virtual void Connect(const char* server_ip, uint16_t port, const conn_complete_task_t& callback);
     virtual void Send(const char* buffer, uint64_t length, const io_complete_task_t& callback) = 0;
     virtual void Receive(char* buffer, uint64_t length, const io_complete_task_t& callback) = 0;

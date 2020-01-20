@@ -71,21 +71,28 @@ void TestServer::Initialize()
         [this]() {
             while (eixt_flag_ == false)
             {
-                std::pair<std::shared_ptr<UE4Client>, std::shared_ptr<NioInPacket>> pair;
-                if (g_queue.try_pop(pair))
-                {
-                    std::cout << "PacketDump: " << pair.second->GetDebugString() << std::endl;
-                    int16_t opcode = pair.second->ReadInt16();
-                    switch (opcode)
+                try {
+                    std::pair<std::shared_ptr<UE4Client>, std::shared_ptr<NioInPacket>> pair;
+                    if (g_queue.try_pop(pair))
                     {
-                        case 0: // RequestSpawn
-                            this->HandleSpawn(*pair.first, *pair.second);
-                            this->HandlePossess(*pair.first, *pair.second);
-                            break;
-                        case 1: // NotifyPosition
-                            this->HandleNotifiyPosition(*pair.first, *pair.second);
-                            break;
+                        std::cout << "PacketDump: " << pair.second->GetDebugString() << std::endl;
+                        int16_t opcode = pair.second->ReadInt16();
+                        switch (opcode)
+                        {
+                            case 0: // RequestSpawn
+                                this->HandleSpawn(*pair.first, *pair.second);
+                                this->HandlePossess(*pair.first, *pair.second);
+                                break;
+                            case 1: // NotifyPosition
+                                this->HandleNotifiyPosition(*pair.first, *pair.second);
+                            case 2:
+                                this->HandleBroadCast(*pair.first, *pair.second);
+                                break;
+                        }
                     }
+                }
+                catch (const std::exception & e) {
+                    std::cout << e.what();
                 }
             }
         });
@@ -192,10 +199,15 @@ void TestServer::HandlePossess(UE4Client& client, NioInPacket& input)
 
 void TestServer::HandleNotifiyPosition(UE4Client& client, NioInPacket& input)
 {
+    float rox, roy, roz;
     float z;
     input >> client.x;
     input >> client.y;
     input >> z;
+    input >> rox;
+    input >> roy;
+    input >> roz;
+    // Rotation
 
     OutPacket out;
     out.WriteInt16(2);
@@ -203,6 +215,23 @@ void TestServer::HandleNotifiyPosition(UE4Client& client, NioInPacket& input)
     out << client.x;
     out << client.y;
     out << z;
+    out << rox;
+    out << roy;
+    out << roz;
     out.MakePacketHead();
     this->BroadCastPacket(out, &client);
+}
+
+void TestServer::HandleBroadCast(UE4Client& client, NioInPacket& input)
+{
+    int length = input.GetBufferLength();
+
+    char* buffer = &input.GetData()[4];
+
+    OutPacket out;
+    out.WriteInt16(3);
+    out << client.GetUUID();
+    out.WriteBytes(buffer, length - 4);
+    out.MakePacketHead();
+    this->BroadCastPacket(out);
 }

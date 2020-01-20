@@ -24,7 +24,7 @@ private:
     NioServer();
 public:
     ~NioServer();
-    void PrintCurrentSessionQueue();
+    void PrintCurrentSessionQueue() const;
     void Initialize();
     void Run();
     void Accept();

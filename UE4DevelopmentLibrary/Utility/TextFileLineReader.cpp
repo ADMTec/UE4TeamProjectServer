@@ -67,11 +67,11 @@ std::optional<int64_t> TextFileLineReader::GetInt64(const std::string& key) cons
 	return std::nullopt;
 }
 
-std::optional<const char*> TextFileLineReader::GetString(const std::string& key) const
+std::optional<std::string> TextFileLineReader::GetString(const std::string& key) const
 {
 	auto iter = parse_result_.find(key);
 	if (iter != parse_result_.end()) {
-		return iter->second.c_str();
+		return iter->second;
 	}
 	return std::nullopt;
 }

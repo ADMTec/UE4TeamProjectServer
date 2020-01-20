@@ -42,11 +42,12 @@ const char* GetPrimitiveTypeNameFromPrefix(const std::string& str)
 std::string MakeHeaderFile(const std::string& file_name, const std::vector<std::string>& variables)
 {
     std::stringstream ss;
+    ss << "#pragma once" << '\n';
     ss << "#include <cstdint>" << '\n';
     ss << "#include <string>" << '\n';
     ss << '\n';
     ss << '\n';
-    ss << "class " << file_name << " : public ISerialize" << '\n';
+    ss << "class " << file_name << " : public SerializeInterface" << '\n';
     ss << "{" << '\n';
     ss << "public:" << '\n';
     ss << "    " << file_name << "() = default;" << '\n';
@@ -54,7 +55,11 @@ std::string MakeHeaderFile(const std::string& file_name, const std::vector<std::
     ss << "public:" << '\n';
     ss << "    virtual void Write(OutputStream& out) const override;" << '\n';
     ss << "    virtual void Read(InputStream& input) override;" << '\n';
-    //ss << "    std::string ToString() const;" << '\n';
+    ss << "public:" << '\n';
+    for (const auto& variable : variables) {
+        ss << "    void Get" << &variable.c_str()[1] << "() const;" << "\n";
+        ss << "    void Set" << &variable.c_str()[1] << "(" << GetPrimitiveTypeNameFromPrefix(variable) << " value);" << "\n";
+    }
     ss << "private:" << '\n';
     for (const auto& variable : variables) {
         ss << "    " << GetPrimitiveTypeNameFromPrefix(variable) << " " << variable << ';' << "\n";
@@ -78,12 +83,24 @@ std::string MakeCppFile(const std::string& file_name, const std::vector<std::str
     ss << "}" << '\n';
     ss << '\n';
 
-    ss << "void " << file_name << "::" << "void Read(InputStream& input)" << '\n';
+    ss << "void " << file_name << "::" << "Read(InputStream& input)" << '\n';
     ss << "{" << '\n';
     for (const auto& variable : variables) {
         ss << "    " << "input >> " << variable << ";" << '\n';
     }
     ss << "}" << '\n';
+    ss << '\n';
+
+    for (const auto& variable : variables) {
+        ss << '\n';
+        ss << "void " << file_name << "::Get" << &variable.c_str()[1] << "() const {" << '\n';
+        ss << "    return " << variable << ";" << '\n';
+        ss << "}\n";
+        ss << '\n';
+        ss << "void " << file_name << "::Set" << &variable.c_str()[1] << "(" << GetPrimitiveTypeNameFromPrefix(variable) << " value) {" << '\n';
+        ss << "    " << variable << " = value;" << '\n';
+        ss << "}\n";
+    }
     return ss.str();
 }
 

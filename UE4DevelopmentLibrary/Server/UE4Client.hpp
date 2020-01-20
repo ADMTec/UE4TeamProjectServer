@@ -1,20 +1,20 @@
 #pragma once
-#include "UE4DevelopmentLibrary/Utility.hpp"
-#include "UE4DevelopmentLibrary/Nio.hpp"
+#include "../Utility.hpp"
+#include "../Nio.hpp"
 #include <string>
 #include <optional>
 #include <shared_mutex>
 #include <unordered_map>
 
 
-class ImplUE4Client
+class UE4Client
 {
 public:
-    ImplUE4Client(const ImplUE4Client&) = delete;
-    void operator=(const ImplUE4Client&) = delete;
+    UE4Client(const UE4Client&) = delete;
+    void operator=(const UE4Client&) = delete;
 public:
-    explicit ImplUE4Client(const std::shared_ptr<NioSession>& session);
-    ~ImplUE4Client();
+    explicit UE4Client(const std::shared_ptr<NioSession>& session);
+    ~UE4Client();
 
     void Close();
     const __UUID& GetUUID() const;

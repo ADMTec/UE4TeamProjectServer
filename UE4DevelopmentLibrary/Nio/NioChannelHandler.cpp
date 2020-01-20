@@ -3,8 +3,10 @@
 #include "NioInPacket.hpp"
 #include "NioSession.hpp"
 #include "Exception.hpp"
+#include "../Time.hpp"
 #include <shared_mutex>
 #include <iostream>
+#include <sstream>
 
 
 int64_t NioChannelCipher::GetHead(NioInternalBuffer& buffer)
@@ -54,17 +56,29 @@ void NioChannelEventHandler::BindFunction(int16_t identifier, const handler_t& h
 
 void NioChannelEventHandler::OnSessionActive(NioSession& session)
 {
-	std::cout << "InterServerChannel Connect: " << session.GetRemoteAddress() << "]\n";
+	std::stringstream ss;
+	Clock clock;
+	ss << '[' << Calendar::DateTime(clock) << "] ";
+	ss << "NioChannel Active: " << session.GetRemoteAddress() << "]\n";
+	std::cout << ss.str();
 }
 
 void NioChannelEventHandler::OnSessionError(NioSession& session, int error_code, const char* message)
 {
-	std::cout << "InterServerChannel Error:" << session.GetRemoteAddress() << ", " << error_code << ": " << message << '\n';
+	std::stringstream ss;
+	Clock clock;
+	ss << '[' << Calendar::DateTime(clock) << "] ";
+	ss << "NioChannel Error:" << session.GetRemoteAddress() << ", " << error_code << ": " << message << '\n';
+	std::cout << ss.str();
 }
 
 void NioChannelEventHandler::OnSessionClose(NioSession& session)
 {
-	std::cout << "InterServerChannel Close: " << session.GetRemoteAddress() << "]\n";
+	std::stringstream ss;
+	Clock clock;
+	ss << '[' << Calendar::DateTime(clock) << "] ";
+	ss << "NioChannel Close: " << session.GetRemoteAddress() << "]\n";
+	std::cout << ss.str();
 }
 
 void NioChannelEventHandler::ProcessPacket(NioSession& session, const std::shared_ptr<NioInPacket>& in_packet)

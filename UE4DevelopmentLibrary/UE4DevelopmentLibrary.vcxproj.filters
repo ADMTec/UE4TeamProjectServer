@@ -25,6 +25,9 @@
     <Filter Include="Thread">
       <UniqueIdentifier>{3a63e7dd-120b-4d87-bea0-ece6ff31ed46}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Server">
+      <UniqueIdentifier>{b5c7a604-4ee6-4355-83a6-6fcd2af0da1d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Time.hpp" />
@@ -133,6 +136,28 @@
     <ClInclude Include="Thread\JoinThread.hpp">
       <Filter>Thread</Filter>
     </ClInclude>
+    <ClInclude Include="Server\ClientStorage.hpp">
+      <Filter>Server</Filter>
+    </ClInclude>
+    <ClInclude Include="Server\UE4Client.hpp">
+      <Filter>Server</Filter>
+    </ClInclude>
+    <ClInclude Include="Server\UE4BaseServer.hpp">
+      <Filter>Server</Filter>
+    </ClInclude>
+    <ClInclude Include="Server\UE4OutPacket.hpp">
+      <Filter>Server</Filter>
+    </ClInclude>
+    <ClInclude Include="Server\UE4PacketCipher.hpp">
+      <Filter>Server</Filter>
+    </ClInclude>
+    <ClInclude Include="Server.hpp" />
+    <ClInclude Include="Utility\TextFileLineReader.hpp">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="Server\SessionAuthorityInfo.hpp">
+      <Filter>Server</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Exception\StackTraceException.cpp">
@@ -215,6 +240,27 @@
     </ClCompile>
     <ClCompile Include="Thread\Barrier.cpp">
       <Filter>Thread</Filter>
+    </ClCompile>
+    <ClCompile Include="Server\ClientStorage.cpp">
+      <Filter>Server</Filter>
+    </ClCompile>
+    <ClCompile Include="Server\UE4Client.cpp">
+      <Filter>Server</Filter>
+    </ClCompile>
+    <ClCompile Include="Server\UE4BaseServer.cpp">
+      <Filter>Server</Filter>
+    </ClCompile>
+    <ClCompile Include="Server\UE4OutPacket.cpp">
+      <Filter>Server</Filter>
+    </ClCompile>
+    <ClCompile Include="Server\UE4PacketCipher.cpp">
+      <Filter>Server</Filter>
+    </ClCompile>
+    <ClCompile Include="Utility\TextFileLineReader.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="Server\SessionAuthorityInfo.cpp">
+      <Filter>Server</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

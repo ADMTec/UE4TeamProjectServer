@@ -21,6 +21,7 @@ public:
     explicit NioSession(int64_t id);
     NioSession(int64_t id, const std::shared_ptr<NioLogger>& logger);
 
+    bool SyncConnect(const char* ip, uint16_t port);
     void Connect(const char* ip, uint16_t port);
     void AsyncSend(NioOutPacket& out_packet, bool immediate, bool encode);
     void AsyncRead();

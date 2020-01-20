@@ -1,8 +1,8 @@
 #pragma once
-#include "UE4DevelopmentLibrary/Nio.hpp"
+#include "../Nio.hpp"
 
 
-class LoginServerPacketCipher : public NioCipher
+class UE4PacketCipher : public NioCipher
 {
 public:
     virtual int64_t GetHead(NioInternalBuffer& buffer);

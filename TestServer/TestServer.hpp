@@ -46,6 +46,7 @@ public:
     void HandleSpawn(UE4Client& client, NioInPacket& input);
     void HandlePossess(UE4Client& client, NioInPacket& input);
     void HandleNotifiyPosition(UE4Client& client, NioInPacket& input);
+    void HandleBroadCast(UE4Client& client, NioInPacket& input);
 protected:
     std::thread worker_;
     std::atomic<bool> eixt_flag_;

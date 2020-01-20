@@ -7,7 +7,7 @@ class ResultSet;
 class PreparedStatement
 {
 public:
-    virtual ~PreparedStatement() = 0;
+    virtual ~PreparedStatement();
     virtual void PrepareStatement(const char_t* string) = 0;
     virtual void SetInt32(int index, void* value) = 0;
     virtual void SetInt64(int index, void* value) = 0;

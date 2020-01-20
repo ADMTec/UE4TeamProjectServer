@@ -1,6 +1,6 @@
-#include "LoginServerPacketCipher.hpp"
+#include "UE4PacketCipher.hpp"
 
-int64_t LoginServerPacketCipher::GetHead(NioInternalBuffer& buffer)
+int64_t UE4PacketCipher::GetHead(NioInternalBuffer& buffer)
 {
 	if (buffer.GetReceiveLength() < 2) {
 		return -1;
@@ -8,12 +8,12 @@ int64_t LoginServerPacketCipher::GetHead(NioInternalBuffer& buffer)
 	return buffer.ReadInt16();
 }
 
-int64_t LoginServerPacketCipher::GetPacketLength(int64_t head)
+int64_t UE4PacketCipher::GetPacketLength(int64_t head)
 {
 	return head;
 }
 
-void LoginServerPacketCipher::Decode(NioSession& session, NioInternalBuffer& buffer, NioInPacket& packet)
+void UE4PacketCipher::Decode(NioSession& session, NioInternalBuffer& buffer, NioInPacket& packet)
 {
 	int64_t head = this->GetHead(buffer);
 	int64_t packet_length = GetPacketLength(head);
@@ -27,6 +27,6 @@ void LoginServerPacketCipher::Decode(NioSession& session, NioInternalBuffer& buf
 	buffer.MarkReadIndex(packet_length);
 }
 
-void LoginServerPacketCipher::Encode(NioSession& session, NioOutPacket& out_packet)
+void UE4PacketCipher::Encode(NioSession& session, NioOutPacket& out_packet)
 {
 }

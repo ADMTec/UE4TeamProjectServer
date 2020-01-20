@@ -13,7 +13,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UE4ZoneServer", "UE4ZoneSer
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UE4LoginServer", "UE4LoginServer\UE4LoginServer.vcxproj", "{2055F2FD-C569-4EE9-B695-3ADCCE83E657}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UE4DynamicComponent", "UE4DynamicComponent\UE4DynamicComponent.vcxproj", "{6FEBA610-C85B-40FF-A51F-E16B176313AA}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{427E5783-6ED9-4AFF-9E61-A78B9750C6A4}"
+	ProjectSection(SolutionItems) = preProject
+		InterServerOpcode.hpp = InterServerOpcode.hpp
+		NetworkOpcode.h = NetworkOpcode.h
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -63,14 +67,6 @@ Global
 		{2055F2FD-C569-4EE9-B695-3ADCCE83E657}.Release|x64.Build.0 = Release|x64
 		{2055F2FD-C569-4EE9-B695-3ADCCE83E657}.Release|x86.ActiveCfg = Release|Win32
 		{2055F2FD-C569-4EE9-B695-3ADCCE83E657}.Release|x86.Build.0 = Release|Win32
-		{6FEBA610-C85B-40FF-A51F-E16B176313AA}.Debug|x64.ActiveCfg = Debug|x64
-		{6FEBA610-C85B-40FF-A51F-E16B176313AA}.Debug|x64.Build.0 = Debug|x64
-		{6FEBA610-C85B-40FF-A51F-E16B176313AA}.Debug|x86.ActiveCfg = Debug|Win32
-		{6FEBA610-C85B-40FF-A51F-E16B176313AA}.Debug|x86.Build.0 = Debug|Win32
-		{6FEBA610-C85B-40FF-A51F-E16B176313AA}.Release|x64.ActiveCfg = Release|x64
-		{6FEBA610-C85B-40FF-A51F-E16B176313AA}.Release|x64.Build.0 = Release|x64
-		{6FEBA610-C85B-40FF-A51F-E16B176313AA}.Release|x86.ActiveCfg = Release|Win32
-		{6FEBA610-C85B-40FF-A51F-E16B176313AA}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

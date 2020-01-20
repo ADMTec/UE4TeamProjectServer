@@ -35,7 +35,7 @@ public:
         Connection(const std::shared_ptr<NioChannel>& channel, int identifier);
         Connection();
         void BindFunction(int16_t opcode, const NioChannelEventHandler::handler_t& func);
-        void Connect(const char* ip, uint16_t port);
+        bool Connect(const char* ip, uint16_t port);
         void Send(NioOutPacket& out);
         void Close();
         bool IsValid() const;
@@ -61,9 +61,9 @@ public:
 private:
     std::shared_ptr<NioContext> context_;
 
-    mutable std::shared_mutex host_pool_guard_;
-    std::vector<NioChannel::Receiver> host_pool_;
+    mutable std::shared_mutex receiver_pool_guard_;
+    std::vector<NioChannel::Receiver> receiver_pool_;
 
-    mutable std::shared_mutex guest_pool_guard_;
-    std::vector<NioChannel::Connection> guest_pool_;
+    mutable std::shared_mutex connection_pool_guard_;
+    std::vector<NioChannel::Connection> connection_pool_;
 };

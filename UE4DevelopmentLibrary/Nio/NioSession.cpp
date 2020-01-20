@@ -72,6 +72,11 @@ void NioSession::OnConnected()
     this->AsyncRead();
 }
 
+bool NioSession::SyncConnect(const char* ip, uint16_t port)
+{
+    return socket_->SyncConnect(ip, port);
+}
+
 void NioSession::Connect(const char* ip, uint16_t port)
 {
     socket_->Connect(ip, port,

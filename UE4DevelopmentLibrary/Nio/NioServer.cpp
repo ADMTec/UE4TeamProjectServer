@@ -44,9 +44,20 @@ NioServer::~NioServer()
     this->Exit();
 }
 
-void NioServer::PrintCurrentSessionQueue()
+void NioServer::PrintCurrentSessionQueue() const
 {
-    std::cout << "current session id queue size: " << session_id_queue_.unsafe_size() << std::endl;
+    std::stringstream ss;
+    auto copy = session_pool_;
+    ss << "-----------------------------------------------------------\n";
+    ss << " Max Session Pool Size: " << max_connection_ << '\n';
+    ss << " Current Session Pool Size: " << copy.size();
+    if (copy.size() > 0) {
+        ss << " Connected Session IP: " << '\n';
+        for (const auto& session : copy) {
+            ss << " " << session->GetRemoteAddress() << '\n';
+        }
+    }
+    ss << "-----------------------------------------------------------\n";
 }
 
 void NioServer::Initialize()

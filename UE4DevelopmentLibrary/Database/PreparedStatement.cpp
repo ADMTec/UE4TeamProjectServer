@@ -4,6 +4,12 @@
 #include "ODBC.hpp"
 
 
+PreparedStatement::~PreparedStatement()
+{
+}
+
+
+
 ODBCPreparedStatement::ODBCPreparedStatement(SQLHDBC conn_handle)
     : statement_handle_(NULL), nts_length_(SQL_NTS)
 {

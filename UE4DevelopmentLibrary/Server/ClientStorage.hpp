@@ -4,7 +4,7 @@
 #include <shared_mutex>
 #include <vector>
 #include <unordered_map>
-#include "Public/UE4Client.hpp"
+#include "UE4Client.hpp"
 
 
 class ClientStorage

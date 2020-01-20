@@ -12,6 +12,14 @@ NioSocket::~NioSocket()
     Close();
 }
 
+bool NioSocket::SyncConnect(const char* server_ip, uint16_t port)
+{
+    boost::system::error_code ec;
+    socket_.connect(
+        asio::ip::tcp::endpoint{ asio::ip::make_address(server_ip), port }, ec);
+    return !ec.operator bool();
+}
+
 void NioSocket::Connect(const char* server_ip, uint16_t port, const conn_complete_task_t& callback)
 {
     socket_.async_connect(
