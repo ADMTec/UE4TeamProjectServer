@@ -18,7 +18,7 @@ int64_t NioCipher::GetPacketLength(int64_t head)
 void NioCipher::Decode(NioSession& session, NioInternalBuffer& buffer, NioInPacket& packet)
 {
     int64_t head = this->GetHead(buffer);
-    int64_t packet_length = GetPacketLength(head);
+    uint64_t packet_length = GetPacketLength(head);
     if (head < 0 || head < packet_length || (buffer.GetReadableLength() < packet_length)) {
         buffer.ResetReadOffset();
         return;

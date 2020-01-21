@@ -1,27 +1,24 @@
 #pragma once
 #include <cstdint>
 
-enum class ToLoginServer : int16_t
+enum class IntermediateServerSendPacket : int16_t
 {
-    UserCloseNotify,
-    UserMigrationNotifyAck,
+    kNotifySessionAuthorityInfo,
+    kReactUserMigation,
 };
 
-enum class OutLoginServer : int16_t
+enum class IntermediateServerReceivePacket : int16_t
 {
-    UserCloseNotify,
-    UserCloseAck,
-    UserMigrationNotifyAck
+    kRegisterRemoteServer,
+    kUpdateServerConnection,
+    kRequestUserMigration,
+    kReactSessionAuthorityInfo,
 };
 
-
-enum class ToLobbyServer : int16_t
+enum class ServerType : int16_t
 {
-    UserMigrationNotify,
-    UserMigrationNotifyAck
-};
-
-enum class ToZoneServer : int16_t
-{
-    UserMigrationNotify,
+    kLoginServer,
+    kLobbyServer,
+    kZoneServer,
+    kCount,
 };

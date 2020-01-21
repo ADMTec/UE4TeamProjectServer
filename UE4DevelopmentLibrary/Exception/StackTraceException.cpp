@@ -140,7 +140,7 @@ StackTraceException::StackTraceException(const char* except_type, const char* me
 #ifdef USE_CUSTOM_STRING_PARSE_BOOST_STACKTRACE
     std::stringstream stack_ss; stack_ss << boost::stacktrace::stacktrace();
     std::stringstream ss;
-    ss << except_type << ') ' << message << '\n';
+    ss << except_type << ") " << message << '\n';
     message_ = GetParseString(stack_ss.str(), ss);
 #else
     ss << boost::stacktrace::stacktrace();

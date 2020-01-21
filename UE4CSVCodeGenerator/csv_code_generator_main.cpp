@@ -57,7 +57,7 @@ std::string MakeHeaderFile(const std::string& file_name, const std::vector<std::
     ss << "    virtual void Read(InputStream& input) override;" << '\n';
     ss << "public:" << '\n';
     for (const auto& variable : variables) {
-        ss << "    void Get" << &variable.c_str()[1] << "() const;" << "\n";
+        ss << "    "<< GetPrimitiveTypeNameFromPrefix(variable) << " Get" << &variable.c_str()[1] << "() const;" << "\n";
         ss << "    void Set" << &variable.c_str()[1] << "(" << GetPrimitiveTypeNameFromPrefix(variable) << " value);" << "\n";
     }
     ss << "private:" << '\n';
@@ -93,7 +93,7 @@ std::string MakeCppFile(const std::string& file_name, const std::vector<std::str
 
     for (const auto& variable : variables) {
         ss << '\n';
-        ss << "void " << file_name << "::Get" << &variable.c_str()[1] << "() const {" << '\n';
+        ss << GetPrimitiveTypeNameFromPrefix(variable) << " " << file_name << "::Get" << &variable.c_str()[1] << "() const {" << '\n';
         ss << "    return " << variable << ";" << '\n';
         ss << "}\n";
         ss << '\n';

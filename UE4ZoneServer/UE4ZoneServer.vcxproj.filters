@@ -8,43 +8,112 @@
     <Filter Include="Constants">
       <UniqueIdentifier>{fadc50e7-96c4-46d1-a31b-87a667cbdc68}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Constructor">
-      <UniqueIdentifier>{e978519b-14a9-47a2-ad8d-b66d07100f3f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Network">
       <UniqueIdentifier>{96f3c01c-e149-4eb7-ab47-b4eac28a6e2f}</UniqueIdentifier>
     </Filter>
     <Filter Include="Zone">
       <UniqueIdentifier>{8dd2d933-668e-492d-845c-2f12d5b43886}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Zone\Object">
-      <UniqueIdentifier>{0d20a628-04a9-4b83-b624-78755cd1864d}</UniqueIdentifier>
+    <Filter Include="Provider">
+      <UniqueIdentifier>{e978519b-14a9-47a2-ad8d-b66d07100f3f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Data">
+      <UniqueIdentifier>{6ddb119c-184c-43e2-8792-1f79dd550330}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Zone\Character">
+      <UniqueIdentifier>{41077bd1-8828-4bf8-af67-7fd7307f718a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Zone\Character\Item">
+      <UniqueIdentifier>{d9914310-1fa0-4d4f-b2fc-2705ae43b3f6}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="zone_server_main.cpp" />
-    <ClCompile Include="Zone\Object\ZoneObject.cpp">
-      <Filter>Zone\Object</Filter>
+    <ClCompile Include="Provider\ZoneDataProvider.cpp">
+      <Filter>Provider</Filter>
+    </ClCompile>
+    <ClCompile Include="Constants\GameConstants.cpp">
+      <Filter>Constants</Filter>
+    </ClCompile>
+    <ClCompile Include="Constants\ServerConstants.cpp">
+      <Filter>Constants</Filter>
     </ClCompile>
     <ClCompile Include="Zone\Zone.cpp">
       <Filter>Zone</Filter>
     </ClCompile>
+    <ClCompile Include="Zone\ZoneObject.cpp">
+      <Filter>Zone</Filter>
+    </ClCompile>
+    <ClCompile Include="Zone\Character\Character.cpp">
+      <Filter>Zone\Character</Filter>
+    </ClCompile>
+    <ClCompile Include="Zone\Character\CharacterInventory.cpp">
+      <Filter>Zone\Character</Filter>
+    </ClCompile>
+    <ClCompile Include="Zone\Character\CharacterQuickSlot.cpp">
+      <Filter>Zone\Character</Filter>
+    </ClCompile>
+    <ClCompile Include="Zone\Character\CharacterSkill.cpp">
+      <Filter>Zone\Character</Filter>
+    </ClCompile>
+    <ClCompile Include="Zone\Character\CharacterStat.cpp">
+      <Filter>Zone\Character</Filter>
+    </ClCompile>
+    <ClCompile Include="Zone\Character\Item\ConsumeItem.cpp">
+      <Filter>Zone\Character\Item</Filter>
+    </ClCompile>
+    <ClCompile Include="Zone\Character\Item\EquipItem.cpp">
+      <Filter>Zone\Character\Item</Filter>
+    </ClCompile>
+    <ClCompile Include="Zone\Character\Item\BaseItem.cpp">
+      <Filter>Zone\Character\Item</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Zone\Object\ZoneObject.hpp">
-      <Filter>Zone\Object</Filter>
+    <ClInclude Include="Provider\ZoneDataProvider.hpp">
+      <Filter>Provider</Filter>
     </ClInclude>
-    <ClInclude Include="Zone\Object\Location.hpp">
-      <Filter>Zone\Object</Filter>
+    <ClInclude Include="Constants\GameConstants.hpp">
+      <Filter>Constants</Filter>
     </ClInclude>
-    <ClInclude Include="Zone\Object\Rotation.hpp">
-      <Filter>Zone\Object</Filter>
+    <ClInclude Include="Constants\ServerConstants.hpp">
+      <Filter>Constants</Filter>
     </ClInclude>
-    <ClInclude Include="Zone\Object\FVector.hpp">
-      <Filter>Zone\Object</Filter>
+    <ClInclude Include="Data\ZoneData.hpp">
+      <Filter>Data</Filter>
+    </ClInclude>
+    <ClInclude Include="Zone\FVector.hpp">
+      <Filter>Zone</Filter>
     </ClInclude>
     <ClInclude Include="Zone\Zone.hpp">
       <Filter>Zone</Filter>
+    </ClInclude>
+    <ClInclude Include="Zone\ZoneObject.hpp">
+      <Filter>Zone</Filter>
+    </ClInclude>
+    <ClInclude Include="Zone\Character\Character.hpp">
+      <Filter>Zone\Character</Filter>
+    </ClInclude>
+    <ClInclude Include="Zone\Character\CharacterInventory.hpp">
+      <Filter>Zone\Character</Filter>
+    </ClInclude>
+    <ClInclude Include="Zone\Character\CharacterQuickSlot.hpp">
+      <Filter>Zone\Character</Filter>
+    </ClInclude>
+    <ClInclude Include="Zone\Character\CharacterSkill.hpp">
+      <Filter>Zone\Character</Filter>
+    </ClInclude>
+    <ClInclude Include="Zone\Character\CharacterStat.hpp">
+      <Filter>Zone\Character</Filter>
+    </ClInclude>
+    <ClInclude Include="Zone\Character\Item\ConsumeItem.hpp">
+      <Filter>Zone\Character\Item</Filter>
+    </ClInclude>
+    <ClInclude Include="Zone\Character\Item\EquipItem.hpp">
+      <Filter>Zone\Character\Item</Filter>
+    </ClInclude>
+    <ClInclude Include="Zone\Character\Item\BaseItem.hpp">
+      <Filter>Zone\Character\Item</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

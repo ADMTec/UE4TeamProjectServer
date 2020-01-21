@@ -21,6 +21,7 @@ public:
         void Clear();
         void BindFunction(int16_t opcode, const NioChannelEventHandler::handler_t& func);
         bool IsValid() const;
+        bool IsOpen() const;
         int GetId() const;
     private:
         int id_;
@@ -39,7 +40,8 @@ public:
         void Send(NioOutPacket& out);
         void Close();
         bool IsValid() const;
-        int GetId() const;
+        bool IsOpen() const;
+        int64_t GetId() const;
     private:
         std::shared_ptr<NioSession> session_;
     };

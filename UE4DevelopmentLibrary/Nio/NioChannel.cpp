@@ -91,6 +91,13 @@ bool NioChannel::Receiver::IsValid() const
     return host_.operator bool();
 }
 
+bool NioChannel::Receiver::IsOpen() const
+{
+    if (IsValid() && host_->IsRunning())
+        return true;
+    return false;
+}
+
 int NioChannel::Receiver::GetId() const
 {
     return id_;
@@ -143,7 +150,14 @@ bool NioChannel::Connection::IsValid() const
     return session_.operator bool();
 }
 
-int NioChannel::Connection::GetId() const
+bool NioChannel::Connection::IsOpen() const
+{
+    if (IsValid() && session_->IsOpen())
+        return true;
+    return false;
+}
+
+int64_t NioChannel::Connection::GetId() const
 {
     return session_->GetId();
 }

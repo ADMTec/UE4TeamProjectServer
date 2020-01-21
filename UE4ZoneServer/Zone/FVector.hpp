@@ -4,6 +4,11 @@
 struct FVector : public SerializeInterface
 {
 public:
+    FVector(float _x, float _y, float _z)
+        : x(_x), y(_y), z(_z)
+    {
+    }
+    FVector() = default;
     virtual void Write(OutputStream& output) const {
         output << x;
         output << y;
@@ -19,3 +24,6 @@ public:
     float y;
     float z;
 };
+
+using Location = FVector;
+using Rotation = FVector;

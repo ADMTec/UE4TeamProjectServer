@@ -4,3 +4,4 @@
 #include "Server/UE4OutPacket.hpp"
 #include "Server/UE4PacketCipher.hpp"
 #include "Server/SessionAuthorityInfo.hpp"
+#include "Server/RemoteServerInfo.hpp"

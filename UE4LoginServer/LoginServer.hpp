@@ -7,10 +7,11 @@
 #include <memory>
 
 
+using std::shared_ptr;
+
 class LoginServer : public UE4BaseServer, public TSingleton<LoginServer>
 {
-    constexpr static const int channel_id = 0;
-    constexpr static const int lobby_channel_id = 1;
+    constexpr static const int intermediate_server = 0;
     LoginServer();
     friend class TSingleton<LoginServer>;
 public:
@@ -21,7 +22,7 @@ public:
     virtual void ConnectChannel();
     virtual void OnActiveClient(UE4Client& client);
     virtual void OnCloseClient(UE4Client& client);
-    virtual void OnProcessPacket(const std::shared_ptr<UE4Client>& client, NioInPacket& in_packet);
+    virtual void OnProcessPacket(const shared_ptr<UE4Client>& client, const shared_ptr<NioInPacket>& in_packet);
 private:
     void HandleCreateAccountRquest(UE4Client& client, NioInPacket& in_packet);
     void HandleLoginRequest(UE4Client& client, NioInPacket& in_packet);

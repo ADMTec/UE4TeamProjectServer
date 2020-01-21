@@ -222,6 +222,7 @@ copy "Utility\*.hpp" "..\include\$(ProjectName)\Utility\"</Command>
     <ClInclude Include="Nio\Private\NioSystemClockTimer.hpp" />
     <ClInclude Include="Server.hpp" />
     <ClInclude Include="Server\ClientStorage.hpp" />
+    <ClInclude Include="Server\RemoteServerInfo.hpp" />
     <ClInclude Include="Server\SessionAuthorityInfo.hpp" />
     <ClInclude Include="Server\UE4BaseServer.hpp" />
     <ClInclude Include="Server\UE4Client.hpp" />
@@ -266,6 +267,7 @@ copy "Utility\*.hpp" "..\include\$(ProjectName)\Utility\"</Command>
     <ClCompile Include="Nio\Private\NioSocket.cpp" />
     <ClCompile Include="Nio\Private\NioSystemClockTimer.cpp" />
     <ClCompile Include="Server\ClientStorage.cpp" />
+    <ClCompile Include="Server\RemoteServerInfo.cpp" />
     <ClCompile Include="Server\SessionAuthorityInfo.cpp" />
     <ClCompile Include="Server\UE4BaseServer.cpp" />
     <ClCompile Include="Server\UE4Client.cpp" />

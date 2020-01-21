@@ -158,6 +158,9 @@
     <ClInclude Include="Server\SessionAuthorityInfo.hpp">
       <Filter>Server</Filter>
     </ClInclude>
+    <ClInclude Include="Server\RemoteServerInfo.hpp">
+      <Filter>Server</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Exception\StackTraceException.cpp">
@@ -260,6 +263,9 @@
       <Filter>Utility</Filter>
     </ClCompile>
     <ClCompile Include="Server\SessionAuthorityInfo.cpp">
+      <Filter>Server</Filter>
+    </ClCompile>
+    <ClCompile Include="Server\RemoteServerInfo.cpp">
       <Filter>Server</Filter>
     </ClCompile>
   </ItemGroup>

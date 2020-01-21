@@ -15,7 +15,7 @@ void TextFileLineReader::Parse(std::ifstream& file) noexcept
 	while (file.eof() == false)
 	{
 		std::getline(file, lines);
-		int find_result = lines.find_first_of('=');
+		size_t find_result = lines.find_first_of('=');
 		if (find_result != lines.npos && lines[0] != '/') {
 			parse_result_.emplace(Trim(lines.substr(0, find_result)), Trim(lines.substr(find_result + 1)));
 		}

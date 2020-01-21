@@ -1,29 +1,20 @@
 #pragma once
 #include "UE4DevelopmentLibrary/Time.hpp"
-#include "Location.hpp"
-#include "Rotation.hpp"
+#include "FVector.hpp"
 #include <cstdint>
 
-class Enum
-{
-public:
-    template<typename T>
-    static constexpr int32_t Cast(T value) {
-        return static_cast<int32_t>(value);
-    }
-};
 
 class ZoneObject : public SerializeInterface
 {
 public:
     using oid_t = int64_t;
-    enum class Template : int32_t {
-        Character = 0,
-        Monster,
-        Npc,
-        Item,
-        Reactor,
-        Count,
+    enum Template : int32_t {
+        kCharacter = 0,
+        kMonster,
+        kNpc,
+        kItem,
+        kReactor,
+        kCount,
     };
 public:
     ZoneObject(const ZoneObject& rhs);
