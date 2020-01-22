@@ -13,19 +13,22 @@ public:
 public:
     using item_type_t = int16_t;
     enum class ItemType : item_type_t {
-        kEquip,
-        kConsume,
-        kETC,
+        kETC = 1,
+        kConsume = 2,
+        kEquip = 3,
     };
     using equip_position_t = int16_t;
     enum class EquipPosition : equip_position_t {
-        kHat,
-        kJacket,
-        kPants,
-        kWeapon,
+        kHat = 1,
+        kJacket = 2,
+        kShoes = 3,
+        kPants = 4,
+        kWeapon = 5,
+        kSubWeapon = 6,
         kCount,
     };
 public:
+    float GetStaminaRecoveryFromLevel(int32_t level) const;
     ItemType GetItemTypeFromItemId(int32_t itemid) const;
     std::optional<EquipPosition> GetEquipPositionFromEquipPosInt(equip_position_t pos) const;
     std::optional<EquipPosition> GetEquipPositionFromItemId(int32_t itemid) const;

@@ -28,11 +28,4 @@ private:
     void HandleLoginRequest(UE4Client& client, NioInPacket& in_packet);
 private:
     TextFileLineReader reader_;
-    std::unique_ptr<DatabaseDriver> database_;
-    string_t odbc_;
-    string_t db_id_;
-    string_t db_pw_;
-    
-    std::mutex connected_id_set_garud_;
-    std::unordered_set<std::string> connected_id_set_;
 };

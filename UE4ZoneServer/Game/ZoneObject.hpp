@@ -12,7 +12,6 @@ public:
         kCharacter = 0,
         kMonster,
         kNpc,
-        kItem,
         kReactor,
         kCount,
     };

@@ -12,13 +12,12 @@ class CharacterStat : public SerializeInterface
 public:
     CharacterStat(Character& base);
 public:
-    void Initialize(int32_t db_cid);
+    void SetDefault(class CharacterTable& data);
+    void RecalculateStat();
 public:
     virtual void Write(OutputStream& out) const override;
     virtual void Read(InputStream& input) override;
 public:
-    int32_t GetRacial() const;
-    void SetRacial(int32_t value);
     int32_t GetGender() const;
     void SetGender(int32_t value);
     float GetHP() const;
@@ -27,10 +26,14 @@ public:
     void SetMaxHP(float value);
     float GetStamina() const;
     void SetStamina(float value);
+    float GetStaminaRecovery() const;
+    void SetStaminaRecovery(float value);
     float GetMaxStamina() const;
     void SetMaxStamina(float value);
-    float GetAttack() const;
-    void SetAttack(float value);
+    float GetAttackMin() const;
+    void SetAttackMin(float value);
+    float GetAttackMax() const;
+    void SetAttackMax(float value);
     float GetAttackRange() const;
     void SetAttackRange(float value);
     float GetAttackSpeed() const;
@@ -51,27 +54,8 @@ public:
     void SetDex(int32_t value);
     int32_t GetIntel() const;
     void SetIntel(int32_t value);
-    int32_t GetLuk() const;
-    void SetLuk(int32_t value);
 private:
     Character& base_;
 
-    int32_t racial = 0;
-    int32_t gender_ = 0;
-    float hp_ = 0.0f;
-    float max_hp = 0.0f;
-    float stamina_ = 0.0f;
-    float max_stamina = 0.0f;
-    float attack_ = 0.0f;
-    float attackrange_ = 0.0f;
-    float attackspeed_ = 0.0f;
-    float speed_ = 0.0f;
-    int32_t faceid_ = 0;
-    int32_t hair_id_ = 0;
-    int32_t job_ = 0;
-    int64_t lv_ = 0;
-    int32_t str_ = 0;
-    int32_t dex_ = 0;
-    int32_t intel_ = 0;
-    int32_t luk_ = 0;
+
 };

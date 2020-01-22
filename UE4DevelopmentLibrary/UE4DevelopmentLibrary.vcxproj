@@ -200,6 +200,7 @@ copy "Utility\*.hpp" "..\include\$(ProjectName)\Utility\"</Command>
     <ClInclude Include="Database\Connection.hpp" />
     <ClInclude Include="Database\DatabaseDriver.hpp" />
     <ClInclude Include="Database\ODBC.hpp" />
+    <ClInclude Include="Database\ODBCConnectionPool.hpp" />
     <ClInclude Include="Database\PreparedStatement.hpp" />
     <ClInclude Include="Database\ResultSet.hpp" />
     <ClInclude Include="Exception.hpp" />
@@ -223,7 +224,7 @@ copy "Utility\*.hpp" "..\include\$(ProjectName)\Utility\"</Command>
     <ClInclude Include="Server.hpp" />
     <ClInclude Include="Server\ClientStorage.hpp" />
     <ClInclude Include="Server\RemoteServerInfo.hpp" />
-    <ClInclude Include="Server\SessionAuthorityInfo.hpp" />
+    <ClInclude Include="Server\RemoteSessionInfo.hpp" />
     <ClInclude Include="Server\UE4BaseServer.hpp" />
     <ClInclude Include="Server\UE4Client.hpp" />
     <ClInclude Include="Server\UE4OutPacket.hpp" />
@@ -249,6 +250,7 @@ copy "Utility\*.hpp" "..\include\$(ProjectName)\Utility\"</Command>
     <ClCompile Include="Database\Connection.cpp" />
     <ClCompile Include="Database\DatabaseDriver.cpp" />
     <ClCompile Include="Database\ODBC.cpp" />
+    <ClCompile Include="Database\ODBCConnectionPool.cpp" />
     <ClCompile Include="Database\PreparedStatement.cpp" />
     <ClCompile Include="Database\ResultSet.cpp" />
     <ClCompile Include="Exception\StackTraceException.cpp" />
@@ -268,7 +270,7 @@ copy "Utility\*.hpp" "..\include\$(ProjectName)\Utility\"</Command>
     <ClCompile Include="Nio\Private\NioSystemClockTimer.cpp" />
     <ClCompile Include="Server\ClientStorage.cpp" />
     <ClCompile Include="Server\RemoteServerInfo.cpp" />
-    <ClCompile Include="Server\SessionAuthorityInfo.cpp" />
+    <ClCompile Include="Server\RemoteSessionInfo.cpp" />
     <ClCompile Include="Server\UE4BaseServer.cpp" />
     <ClCompile Include="Server\UE4Client.cpp" />
     <ClCompile Include="Server\UE4OutPacket.cpp" />

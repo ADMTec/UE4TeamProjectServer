@@ -1,10 +1,11 @@
 #pragma once
 #include "base.hpp"
+#include <memory>
 
 
 class PreparedStatement;
 
-class Connection
+class Connection : public std::enable_shared_from_this<Connection>
 {
 public:
     virtual ~Connection();

@@ -155,11 +155,14 @@
     <ClInclude Include="Utility\TextFileLineReader.hpp">
       <Filter>Utility</Filter>
     </ClInclude>
-    <ClInclude Include="Server\SessionAuthorityInfo.hpp">
-      <Filter>Server</Filter>
-    </ClInclude>
     <ClInclude Include="Server\RemoteServerInfo.hpp">
       <Filter>Server</Filter>
+    </ClInclude>
+    <ClInclude Include="Server\RemoteSessionInfo.hpp">
+      <Filter>Server</Filter>
+    </ClInclude>
+    <ClInclude Include="Database\ODBCConnectionPool.hpp">
+      <Filter>Database</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -262,11 +265,14 @@
     <ClCompile Include="Utility\TextFileLineReader.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
-    <ClCompile Include="Server\SessionAuthorityInfo.cpp">
-      <Filter>Server</Filter>
-    </ClCompile>
     <ClCompile Include="Server\RemoteServerInfo.cpp">
       <Filter>Server</Filter>
+    </ClCompile>
+    <ClCompile Include="Server\RemoteSessionInfo.cpp">
+      <Filter>Server</Filter>
+    </ClCompile>
+    <ClCompile Include="Database\ODBCConnectionPool.cpp">
+      <Filter>Database</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

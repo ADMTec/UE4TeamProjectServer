@@ -4,6 +4,6 @@
 class ConsumeItem : public BaseItem
 {
 public:
-
+    explicit ConsumeItem(int32_t itemid = -1);
 private:
 };

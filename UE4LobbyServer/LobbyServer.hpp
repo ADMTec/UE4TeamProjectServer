@@ -15,6 +15,12 @@ class LobbyServer : public UE4BaseServer, public TSingleton<LobbyServer>
     friend class TSingleton<LobbyServer>;
     LobbyServer();
 public:
+    enum ClientState {
+        kNotConfirm,
+        kConfirm,
+        kReserveToMigrate,
+    };
+public:
     virtual void Initialize();
     virtual void Run();
     virtual void Stop();
@@ -23,6 +29,14 @@ public:
     virtual void OnCloseClient(UE4Client& client);
     virtual void OnProcessPacket(const shared_ptr<UE4Client>& client, const shared_ptr<NioInPacket>& in_packet);
 private:
+    void HandleConfirmRequest(UE4Client& client, NioInPacket& in_packet);
+    void HandleCharacterListRequest(UE4Client& client, NioInPacket& in_packet);
+    void HandleCharacterCreateRequest(UE4Client& client, NioInPacket& in_packet);
+    void HandleCharacterDeleteRequest(UE4Client& client, NioInPacket& in_packet);
+    void HandleCharacterSelectRequest(UE4Client& client, NioInPacket& in_packet);
+private:
+    void SendCharacterList(UE4Client& client);
+private:
     TextFileLineReader reader_;
     unique_ptr<DatabaseDriver> database_;
     string_t odbc_;
@@ -30,5 +44,5 @@ private:
     string_t db_pw_;
 
     std::shared_mutex session_authority_guard_;
-    std::unordered_map<SessionAuthorityInfo::id_t, SessionAuthorityInfo> authority_map_;
+    std::unordered_map<RemoteSessionInfo::id_t, RemoteSessionInfo> authority_map_;
 };

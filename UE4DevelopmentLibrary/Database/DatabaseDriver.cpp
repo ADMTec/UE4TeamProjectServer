@@ -30,9 +30,21 @@ void ODBCDriver::Initialize()
     ODBC::CheckSQLError(result, environment_handle_, SQL_HANDLE_ENV);
 }
 
-std::shared_ptr<Connection> ODBCDriver::Connect(const string_t& addr, const string_t& id, const string_t& pw)
+std::shared_ptr<Connection> ODBCDriver::Connect(const string_t& addr, const string_t& id, const string_t& pw, const deleter_t& deleter)
 {
-    auto con = std::shared_ptr<Connection>(new ODBCConnection(environment_handle_));
+    std::shared_ptr<Connection> con = nullptr;
+    if (deleter == nullptr) {
+        con = std::shared_ptr<Connection>(new ODBCConnection(environment_handle_));
+    } else {
+        con = std::shared_ptr<Connection>(new ODBCConnection(environment_handle_), deleter);
+    }
     con->Connect(addr, id, pw);
     return con;
 }
+//
+//std::shared_ptr<Connection> ODBCDriver::Connect(const string_t& addr, const string_t& id, const string_t& pw)
+//{
+//    auto con = std::shared_ptr<Connection>(new ODBCConnection(environment_handle_));
+//    con->Connect(addr, id, pw);
+//    return con;
+//}

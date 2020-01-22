@@ -13,6 +13,7 @@ enum class IntermediateServerReceivePacket : int16_t
     kUpdateServerConnection,
     kRequestUserMigration,
     kReactSessionAuthorityInfo,
+    kNotifyUserLogout,
 };
 
 enum class ServerType : int16_t

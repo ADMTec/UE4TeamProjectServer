@@ -12,55 +12,41 @@ void CharacterStat::Initialize(int32_t db_cid)
 
 void CharacterStat::Write(OutputStream& out) const
 {
-    out << racial;
     out << gender_;
     out << hp_;
     out << max_hp;
     out << stamina_;
-    out << max_stamina;
-    out << attack_;
-    out << attackrange_;
-    out << attackspeed_;
+    out << max_stamina_;
+    out << attack_range_;
+    out << attack_speed_;
     out << speed_;
-    out << faceid_;
+    out << face_id_;
     out << hair_id_;
     out << job_;
     out << lv_;
     out << str_;
     out << dex_;
     out << intel_;
-    out << luk_;
 }
 
 void CharacterStat::Read(InputStream& input)
 {
-    input >> racial;
     input >> gender_;
     input >> hp_;
     input >> max_hp;
     input >> stamina_;
-    input >> max_stamina;
-    input >> attack_;
-    input >> attackrange_;
-    input >> attackspeed_;
+    input >> max_stamina_;
+
+    input >> attack_range_;
+    input >> attack_speed_;
     input >> speed_;
-    input >> faceid_;
+    input >> face_id_;
     input >> hair_id_;
     input >> job_;
     input >> lv_;
     input >> str_;
     input >> dex_;
     input >> intel_;
-    input >> luk_;
-}
-
-
-int32_t CharacterStat::GetRacial() const {
-    return racial;
-}
-
-void CharacterStat::SetRacial(int32_t value) {
-    racial = value;
 }
 
 int32_t CharacterStat::GetGender() const {
@@ -95,38 +81,60 @@ void CharacterStat::SetStamina(float value) {
     stamina_ = value;
 }
 
+float CharacterStat::GetStaminaRecovery() const
+{
+    return stamina_recovery_;
+}
+
+void CharacterStat::SetStaminaRecovery(float value)
+{
+    stamina_recovery_ = value;
+}
+
 float CharacterStat::GetMaxStamina() const {
-    return max_stamina;
+    return max_stamina_;
 }
 
 void CharacterStat::SetMaxStamina(float value) {
-    max_stamina = value;
+    max_stamina_ = value;
 }
 
-float CharacterStat::GetAttack() const {
-    return attack_;
+float CharacterStat::GetAttackMin() const
+{
+    return attack_min_;
 }
 
-void CharacterStat::SetAttack(float value) {
-    attack_ = value;
+void CharacterStat::SetAttackMin(float value)
+{
+    attack_min_ = value;
+}
+
+float CharacterStat::GetAttackMax() const
+{
+    return attack_max_;
+}
+
+void CharacterStat::SetAttackMax(float value)
+{
+    attack_max_ = value;
 }
 
 float CharacterStat::GetAttackRange() const {
-    return attackrange_;
+    return attack_range_;
 }
 
 void CharacterStat::SetAttackRange(float value) {
-    attackrange_ = value;
+    attack_range_ = value;
 }
 
 float CharacterStat::GetAttackSpeed() const
 {
-    return attackspeed_;
+    return attack_speed_;
 }
 
 void CharacterStat::SetAttackSpeed(float value)
 {
-    attackspeed_ = value;
+    attack_speed_ = value;
 }
 
 float CharacterStat::GetSpeed() const
@@ -140,11 +148,11 @@ void CharacterStat::SetSpeed(float value)
 }
 
 int32_t CharacterStat::GetFaceId() const {
-    return faceid_;
+    return face_id_;
 }
 
 void CharacterStat::SetFaceId(int32_t value) {
-    faceid_ = value;
+    face_id_ = value;
 }
 
 int32_t CharacterStat::GetHairId() const {
@@ -193,12 +201,4 @@ int32_t CharacterStat::GetIntel() const {
 
 void CharacterStat::SetIntel(int32_t value) {
     intel_ = value;
-}
-
-int32_t CharacterStat::GetLuk() const {
-    return luk_;
-}
-
-void CharacterStat::SetLuk(int32_t value) {
-    luk_ = value;
 }

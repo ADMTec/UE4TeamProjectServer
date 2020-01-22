@@ -25,31 +25,25 @@ void LoginServer::Initialize()
     auto opt_port = reader_.GetInt32("LOGIN_SERVER_PORT");
     auto opt_max_conn = reader_.GetInt32("LOGIN_SERVER_MAX_CONNECTION");
     auto opt_worker_size = reader_.GetInt32("LOGIN_SERVER_NUM_IO_WORKER");
-    auto opt_channel_port = reader_.GetInt32("LOGIN_SERVER_CHANNEL_PORT");
-    auto opt_channel_max_conn = reader_.GetInt32("LOGIN_SERVER_CHANNEL_MAX_CONNECTION");
-    if(!opt_odbc || !opt_db_id || !opt_db_pw || !opt_port || !opt_max_conn || 
-        !opt_worker_size || !opt_channel_port || *opt_channel_max_conn)
+    if(!opt_odbc || !opt_db_id || !opt_db_pw || !opt_port || !opt_max_conn || !opt_worker_size)
     {
         throw StackTraceException(ExceptionType::kLogicError, "no data");
     }
-    database_ = std::make_unique<ODBCDriver>();
-    database_->Initialize();
 #ifdef _UNICODE
     std::string str1 = std::string(*opt_odbc);
     std::string str2 = std::string(*opt_db_id);
     std::string str3 = std::string(*opt_db_pw);
-    odbc_ = std::wstring(str1.begin(), str1.end());
-    db_id_ = std::wstring(str2.begin(), str2.end());
-    db_pw_ = std::wstring(str3.begin(), str3.end());
+    string_t odbc_ = std::wstring(str1.begin(), str1.end());
+    string_t db_id_ = std::wstring(str2.begin(), str2.end());
+    string_t db_pw_ = std::wstring(str3.begin(), str3.end());
+    ODBCConnectionPool::Instance().Initialize(3, odbc_, db_id_, db_pw_);
 #else
-    odbc_ = *opt_odbc;
-    db_id_ = *opt_db_id;
-    db_pw_ = *opt_db_pw;
+    ODBCConnectionPool::Instance().Initialize(3, *opt_odbc, *opt_db_id, *opt_db_pw);
 #endif
     NioServerBuilder builder;
     builder.SetPort(*opt_port)
-        .SetMaxConnection(10)
-        .SetNioThreadCount(2)
+        .SetMaxConnection(*opt_max_conn)
+        .SetNioThreadCount(*opt_worker_size)
         .SetNioInternalBufferSize(2048)
         .SetNioPacketCipher(std::shared_ptr<NioCipher>(new UE4PacketCipher()))
         .SetNioEventHandler(std::shared_ptr<NioEventHandler>(new LoginServerEventHandler()));
@@ -82,8 +76,10 @@ void LoginServer::Run()
     auto nio = GetNioServer();
     if (nio) {
         GetNioServer()->Run();
-        ConnectChannel();
-        std::cout << "Input Command\n[1] : PrintServerState\n[q] : Server Stop\n";;
+        std::cout << "Input Command\n\
+[1] : PrintServerState\n\
+[2] : Retry connect IntermediateServer\n\
+[q] : Server Stop\n";
         std::string line;
         while (true)
         {
@@ -99,6 +95,7 @@ void LoginServer::Run()
                         nio->PrintCurrentSessionQueue();
                         break;
                     case 2:
+                        ConnectChannel();
                         break;
                     default:
                         std::cout << "find command fail...\n";
@@ -122,8 +119,8 @@ void LoginServer::Stop()
 
 void LoginServer::ConnectChannel()
 {
-    auto opt_ip = reader_.GetString("INTERMEDIATE_SERVER_CHANNEL_IP");
-    auto opt_port = reader_.GetInt32("INTERMEDIATE_SERVER_CHANNEL_PORT");
+    auto opt_ip = reader_.GetString("INTERMEDIATE_SERVER_IP");
+    auto opt_port = reader_.GetInt32("INTERMEDIATE_SERVER_PORT");
     if (!opt_ip || !opt_port) {
         throw StackTraceException(ExceptionType::kLogicError, "no data");
     }
@@ -150,11 +147,12 @@ void LoginServer::OnProcessPacket(const std::shared_ptr<UE4Client>& client, cons
 {
     try {
         int16_t opcode = in_packet->ReadInt16();
-        switch (opcode)
-        {
+        switch (opcode) {
             case static_cast<int16_t>(ENetworkCSOpcode::kCreateAccountRequest):
+                HandleCreateAccountRquest(*client, *in_packet);
                 break;
             case static_cast<int16_t>(ENetworkCSOpcode::kLoginRequest):
+                HandleLoginRequest(*client, *in_packet);
                 break;
         }
     }
@@ -177,7 +175,7 @@ void LoginServer::HandleCreateAccountRquest(UE4Client& client, NioInPacket& in_p
     // 성공 1, 실패 0 - > 실패시 reason
     
     try {
-        auto con = database_->Connect(odbc_, db_id_, db_pw_);
+        auto con = ODBCConnectionPool::Instance().GetConnection();
         auto ps = con->GetPreparedStatement();
         ps->PrepareStatement(TEXT("select pw from account where id = ?"));
         ps->SetString(1, id);
@@ -213,34 +211,46 @@ void LoginServer::HandleLoginRequest(UE4Client& client, NioInPacket& in_packet)
 
     // DB 접속
     try {
-        auto con = database_->Connect(odbc_, db_id_, db_pw_);
+        auto con = ODBCConnectionPool::Instance().GetConnection();
         auto ps = con->GetPreparedStatement();
-        ps->PrepareStatement(TEXT("select pw from account where id = ?"));
+        ps->PrepareStatement(TEXT("select accid, id, pw, loggedin from accounts where id = ?"));
         ps->SetString(1, id);
         auto rs = ps->Execute();
 
+        int32_t accid;
+        char db_id[100];
         char db_pw[100];
-        rs->BindString(1, db_pw, 100);
+        int32_t loggedin;
+        rs->BindInt32(1, &accid);
+        rs->BindString(2, db_id, 100);
+        rs->BindString(3, db_pw, 100);
+        rs->BindInt32(4, &loggedin);
         if (rs->Next()) {
             if (!pw.compare(db_pw)) {
                 login_ok = true;
             }
         }
         if (login_ok) {
-            std::unique_lock lock(connected_id_set_garud_);
-            auto iter = connected_id_set_.find(id);
-            if (iter == connected_id_set_.end()) { // Success
-                connected_id_set_.emplace(id);
-                lock.unlock();
+            if (!loggedin) { // Success
+                rs->Close();
+                ps->Close();
+                ps->PrepareStatement(TEXT("update accounts set loggedin = 1 where accid = ?"));
+                ps->SetInt32(1, &accid);
+                ps->ExecuteUpdate();
+
+                RemoteSessionInfo info;
+                info.SetAccid(accid);
+                info.SetId(db_id);
+                info.SetIp(client.GetSession()->GetRemoteAddress());
+
                 UE4OutPacket mig_noti;
                 mig_noti.WriteInt16(static_cast<int16_t>(IntermediateServerReceivePacket::kRequestUserMigration)); // opcode
                 mig_noti.WriteInt16(static_cast<int16_t>(ServerType::kLobbyServer));
                 mig_noti << client.GetUUID();
-                mig_noti.Write(SessionAuthorityInfo(client.GetSession()->GetRemoteAddress(), id));
+                mig_noti << info;
                 mig_noti.MakePacketHead();
                 GetNioServer()->GetChannel().GetConnection(intermediate_server).Send(mig_noti);
             } else { // current connected id
-                lock.unlock();
                 UE4OutPacket out;
                 out.WriteInt16(static_cast<int16_t>(ENetworkSCOpcode::kLoginResult));
                 out.WriteInt32(3);

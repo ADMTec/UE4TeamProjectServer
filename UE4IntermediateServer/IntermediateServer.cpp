@@ -14,10 +14,13 @@ IntermediateServer::IntermediateServer()
 void IntermediateServer::Initialize()
 {
     reader_.Initialize("ServerSetting.ini");
+    auto opt_odbc = reader_.GetString("ODBC");
+    auto opt_db_id = reader_.GetString("DB_ID");
+    auto opt_db_pw = reader_.GetString("DB_PW");
     auto opt_port = reader_.GetInt32("INTERMEDIATE_SERVER_PORT");
     auto opt_max_conn = reader_.GetInt32("INTERMEDIATE_SERVER_MAX_CONNECTION");
     auto opt_worker_size = reader_.GetInt32("INTERMEDIATE_SERVER_NUM_IO_WORKER");
-    if (!opt_port || !opt_max_conn || !opt_worker_size) {
+    if (!opt_odbc || !opt_db_id || !opt_db_pw || !opt_port || !opt_max_conn || !opt_worker_size) {
         throw StackTraceException(ExceptionType::kLogicError, "no data");
     }
     NioServerBuilder builder;
@@ -28,6 +31,18 @@ void IntermediateServer::Initialize()
         .SetNioPacketCipher(std::shared_ptr<NioCipher>(new UE4PacketCipher()))
         .SetNioEventHandler(std::shared_ptr<NioEventHandler>(new IntermediateEventHandler()));
     this->SetNioServer(builder.Build());
+
+#ifdef _UNICODE
+    std::string str1 = std::string(*opt_odbc);
+    std::string str2 = std::string(*opt_db_id);
+    std::string str3 = std::string(*opt_db_pw);
+    string_t odbc_ = std::wstring(str1.begin(), str1.end());
+    string_t db_id_ = std::wstring(str2.begin(), str2.end());
+    string_t db_pw_ = std::wstring(str3.begin(), str3.end());
+    ODBCConnectionPool::Instance().Initialize(3, odbc_, db_id_, db_pw_);
+#else
+    ODBCConnectionPool::Instance().Initialize(3, *opt_odbc, *opt_db_id, *opt_db_pw);
+#endif
 }
 
 void IntermediateServer::Run()
@@ -91,8 +106,7 @@ void IntermediateServer::OnProcessPacket(const shared_ptr<UE4Client>& client, co
 {
     try {
         int16_t opcode = in_packet->ReadInt16();
-        switch (opcode)
-        {
+        switch (opcode) {
             case static_cast<int16_t>(IntermediateServerReceivePacket::kRegisterRemoteServer):
                 HandleRegisterServer(client, *in_packet);
                 break;
@@ -102,8 +116,11 @@ void IntermediateServer::OnProcessPacket(const shared_ptr<UE4Client>& client, co
             case static_cast<int16_t>(IntermediateServerReceivePacket::kRequestUserMigration):
                 HandleRequestUserMigration(*client, *in_packet);
                 break;
-            case static_cast<int16_t>(IntermediateServerReceivePacket::kReactSessionAuthorityInfo) :
+            case static_cast<int16_t>(IntermediateServerReceivePacket::kReactSessionAuthorityInfo):
                 HandleReactSessionAuthorityInfo(*client, *in_packet);
+                break;
+            case static_cast<int16_t>(IntermediateServerReceivePacket::kNotifyUserLogout):
+                HandleNotifiyUserLogout(*client, *in_packet);
                 break;
         }
     } catch (const std::exception & e) {
@@ -113,7 +130,6 @@ void IntermediateServer::OnProcessPacket(const shared_ptr<UE4Client>& client, co
         ss << "[" << date << "] Exception: " << e.what() << '\n';
         date = ss.str();
         std::cout << date;
-        CloseClient(client->GetUUID().ToString());
     }
 }
 
@@ -142,7 +158,7 @@ void IntermediateServer::HandleRequestUserMigration(UE4Client& client, NioInPack
     int16_t type = packet.ReadInt16();
     std::string user_uuid = packet.ReadString();
 
-    SessionAuthorityInfo authority_info;
+    RemoteSessionInfo authority_info;
     packet >> authority_info;
 
     std::vector<RemoteServerInfo> servers;
@@ -196,4 +212,14 @@ void IntermediateServer::HandleReactSessionAuthorityInfo(UE4Client& client, NioI
             }
         }
     }
+}
+
+void IntermediateServer::HandleNotifiyUserLogout(UE4Client& client, NioInPacket& packet)
+{
+    int32_t accid = packet.ReadInt32();
+    auto con = ODBCConnectionPool::Instance().GetConnection();
+    auto ps = con->GetPreparedStatement();
+    ps->PrepareStatement(TEXT("update accounts set loggedin = 0 where accid = ?"));
+    ps->SetInt32(1, &accid);
+    ps->ExecuteUpdate();
 }

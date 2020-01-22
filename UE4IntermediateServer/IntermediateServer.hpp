@@ -1,6 +1,7 @@
 #pragma once
 #include "UE4DevelopmentLibrary/Server.hpp"
 #include "UE4DevelopmentLibrary/Utility.hpp"
+#include "UE4DevelopmentLibrary/Database.hpp"
 #include <shared_mutex>
 #include <unordered_map>
 #include <memory>
@@ -26,9 +27,10 @@ private:
     void UpdateServerConnection(UE4Client& client, NioInPacket& packet);
     void HandleRequestUserMigration(UE4Client& client, NioInPacket& packet);
     void HandleReactSessionAuthorityInfo(UE4Client& client, NioInPacket& packet);
+    void HandleNotifiyUserLogout(UE4Client& client, NioInPacket& packet);
 private:
     TextFileLineReader reader_;
-    
+
     std::shared_mutex data_guard_;
     unordered_map<std::string, RemoteServerInfo> server_map_;
 };
