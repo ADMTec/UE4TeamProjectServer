@@ -6,7 +6,7 @@
 
 
 Character::Character(int accid, int cid)
-    : PawnObject(ZoneObject::Template::kCharacter), accid_(accid), cid_(cid)
+    : PawnObject(ZoneObject::Type::kCharacter), accid_(accid), cid_(cid)
     , skill_(*this), inventory_(*this), quick_slot_(*this)
 {
 }

@@ -56,7 +56,7 @@ void UE4BaseServer::ProcessPacket(NioSession& session, const shared_ptr<NioInPac
     }
     if (print_log_) {
         std::stringstream ss;
-        ss << "LoginServer InPacket: " << in_packet->GetDebugString() << '\n';
+        ss << "Packet Dump: " << in_packet->GetDebugString() << '\n';
         std::cout << ss.str();
     }
     this->OnProcessPacket(client, in_packet);

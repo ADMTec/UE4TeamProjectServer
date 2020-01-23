@@ -28,4 +28,5 @@ private:
     void HandleLoginRequest(UE4Client& client, NioInPacket& in_packet);
 private:
     TextFileLineReader reader_;
+    RemoteServerInfo this_info_;
 };

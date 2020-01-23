@@ -1,6 +1,7 @@
 #pragma once
 #include "NioBase.hpp"
 #include "NioThreadGroup.hpp"
+#include "../Utility/UUID.hpp"
 
 class NioContext;
 class NioAcceptor;
@@ -42,8 +43,8 @@ public:
     const std::shared_ptr<NioEventHandler>& GetEventHandler();
     NioChannel& GetChannel();
     // return timer_key for manual cancel timer
-    size_t CreateTimer(const std::function<void(void)>& func, std::chrono::milliseconds milli);
-    size_t CancelTimer(size_t timer_key);
+    const __UUID& CreateTimer(const std::function<void(void)>& func, std::chrono::milliseconds milli);
+    size_t CancelTimer(const __UUID& timer_key);
 private:
     std::shared_ptr<NioContext> nio_context_;
     NioThreadGroup work_thread_group_;
@@ -69,7 +70,7 @@ private:
     std::shared_ptr<NioChannel> channel_;
 
     mutable std::mutex timer_pool_guard_;
-    std::unordered_map<size_t, std::shared_ptr<class NioSystemClockTimer>> timer_;
+    std::unordered_map<__UUID, std::shared_ptr<class NioSystemClockTimer>> timer_;
 };
 
 class NioServerBuilder

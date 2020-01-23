@@ -8,7 +8,8 @@ class ZoneObject : public SerializeInterface
 {
 public:
     using oid_t = int64_t;
-    enum Template : int32_t {
+    using template_id_t = int32_t;
+    enum Type : int32_t {
         kCharacter = 0,
         kMonster,
         kNpc,
@@ -21,14 +22,12 @@ public:
     ZoneObject(ZoneObject&& rhs) noexcept;
     void operator=(ZoneObject&& rhs) noexcept;
 public:
-    ZoneObject(ZoneObject::Template template_id, oid_t object_id = -1);
+    ZoneObject(ZoneObject::Type template_id, oid_t object_id = -1);
     virtual ~ZoneObject();
 
-    virtual void Initialize();
-    virtual void Update(const Clock& clock);
-    virtual void Release();
-
-    ZoneObject::Template GetTemplate() const;
+    ZoneObject::Type GetType() const;
+    template_id_t GetTemplateId() const;
+    void SetTemplateId(template_id_t id);
     oid_t GetObjectId() const;
     void SetObjectId(oid_t oid);
     Location& GetLocation();
@@ -37,7 +36,8 @@ public:
     virtual void Write(OutputStream& output) const override;
     virtual void Read(InputStream& input) override;
 private:
-    int32_t template_;
+    int32_t type_;
+    template_id_t template_id_;
     oid_t object_id_;
     Location location_;
     Rotation rotation_;

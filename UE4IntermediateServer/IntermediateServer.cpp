@@ -106,20 +106,20 @@ void IntermediateServer::OnProcessPacket(const shared_ptr<UE4Client>& client, co
 {
     try {
         int16_t opcode = in_packet->ReadInt16();
-        switch (opcode) {
-            case static_cast<int16_t>(IntermediateServerReceivePacket::kRegisterRemoteServer):
+        switch (static_cast<IntermediateServerReceivePacket>(opcode)) {
+            case IntermediateServerReceivePacket::kRegisterRemoteServer:
                 HandleRegisterServer(client, *in_packet);
                 break;
-            case static_cast<int16_t>(IntermediateServerReceivePacket::kUpdateServerConnection):
+            case IntermediateServerReceivePacket::kUpdateServerConnection:
                 UpdateServerConnection(*client, *in_packet);
                 break;
-            case static_cast<int16_t>(IntermediateServerReceivePacket::kRequestUserMigration):
+            case IntermediateServerReceivePacket::kRequestUserMigration:
                 HandleRequestUserMigration(*client, *in_packet);
                 break;
-            case static_cast<int16_t>(IntermediateServerReceivePacket::kReactSessionAuthorityInfo):
+            case IntermediateServerReceivePacket::kReactSessionAuthorityInfo:
                 HandleReactSessionAuthorityInfo(*client, *in_packet);
                 break;
-            case static_cast<int16_t>(IntermediateServerReceivePacket::kNotifyUserLogout):
+            case IntermediateServerReceivePacket::kNotifyUserLogout:
                 HandleNotifiyUserLogout(*client, *in_packet);
                 break;
         }
@@ -165,7 +165,7 @@ void IntermediateServer::HandleRequestUserMigration(UE4Client& client, NioInPack
     {
         std::shared_lock lock(data_guard_);
         for (const auto& pair : server_map_) {
-            if (type == static_cast<int16_t>(pair.second.GetServertype())) {
+            if (type == static_cast<int16_t>(pair.second.GetServerType())) {
                 servers.push_back(pair.second);
             }
         }
@@ -198,15 +198,16 @@ void IntermediateServer::HandleReactSessionAuthorityInfo(UE4Client& client, NioI
     std::string user_uuid = packet.ReadString();
     {
         std::shared_lock lock(data_guard_);
-        auto iter = server_map_.find(server_uuid);
-        if(iter != server_map_.end()) {
-            auto client = iter->second.GetWeak().lock();
+        auto login = server_map_.find(server_uuid);
+        auto lobby = server_map_.find(client.GetUUID().ToString());
+        if(login != server_map_.end() && lobby != server_map_.end()) {
+            auto client = login->second.GetWeak().lock();
             if (client) {
                 UE4OutPacket out;
                 out.WriteInt16(static_cast<int16_t>(IntermediateServerSendPacket::kReactUserMigation));
                 out << user_uuid;
-                out << iter->second.GetIP();
-                out << iter->second.GetPort();
+                out << lobby->second.GetIP();
+                out << lobby->second.GetPort();
                 out.MakePacketHead();
                 client->GetSession()->AsyncSend(out, false, false);
             }

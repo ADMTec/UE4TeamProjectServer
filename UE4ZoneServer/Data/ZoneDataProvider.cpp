@@ -38,12 +38,15 @@ void ZoneDataProvider::Initialize()
             try {
                 data.map_id = map_data["Mapid"];
                 data.type = map_data["Type"];
-                for (const auto& sp : map_data["PlayerSpawnPoint"]) {
-                    data.player_spawn_location_.emplace_back(sp["x"], sp["y"], sp["z"]);
+                if (map_data["Portal"].is_null() == false) {
+                    data.portal.map_id = map_data["Portal"]["Mapid"];
+                    data.portal.location.x = map_data["Portal"]["x"];
+                    data.portal.location.y = map_data["Portal"]["y"];
+                    data.portal.location.z = map_data["Portal"]["z"];
                 }
                 for (const auto& sp : map_data["SpawnPoint"]) {
-                    data.npc_spawn_point.emplace_back(
-                        sp["type"], sp["id"], sp["x"], sp["y"], sp["z"]);
+                    data.spawn_point.emplace_back(
+                        sp["type"], sp["id"], sp["x"], sp["y"], sp["z"], sp["rx"], sp["ry"], sp["rz"]);
                 }
 
             } catch (const std::exception & e) {

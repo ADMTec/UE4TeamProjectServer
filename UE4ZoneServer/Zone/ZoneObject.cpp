@@ -7,9 +7,11 @@ ZoneObject::ZoneObject(const ZoneObject& rhs)
 
 void ZoneObject::operator=(const ZoneObject& rhs)
 {
-    template_ = rhs.template_;
+    type_ = rhs.type_;
+    template_id_ = rhs.template_id_;
     object_id_ = rhs.object_id_;
     location_ = rhs.location_;
+    rotation_ = rhs.rotation_;
 }
 
 ZoneObject::ZoneObject(ZoneObject&& rhs) noexcept
@@ -19,29 +21,19 @@ ZoneObject::ZoneObject(ZoneObject&& rhs) noexcept
 
 void ZoneObject::operator=(ZoneObject&& rhs) noexcept
 {
-    template_ = rhs.template_;
+    type_ = rhs.type_;
+    template_id_ = rhs.template_id_; rhs.template_id_ = -1;
     object_id_ = rhs.object_id_; rhs.object_id_ = -1;
-    location_ = rhs.location_;
+    location_ = std::move(rhs.location_);
+    rotation_ = std::move(rhs.rotation_);
 }
 
-ZoneObject::ZoneObject(ZoneObject::Template template_id, oid_t object_id)
-    : template_(static_cast<int32_t>(template_id)), object_id_(object_id)
+ZoneObject::ZoneObject(ZoneObject::Type template_id, oid_t object_id)
+    : type_(static_cast<int32_t>(template_id)), object_id_(object_id)
 {
 }
 
 ZoneObject::~ZoneObject()
-{
-}
-
-void ZoneObject::Initialize()
-{
-}
-
-void ZoneObject::Update(const Clock& clock)
-{
-}
-
-void ZoneObject::Release()
 {
 }
 
@@ -65,14 +57,25 @@ Rotation& ZoneObject::GetRotation()
     return rotation_;
 }
 
-ZoneObject::Template ZoneObject::GetTemplate() const
+ZoneObject::Type ZoneObject::GetType() const
 {
-    return static_cast<ZoneObject::Template>(template_);
+    return static_cast<ZoneObject::Type>(type_);
+}
+
+ZoneObject::template_id_t ZoneObject::GetTemplateId() const
+{
+    return template_id_;
+}
+
+void ZoneObject::SetTemplateId(template_id_t id)
+{
+    template_id_ = id;
 }
 
 void ZoneObject::Write(OutputStream& output) const
 {
-    output << template_;
+    output << type_;
+    output << template_id_;
     output << object_id_;
     output << location_;
     output << rotation_;
@@ -80,7 +83,8 @@ void ZoneObject::Write(OutputStream& output) const
 
 void ZoneObject::Read(InputStream& input)
 {
-    input >> template_;
+    input >> type_;
+    input >> template_id_;
     input >> object_id_;
     input >> location_;
     input >> rotation_;

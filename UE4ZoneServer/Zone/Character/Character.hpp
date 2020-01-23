@@ -8,7 +8,7 @@
 #include <memory>
 
 
-class Character : PawnObject
+class Character : public PawnObject
 {
 public:
     Character(const Character&) = delete;

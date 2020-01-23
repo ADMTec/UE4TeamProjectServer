@@ -137,11 +137,11 @@ void ZoneServer::OnProcessPacket(const shared_ptr<UE4Client>& client, const shar
 {
     try {
         int16_t opcode = in_packet->ReadInt16();
-        switch (opcode) {
-            case static_cast<int16_t>(ENetworkCSOpcode::kZoneConrifmRequest):
+        switch (static_cast<ENetworkCSOpcode>(opcode)) {
+            case ENetworkCSOpcode::kZoneConrifmRequest:
                 HandleConfirmRequest(*client, *in_packet);
                 break;
-            case static_cast<int16_t>(ENetworkCSOpcode::kNotifyCurrentChrPosition):
+            case ENetworkCSOpcode::kNotifyCurrentChrPosition:
                 break;
         }
     } catch (const std::exception & e) {

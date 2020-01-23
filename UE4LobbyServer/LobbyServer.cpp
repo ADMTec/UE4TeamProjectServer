@@ -1,5 +1,6 @@
 #include "LobbyServer.hpp"
 #include "LobbyEventHandler.hpp"
+#include "PacketGenerateHelper.hpp"
 #include "UE4DevelopmentLibrary/Exception.hpp"
 #include "UE4DevelopmentLibrary/Time.hpp"
 #include "../InterServerOpcode.hpp"
@@ -18,21 +19,38 @@ void LobbyServer::Initialize()
     auto opt_odbc = reader_.GetString("ODBC");
     auto opt_db_id = reader_.GetString("DB_ID");
     auto opt_db_pw = reader_.GetString("DB_PW");
+    auto opt_ip = reader_.GetString("LOBBY_SERVER_IP");
     auto opt_port = reader_.GetInt32("LOBBY_SERVER_PORT");
     auto opt_max_conn = reader_.GetInt32("LOBBY_SERVER_MAX_CONNECTION");
     auto opt_worker_size = reader_.GetInt32("LOBBY_SERVER_NUM_IO_WORKER");
-    auto opt_channel_port = reader_.GetInt32("LOBBY_SERVER_CHANNEL_PORT");
-    auto opt_channel_max_conn = reader_.GetInt32("LOBBY_SERVER_CHANNEL_MAX_CONNECTION");
-    auto opt_lobby_ip = reader_.GetString("LOBBY_SERVER_IP");
-    auto opt_lobby_port = reader_.GetInt32("LOBBY_SERVER_PORT");
-    if (!opt_odbc || !opt_db_id || !opt_db_pw || !opt_port || !opt_max_conn ||
-        !opt_worker_size || !opt_channel_port || *opt_channel_max_conn ||
-        !opt_lobby_ip || !opt_lobby_port)
+    if (!opt_odbc || !opt_db_id || !opt_db_pw || !opt_ip ||  !opt_port || !opt_max_conn || !opt_worker_size )
     {
         throw StackTraceException(ExceptionType::kLogicError, "no data");
     }
-    database_ = std::make_unique<ODBCDriver>();
-    database_->Initialize();
+    this_info_.SetServerType(ServerType::kLobbyServer);
+    this_info_.SetIP(*opt_ip);
+    this_info_.SetPort(*opt_port);
+    this_info_.SetCurrentConnection(0);
+    this_info_.SetMaxConnection(*opt_max_conn);
+#ifdef _UNICODE
+    std::string str1 = std::string(*opt_odbc);
+    std::string str2 = std::string(*opt_db_id);
+    std::string str3 = std::string(*opt_db_pw);
+    string_t odbc_ = std::wstring(str1.begin(), str1.end());
+    string_t db_id_ = std::wstring(str2.begin(), str2.end());
+    string_t db_pw_ = std::wstring(str3.begin(), str3.end());
+    ODBCConnectionPool::Instance().Initialize(3, odbc_, db_id_, db_pw_);
+#else
+    ODBCConnectionPool::Instance().Initialize(3, *opt_odbc, *opt_db_id, *opt_db_pw);
+#endif
+    NioServerBuilder builder;
+    builder.SetPort(*opt_port)
+        .SetMaxConnection(*opt_max_conn)
+        .SetNioThreadCount(*opt_worker_size)
+        .SetNioInternalBufferSize(2048)
+        .SetNioPacketCipher(std::shared_ptr<NioCipher>(new UE4PacketCipher()))
+        .SetNioEventHandler(std::shared_ptr<NioEventHandler>(new LobbyEventHandler()));
+    this->SetNioServer(builder.Build());
 
     GetNioServer()->GetChannel().MakeConnection(intermediate_server);
     GetNioServer()->GetChannel().GetConnection(intermediate_server).BindFunction(
@@ -115,8 +133,8 @@ void LobbyServer::Stop()
 
 void LobbyServer::ConnectChannel()
 {
-    auto opt_ip = reader_.GetString("INTERMEDIATE_SERVER_CHANNEL_IP");
-    auto opt_port = reader_.GetInt32("INTERMEDIATE_SERVER_CHANNEL_PORT");
+    auto opt_ip = reader_.GetString("INTERMEDIATE_SERVER_IP");
+    auto opt_port = reader_.GetInt32("INTERMEDIATE_SERVER_PORT");
     if (!opt_ip || !opt_port) {
         throw StackTraceException(ExceptionType::kLogicError, "no data");
     }
@@ -127,6 +145,12 @@ void LobbyServer::ConnectChannel()
             Clock clock;
             ss << '[' << Calendar::DateTime(clock) << "] connect to intermediate server(" << *opt_ip << ":" << *opt_port << ") fail \n";
             std::cout << ss.str();
+        } else {
+            UE4OutPacket out;
+            out.WriteInt16(static_cast<int16_t>(IntermediateServerReceivePacket::kRegisterRemoteServer));
+            out << this_info_;
+            out.MakePacketHead();
+            GetNioServer()->GetChannel().GetConnection(intermediate_server).Send(out);
         }
     }
 }
@@ -147,7 +171,7 @@ void LobbyServer::OnActiveClient(UE4Client& client)
 void LobbyServer::OnCloseClient(UE4Client& client)
 {
     // 이 경우에는 LoginServer로 Packet을 보내서 접속중인 연결이 아님을 통지
-    if (client.GetState() != ClientState::kConfirm) {
+    if (client.GetState() == ClientState::kConfirm) {
         UE4OutPacket out;
         out.WriteInt16(static_cast<int16_t>(IntermediateServerReceivePacket::kNotifyUserLogout));
         out.WriteInt32(client.GetAccid());
@@ -160,21 +184,21 @@ void LobbyServer::OnProcessPacket(const shared_ptr<UE4Client>& client, const sha
 {
     try {
         int16_t opcode = in_packet->ReadInt16();
-        switch (opcode)
+        switch (static_cast<ENetworkCSOpcode>(opcode))
         {
-            case static_cast<int16_t>(ENetworkCSOpcode::kLobbyConfirmRequest) :
+            case ENetworkCSOpcode::kLobbyConfirmRequest:
                 HandleConfirmRequest(*client, *in_packet);
                 break;
-            case static_cast<int16_t>(ENetworkCSOpcode::kCharacterListRequest):
+            case ENetworkCSOpcode::kCharacterListRequest:
                 HandleCharacterListRequest(*client, *in_packet);
                 break;
-            case static_cast<int16_t>(ENetworkCSOpcode::kCharacterCreateRequest):
+            case ENetworkCSOpcode::kCharacterCreateRequest:
                 HandleCharacterCreateRequest(*client, *in_packet);
                 break;
-            case static_cast<int16_t>(ENetworkCSOpcode::kCharacterDeleteRequest):
+            case ENetworkCSOpcode::kCharacterDeleteRequest:
                 HandleCharacterDeleteRequest(*client, *in_packet);
                 break;
-            case static_cast<int16_t>(ENetworkCSOpcode::kCharacterSelectionRequest):
+            case ENetworkCSOpcode::kCharacterSelectionRequest:
                 HandleCharacterSelectRequest(*client, *in_packet);
                 break;
         }
@@ -191,19 +215,24 @@ void LobbyServer::OnProcessPacket(const shared_ptr<UE4Client>& client, const sha
 
 void LobbyServer::HandleConfirmRequest(UE4Client& client, NioInPacket& in_packet)
 {
+    bool result = false;
     std::string id = in_packet.ReadString();
     const auto& ip = client.GetSession()->GetRemoteAddress();
     {
         std::shared_lock lock(session_authority_guard_);
         auto iter = authority_map_.find(id);
-        if (iter == authority_map_.end())
-            return;
-        if (iter->second.GetIp() != ip)
-            return;
-        client.SetState(LobbyServer::kConfirm);
-        client.SetAccid(iter->second.GetAccid());
+        if (iter != authority_map_.end() && iter->second.GetIp() == ip) {
+            client.SetState(LobbyServer::kConfirm);
+            client.SetAccid(iter->second.GetAccid());
+            result = true;
+        }
     }
-    SendCharacterList(client);
+    if (result) {
+        SendCharacterList(client);
+    } else {
+        // 실패 보내기
+    }
+    
 }
 
 void LobbyServer::HandleCharacterListRequest(UE4Client& client, NioInPacket& in_packet)
@@ -234,7 +263,7 @@ void LobbyServer::HandleCharacterSelectRequest(UE4Client& client, NioInPacket& i
 void LobbyServer::SendCharacterList(UE4Client& client)
 {
     int accid = client.GetAccid();
-    auto con = database_->Connect(odbc_, db_id_, db_pw_);
+    auto con = ODBCConnectionPool::Instance().GetConnection();
 
     auto ps = con->GetPreparedStatement();
     ps->PrepareStatement(L"select cid from characters where accid = ?");
@@ -254,7 +283,8 @@ void LobbyServer::SendCharacterList(UE4Client& client)
     UE4OutPacket out;
     out.WriteInt16(static_cast<int16_t>(ENetworkSCOpcode::kCharacterListNotify));
     out.WriteInt32(cids_.size());
-    if (cids_.size() > 0) {
+    if (cids_.size() > 0) 
+    {
         for (size_t i = 0; i < cids_.size(); ++i)
         {
             ps = con->GetPreparedStatement();
@@ -263,68 +293,50 @@ void LobbyServer::SendCharacterList(UE4Client& client)
             
             rs = ps->Execute();
 
-            int db_cid;
-            int accid;
-            int slot;
-            char name[100];
-            int level;
-            int str;
-            int dex;
-            int intel;
-            int job;
-            int face;
-            int hair;
-            int gold;
-            int zone;
-            float x;
-            float y;
-            float z;
-            int gender;
-            int itemid;
+            PacketGenerateHelper::LobbyCharacterInfo info;
+
+            int32_t db_cid;
+            int32_t accid;
+            int32_t itemid;
             rs->BindInt32(1, &db_cid);
             rs->BindInt32(2, &accid);
-            rs->BindInt32(3, &slot);
-            rs->BindString(4, name, 100);
-            rs->BindInt32(5, &level);
-            rs->BindInt32(6, &str);
-            rs->BindInt32(7, &dex);
-            rs->BindInt32(8, &intel);
-            rs->BindInt32(9, &job);
-            rs->BindInt32(10, &face);
-            rs->BindInt32(11, &hair);
-            rs->BindInt32(12, &gold);
-            rs->BindInt32(13, &zone);
-            rs->BindFloat32(14, &x);
-            rs->BindFloat32(15, &y);
-            rs->BindFloat32(16, &z);
-            rs->BindInt32(17, &gender);
+            rs->BindInt32(3, &info.slot);
+            rs->BindString(4, info.name, 100);
+            rs->BindInt32(5, &info.level);
+            rs->BindInt32(6, &info.str);
+            rs->BindInt32(7, &info.dex);
+            rs->BindInt32(8, &info.intel);
+            rs->BindInt32(9, &info.job);
+            rs->BindInt32(10, &info.face);
+            rs->BindInt32(11, &info.hair);
+            rs->BindInt32(12, &info.gold);
+            rs->BindInt32(13, &info.zone);
+            rs->BindFloat32(14, &info.x);
+            rs->BindFloat32(15, &info.y);
+            rs->BindFloat32(16, &info.z);
+            rs->BindInt32(17, &info.gender);
             rs->BindInt32(18, &itemid);
             int count = 0;
-            std::vector<int> itemids;
             while (rs->Next()) {
-                itemids.push_back(itemid);
-            }
-            out << slot;
-            out << std::string(name);
-            out << level;
-            out << gender;
-            out << str;
-            out << dex;
-            out << intel;
-            out << job;
-            out << face;
-            out << hair;
-            out << gold;
-            out << zone;
-            out << x;
-            out << y;
-            out << z;
-            int32_t item_size = itemids.size();
-            if (item_size > 0) {
-                for (size_t j = 0; j < itemids.size(); ++j) {
-                    out << itemids[j];
+                switch ((itemid / 100000) % 10) {
+                    case 0:
+                        info.armor_itemid = itemid;
+                        break;
+                    case 1:
+                        info.hand_itemid = itemid;
+                        break;
+                    case 2:
+                        info.shoes_itemid = itemid;
+                        break;
+                    case 3:
+                        info.weapon_itemid = itemid;
+                        break;
+                    case 4:
+                        info.sub_weapon_itemid = itemid;
+                        break;
                 }
             }
+            PacketGenerateHelper::WriteLobbyCharacterInfo(out, info);
             rs->Close();
             ps->Close();
         }

@@ -20,26 +20,16 @@ public:
 public:
     int32_t GetGender() const;
     void SetGender(int32_t value);
-    float GetHP() const;
-    void SetHP(float value);
-    float GetMaxHP() const;
-    void SetMaxHP(float value);
+
     float GetStamina() const;
     void SetStamina(float value);
     float GetStaminaRecovery() const;
     void SetStaminaRecovery(float value);
     float GetMaxStamina() const;
     void SetMaxStamina(float value);
-    float GetAttackMin() const;
-    void SetAttackMin(float value);
-    float GetAttackMax() const;
-    void SetAttackMax(float value);
-    float GetAttackRange() const;
-    void SetAttackRange(float value);
-    float GetAttackSpeed() const;
-    void SetAttackSpeed(float value);
-    float GetSpeed() const;
-    void SetSpeed(float value);
+
+
+
     int32_t GetFaceId() const;
     void SetFaceId(int32_t value);
     int32_t GetHairId() const;

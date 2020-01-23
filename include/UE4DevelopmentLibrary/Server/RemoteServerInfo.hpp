@@ -13,14 +13,25 @@ public:
 public:
     RemoteServerInfo(ServerType type, const std::string& ip, uint16_t port);
     RemoteServerInfo() = default;
-    ServerType GetServertype() const;
+
+    ServerType GetServerType() const;
+    void SetServerType(ServerType type);
+
     const std::string& GetIP() const;
+    void SetIP(const std::string & ip);
+
     uint16_t GetPort() const;
+    void SetPort(uint16_t port);
+
     void SetMaxConnection(int64_t max_connection);
+    int64_t GetMaxConnection() const;
+
     void SetCurrentConnection(int64_t current_connection);
+    int64_t GetCurrentConnection() const;
+
     double GetCurrentCapacityRatio() const;
     const std::weak_ptr<UE4Client> GetWeak() const;
-    void SetWeak(const std::weak_ptr<UE4Client>& weak);
+    void SetWeak(const std::weak_ptr<UE4Client> & weak);
 public:
     virtual void Write(OutputStream& outpacket) const;
     virtual void Read(InputStream& inpacket);

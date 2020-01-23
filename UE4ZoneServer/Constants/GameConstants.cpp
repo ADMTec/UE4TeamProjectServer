@@ -20,7 +20,7 @@ GameConstants::ItemType GameConstants::GetItemTypeFromItemId(int32_t itemid) con
         case 3:
             return ItemType::kEquip;
     }
-    return ItemType::kError;
+    return ItemType();
 }
 
 // Template 으로 만들면 좋곘네.
@@ -28,19 +28,21 @@ std::optional<GameConstants::EquipPosition> GameConstants::GetEquipPositionFromE
 {
     switch (pos)
     {
-        case static_cast<equip_position_t>(GameConstants::EquipPosition::kHat):
-            return EquipPosition::kHat;
-        case static_cast<equip_position_t>(GameConstants::EquipPosition::kJacket):
-            return EquipPosition::kJacket;
-        case static_cast<equip_position_t>(GameConstants::EquipPosition::kPants):
-            return EquipPosition::kPants;
+        case static_cast<equip_position_t>(GameConstants::EquipPosition::kArmor):
+            return EquipPosition::kArmor;
+        case static_cast<equip_position_t>(GameConstants::EquipPosition::kHand):
+            return EquipPosition::kHand;
+        case static_cast<equip_position_t>(GameConstants::EquipPosition::kShoes):
+            return EquipPosition::kShoes;
         case static_cast<equip_position_t>(GameConstants::EquipPosition::kWeapon):
             return EquipPosition::kWeapon;
+        case static_cast<equip_position_t>(GameConstants::EquipPosition::kSubWeapon):
+            return EquipPosition::kSubWeapon;
     }
     return std::nullopt;
 }
 
 std::optional<GameConstants::EquipPosition> GameConstants::GetEquipPositionFromItemId(int32_t itemid) const
 {
-    return EquipPosition::kHat;
+    return EquipPosition::kArmor;
 }

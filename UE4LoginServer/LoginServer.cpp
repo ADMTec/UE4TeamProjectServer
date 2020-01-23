@@ -22,13 +22,18 @@ void LoginServer::Initialize()
     auto opt_odbc = reader_.GetString("ODBC");
     auto opt_db_id = reader_.GetString("DB_ID");
     auto opt_db_pw = reader_.GetString("DB_PW");
+    auto opt_ip = reader_.GetString("LOGIN_SERVER_IP");
     auto opt_port = reader_.GetInt32("LOGIN_SERVER_PORT");
     auto opt_max_conn = reader_.GetInt32("LOGIN_SERVER_MAX_CONNECTION");
     auto opt_worker_size = reader_.GetInt32("LOGIN_SERVER_NUM_IO_WORKER");
-    if(!opt_odbc || !opt_db_id || !opt_db_pw || !opt_port || !opt_max_conn || !opt_worker_size)
+    if(!opt_odbc || !opt_db_id || !opt_db_pw || !opt_ip || !opt_port || !opt_max_conn || !opt_worker_size)
     {
         throw StackTraceException(ExceptionType::kLogicError, "no data");
     }
+    this_info_.SetIP(*opt_ip);
+    this_info_.SetPort(*opt_port);
+    this_info_.SetCurrentConnection(0);
+    this_info_.SetMaxConnection(*opt_max_conn);
 #ifdef _UNICODE
     std::string str1 = std::string(*opt_odbc);
     std::string str2 = std::string(*opt_db_id);
@@ -76,6 +81,7 @@ void LoginServer::Run()
     auto nio = GetNioServer();
     if (nio) {
         GetNioServer()->Run();
+        ConnectChannel();
         std::cout << "Input Command\n\
 [1] : PrintServerState\n\
 [2] : Retry connect IntermediateServer\n\
@@ -131,6 +137,12 @@ void LoginServer::ConnectChannel()
             Clock clock;
             ss << '[' << Calendar::DateTime(clock) << "] connect to intermediate server(" << *opt_ip << ":" << *opt_port << ") fail \n";
             std::cout << ss.str();
+        } else {
+            UE4OutPacket out;
+            out.WriteInt16(static_cast<int16_t>(IntermediateServerReceivePacket::kRegisterRemoteServer));
+            out << this_info_;
+            out.MakePacketHead();
+            GetNioServer()->GetChannel().GetConnection(intermediate_server).Send(out);
         }
     }
 }
@@ -147,11 +159,11 @@ void LoginServer::OnProcessPacket(const std::shared_ptr<UE4Client>& client, cons
 {
     try {
         int16_t opcode = in_packet->ReadInt16();
-        switch (opcode) {
-            case static_cast<int16_t>(ENetworkCSOpcode::kCreateAccountRequest):
+        switch (static_cast<ENetworkCSOpcode>(opcode)) {
+            case ENetworkCSOpcode::kCreateAccountRequest:
                 HandleCreateAccountRquest(*client, *in_packet);
                 break;
-            case static_cast<int16_t>(ENetworkCSOpcode::kLoginRequest):
+            case ENetworkCSOpcode::kLoginRequest:
                 HandleLoginRequest(*client, *in_packet);
                 break;
         }
@@ -234,9 +246,10 @@ void LoginServer::HandleLoginRequest(UE4Client& client, NioInPacket& in_packet)
             if (!loggedin) { // Success
                 rs->Close();
                 ps->Close();
-                ps->PrepareStatement(TEXT("update accounts set loggedin = 1 where accid = ?"));
+                /*ps->PrepareStatement(TEXT("update accounts set loggedin = 1 where accid = ?"));
                 ps->SetInt32(1, &accid);
                 ps->ExecuteUpdate();
+                ps->Close();*/
 
                 RemoteSessionInfo info;
                 info.SetAccid(accid);

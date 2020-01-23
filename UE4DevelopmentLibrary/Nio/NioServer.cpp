@@ -228,23 +228,23 @@ NioChannel& NioServer::GetChannel()
     return *channel_;
 }
 
-size_t NioServer::CreateTimer(const std::function<void(void)>& func, std::chrono::milliseconds milli)
+const __UUID& NioServer::CreateTimer(const std::function<void(void)>& func, std::chrono::milliseconds milli)
 {
     auto new_timer = std::make_shared<NioSystemClockTimer>(*nio_context_);
-    size_t addr = reinterpret_cast<size_t>(new_timer.get());
+    __UUID uuid = __UUID::Generate();
     new_timer->SetTimer(
-        [func, shared = shared_from_this(), addr = addr]() {
+        [func, shared = shared_from_this(), uuid = uuid]() {
         if (func) {
             func();
         }
-        shared->CancelTimer(addr);
+        shared->CancelTimer(uuid);
     }, milli);
     std::lock_guard lock(timer_pool_guard_);
-    timer_.emplace(addr, new_timer);
-    return addr;
+    timer_.emplace(uuid, new_timer);
+    return uuid;
 }
 
-size_t NioServer::CancelTimer(size_t timer_key)
+size_t NioServer::CancelTimer(const __UUID& timer_key)
 {
     std::lock_guard lock(timer_pool_guard_);
     return timer_.erase(timer_key);
@@ -305,5 +305,6 @@ std::shared_ptr<NioServer> NioServerBuilder::Build()
 {
     std::shared_ptr<NioServer> server = std::move(server_);
     server_ = std::shared_ptr<NioServer>(new NioServer());
+    server->Initialize();
     return server;
 }

@@ -59,7 +59,7 @@ void NioChannelEventHandler::OnSessionActive(NioSession& session)
 	std::stringstream ss;
 	Clock clock;
 	ss << '[' << Calendar::DateTime(clock) << "] ";
-	ss << "NioChannel Active: " << session.GetRemoteAddress() << "]\n";
+	ss << "NioChannel Active: [" << session.GetRemoteAddress() << "]\n";
 	std::cout << ss.str();
 }
 
@@ -77,7 +77,7 @@ void NioChannelEventHandler::OnSessionClose(NioSession& session)
 	std::stringstream ss;
 	Clock clock;
 	ss << '[' << Calendar::DateTime(clock) << "] ";
-	ss << "NioChannel Close: " << session.GetRemoteAddress() << "]\n";
+	ss << "NioChannel Close: [" << session.GetRemoteAddress() << "]\n";
 	std::cout << ss.str();
 }
 

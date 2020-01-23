@@ -38,7 +38,7 @@ private:
     void SendCharacterList(UE4Client& client);
 private:
     TextFileLineReader reader_;
-    unique_ptr<DatabaseDriver> database_;
+    RemoteServerInfo this_info_;
     string_t odbc_;
     string_t db_id_;
     string_t db_pw_;

@@ -28,11 +28,12 @@ enum class ENetworkSCOpcode : uint16_t
     kLoginResult,
 
     // LobbyServer
+    kConfirmFailNotify,
     kCharacterListNotify,
     kMigrateZoneNotify,
 
     // ZoneServer
-    kUserConfirmOk,
+    kUserConfirmResult,
     kUserEnterZone,
     kBroadCastChrPosition,
 };

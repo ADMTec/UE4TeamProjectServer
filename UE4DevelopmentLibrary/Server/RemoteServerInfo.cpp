@@ -24,9 +24,14 @@ RemoteServerInfo::RemoteServerInfo(ServerType type, const std::string& ip, uint1
 {
 }
 
-ServerType RemoteServerInfo::GetServertype() const
+ServerType RemoteServerInfo::GetServerType() const
 {
     return type_;
+}
+
+void RemoteServerInfo::SetServerType(ServerType type)
+{
+    type_ = type;
 }
 
 const std::string& RemoteServerInfo::GetIP() const
@@ -34,9 +39,19 @@ const std::string& RemoteServerInfo::GetIP() const
     return ip_;
 }
 
+void RemoteServerInfo::SetIP(const std::string& ip)
+{
+    ip_ = ip;
+}
+
 uint16_t RemoteServerInfo::GetPort() const
 {
     return port_;
+}
+
+void RemoteServerInfo::SetPort(uint16_t port)
+{
+    port_ = port;
 }
 
 void RemoteServerInfo::SetMaxConnection(int64_t max_connection)
@@ -44,9 +59,19 @@ void RemoteServerInfo::SetMaxConnection(int64_t max_connection)
     max_connection_ = max_connection;
 }
 
+int64_t RemoteServerInfo::GetMaxConnection() const
+{
+    return max_connection_;
+}
+
 void RemoteServerInfo::SetCurrentConnection(int64_t current_connection)
 {
     current_connection_ = current_connection;
+}
+
+int64_t RemoteServerInfo::GetCurrentConnection() const
+{
+    return current_connection_;
 }
 
 double RemoteServerInfo::GetCurrentCapacityRatio() const

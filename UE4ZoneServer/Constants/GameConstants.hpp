@@ -11,21 +11,20 @@ private:
 public:
     void Initialize();
 public:
-    using item_type_t = int16_t;
+    using item_type_t = int8_t;
     enum class ItemType : item_type_t {
         kETC = 1,
         kConsume = 2,
         kEquip = 3,
     };
-    using equip_position_t = int16_t;
+    using equip_position_t = int8_t;
     enum class EquipPosition : equip_position_t {
-        kHat = 1,
-        kJacket = 2,
-        kShoes = 3,
-        kPants = 4,
-        kWeapon = 5,
-        kSubWeapon = 6,
-        kCount,
+        kArmor = 0,
+        kHand = 1,
+        kShoes = 2,
+        kWeapon = 3,
+        kSubWeapon = 4,
+        kCount = 5,
     };
 public:
     float GetStaminaRecoveryFromLevel(int32_t level) const;

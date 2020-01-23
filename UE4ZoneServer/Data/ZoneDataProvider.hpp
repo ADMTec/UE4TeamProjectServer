@@ -11,21 +11,35 @@
 struct ZoneData
 {
     struct SpawnPoint {
-        SpawnPoint(const std::string& _type, int64_t _id, float x, float y, float z)
-            : type(_type), id(_id), location(x, y, z)
+        enum class Type : int32_t {
+            kMonster = 1,
+            kNpc = 2,
+            kReactor = 3,
+        };
+        SpawnPoint(int32_t _type, int64_t _id, float x, float y, float z, float rx, float ry, float rz)
+            : type(_type), id(_id), location(x, y, z), rotation(rx, ry, rz)
         {
         }
-        std::string type;
+        int32_t type;
         int64_t id;
         Location location;
+        Rotation rotation;
     };
     struct Portal {
-
+        Portal(int64_t id, float x, float y, float z)
+            : map_id(id), location(x, y, z)
+        {
+        }
+        Portal() = default;
+        int32_t map_id = -1;
+        Location location;
     };
-    int64_t map_id;
-    std::string type;
-    std::vector<Location> player_spawn_location_;
-    std::vector<SpawnPoint> npc_spawn_point;
+    ZoneData() = default;
+    int64_t map_id = -1;
+    int32_t type = -1;
+    Portal portal;
+    Location player_spawn;
+    std::vector<SpawnPoint> spawn_point;
 };
 
 
