@@ -1,7 +1,6 @@
 #include "ZoneSystem.hpp"
 #include "Provider/ZoneDataProvider.hpp"
 #include "Provider/MonsterTemplateProvider.hpp"
-#include "Pawn/Character/Character.hpp"
 #include "UE4DevelopmentLibrary/Server/UE4Client.hpp"
 #include "GameConstants.hpp"
 

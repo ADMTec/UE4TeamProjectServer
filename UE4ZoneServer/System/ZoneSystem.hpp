@@ -7,7 +7,7 @@
 #include <memory>
 #include <atomic>
 #include <array>
-#include "Utility/FVector.hpp"
+#include "UE4Model/Character/Character.hpp"
 #include "Pawn/Monster/Monster.hpp"
 
 

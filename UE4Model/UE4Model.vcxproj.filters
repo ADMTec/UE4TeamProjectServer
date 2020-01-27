@@ -1,17 +1,92 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="Header Files">
+    <Filter Include="Private">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    <Filter Include="Public">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
+    <Filter Include="Public\Character">
+      <UniqueIdentifier>{9cbc2de8-10bf-4ebf-b7ed-601157cff96b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Public\Item">
+      <UniqueIdentifier>{86e7cd00-99b4-488f-b8ad-9bbeeec46588}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Public\PawnObject.cpp">
+      <Filter>Public</Filter>
+    </ClCompile>
+    <ClCompile Include="Public\ZoneObject.cpp">
+      <Filter>Public</Filter>
+    </ClCompile>
+    <ClCompile Include="Public\Character\CharacterQuickSlot.cpp">
+      <Filter>Public\Character</Filter>
+    </ClCompile>
+    <ClCompile Include="Public\Character\CharacterSkill.cpp">
+      <Filter>Public\Character</Filter>
+    </ClCompile>
+    <ClCompile Include="Public\Character\Equipment.cpp">
+      <Filter>Public\Character</Filter>
+    </ClCompile>
+    <ClCompile Include="Public\Character\Inventory.cpp">
+      <Filter>Public\Character</Filter>
+    </ClCompile>
+    <ClCompile Include="Public\Item\ConsumeItem.cpp">
+      <Filter>Public\Item</Filter>
+    </ClCompile>
+    <ClCompile Include="Public\Item\EquipItem.cpp">
+      <Filter>Public\Item</Filter>
+    </ClCompile>
+    <ClCompile Include="Public\Item\Item.cpp">
+      <Filter>Public\Item</Filter>
+    </ClCompile>
+    <ClCompile Include="Public\Character\Character.cpp">
+      <Filter>Public\Character</Filter>
+    </ClCompile>
+    <ClCompile Include="Private\PythonExport.cpp">
+      <Filter>Private</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Public\PawnObject.hpp">
+      <Filter>Public</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\UE4Model.hpp">
+      <Filter>Public</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\ZoneObject.hpp">
+      <Filter>Public</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\FVector.hpp">
+      <Filter>Public</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\Character\CharacterQuickSlot.hpp">
+      <Filter>Public\Character</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\Character\CharacterSkill.hpp">
+      <Filter>Public\Character</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\Character\Equipment.hpp">
+      <Filter>Public\Character</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\Character\Inventory.hpp">
+      <Filter>Public\Character</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\Item\ConsumeItem.hpp">
+      <Filter>Public\Item</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\Item\EquipItem.hpp">
+      <Filter>Public\Item</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\Item\Item.hpp">
+      <Filter>Public\Item</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\Character\Character.hpp">
+      <Filter>Public\Character</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

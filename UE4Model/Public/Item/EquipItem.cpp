@@ -1,10 +1,14 @@
 #include "EquipItem.hpp"
-#include "../Character.hpp"
 
 
 EquipItem::EquipItem(int32_t itemid)
-    : BaseItem(itemid, GameConstants::ItemType::kEquip)
+    : Item(itemid, Item::Type::kEquip), attack_(0)
 {
+}
+
+void EquipItem::SetAddATK(int32_t value)
+{
+    attack_ = value;
 }
 
 void EquipItem::SetAddStr(int32_t value)
@@ -22,9 +26,9 @@ void EquipItem::SetAddInt(int32_t value)
     add_int_ = value;
 }
 
-void EquipItem::SetAddLuk(int32_t value)
+int32_t EquipItem::GetAddATK() const
 {
-    add_luk_ = value;
+    return attack_;
 }
 
 int32_t EquipItem::GetAddStr() const
@@ -42,25 +46,20 @@ int32_t EquipItem::GetAddInt() const
     return add_int_;
 }
 
-int32_t EquipItem::GetAddLuk() const
-{
-    return add_luk_;
-}
-
 void EquipItem::Write(OutputStream& output) const
 {
-    BaseItem::Write(output);
+    Item::Write(output);
+    output << attack_;
     output << add_str_;
     output << add_dex_;
     output << add_int_;
-    output << add_luk_;
 }
 
 void EquipItem::Read(InputStream& input)
 {
-    BaseItem::Read(input);
+    Item::Read(input);
+    input >> attack_;
     input >> add_str_;
     input >> add_dex_;
     input >> add_int_;
-    input >> add_luk_;
 }

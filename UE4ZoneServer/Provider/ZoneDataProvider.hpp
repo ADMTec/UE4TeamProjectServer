@@ -1,6 +1,6 @@
 #pragma once
-#include "UE4DevelopmentLibrary/Utility.hpp"
-#include "Game/FVector.hpp"
+#include "UE4DevelopmentLibrary/Utility.hpp
+#include "UE4Model/FVector.hpp"
 #include <cstdint>
 #include <string>
 #include <vector>

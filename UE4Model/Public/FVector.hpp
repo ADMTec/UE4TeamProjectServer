@@ -1,7 +1,8 @@
 #pragma once
+#include "UE4Model.hpp"
 #include "UE4DevelopmentLibrary/Stream.hpp"
 
-struct FVector : public SerializeInterface
+struct UE4MODEL_DLLCLASS FVector : public SerializeInterface
 {
 public:
     FVector(const FVector& rhs) {

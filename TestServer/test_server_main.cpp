@@ -3,14 +3,40 @@
 #include <iostream>
 
 
+#include <boost/python.hpp>
+#include "UE4Model/Character/Character.hpp"
+
+template<typename... Args>
+void Execute(const std::string& path, Args&&... args) {
+    boost::python::object py_obj;
+    py_obj = boost::python::import(path.c_str());
+    boost::python::import("imp").attr("reload")(py_obj);
+    py_obj.attr("Start")(std::forward<Args>(args)...);
+}
+
 int main()
 {
 
     try {
         int cid = 1;
-        ODBCConnectionPool::Instance().Initialize(3, L"UE4", L"root", L"root");
+        ODBCConnectionPool::Instance().Initialize(3, L"UE4", L"root", L"a123123");
         auto con = ODBCConnectionPool::Instance().GetConnection();
-        auto ps = con->GetPreparedStatement();
+
+        Character chr(1, 1);
+        chr.Initialize(*con);
+
+        Py_Initialize();
+        try {
+            //boost::python::object py_obj;
+            //py_obj = boost::python::import("script.chr");
+            //boost::python::import("imp").attr("reload")(py_obj);
+            //py_obj.attr("Start")(boost::ref(chr));
+            Execute("script.chr", boost::ref(chr));
+        } catch (boost::python::error_already_set&) {
+            PyErr_Print();
+        }
+        std::cout << chr.GetHP() << std::endl;
+        /*auto ps = con->GetPreparedStatement();
         ps->PrepareStatement(L"select characters.*, inventoryitems.itemid from characters, inventoryitems where characters.cid = inventoryitems.cid and inventoryitems.equipped = 1 and characters.cid = ?;");
         ps->SetInt32(1, &cid);
         auto rs = ps->Execute();
@@ -53,7 +79,7 @@ int main()
         rs->BindInt32(18, &itemid);
         while (rs->Next()) {
             std::cout << db_cid << " " << slot << " " << name << " " << level << " " << itemid << std::endl;
-        }
+        }*/
     } catch (const std::exception & e) {
         std::cout << e.what() << std::endl;
     }

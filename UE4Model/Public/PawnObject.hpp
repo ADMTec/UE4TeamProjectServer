@@ -2,7 +2,7 @@
 #include "ZoneObject.hpp"
 
 
-class PawnObject : public ZoneObject
+class UE4MODEL_DLLCLASS PawnObject : public ZoneObject
 {
 public:
     PawnObject(const PawnObject& rhs);
@@ -19,7 +19,7 @@ public:
     float GetAttackSpeed() const;
     float GetDefence() const;
     float GetSpeed() const;
-protected:
+
     void SetHP(float value);
     void SetMaxHP(float value);
     void SetAttackMin(float value);

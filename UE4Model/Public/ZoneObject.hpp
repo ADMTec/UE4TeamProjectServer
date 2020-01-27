@@ -1,10 +1,11 @@
 #pragma once
+#include "UE4Model.hpp"
 #include "UE4DevelopmentLibrary/Time.hpp"
-#include "Utility/FVector.hpp"
+#include "FVector.hpp"
 #include <cstdint>
 
 
-class ZoneObject : public SerializeInterface
+class UE4MODEL_DLLCLASS ZoneObject : public SerializeInterface
 {
 public:
     using oid_t = int64_t;
