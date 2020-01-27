@@ -8,13 +8,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="LobbyServer.cpp" />
-    <ClCompile Include="LobbyEventHandler.cpp" />
     <ClCompile Include="lobby_server_main.cpp" />
     <ClCompile Include="PacketGenerateHelper.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LobbyServer.hpp" />
-    <ClInclude Include="LobbyEventHandler.hpp" />
     <ClInclude Include="PacketGenerateHelper.hpp" />
   </ItemGroup>
 </Project>

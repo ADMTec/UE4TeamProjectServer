@@ -1,10 +1,10 @@
 #include "ZoneServer.hpp"
-#include "ZoneEventHandler.hpp"
-#include "Constants/ServerConstants.hpp"
+#include "ServerConstants.hpp"
 #include "UE4DevelopmentLibrary/Exception.hpp"
 #include "../InterServerOpcode.hpp"
 #include "../NetworkOpcode.h"
-#include "Game/Character/Character.hpp"
+#include "Pawn/Character/Character.hpp"
+#include "System/ZoneSystem.hpp"
 #include <iostream>
 #include <sstream>
 
@@ -25,30 +25,42 @@ void ZoneServer::Initialize()
         .SetNioThreadCount(ServerConstant.num_io_worker_)
         .SetNioInternalBufferSize(2048)
         .SetNioPacketCipher(std::shared_ptr<NioCipher>(new UE4PacketCipher()))
-        .SetNioEventHandler(std::shared_ptr<NioEventHandler>(new ZoneServerEventHandler()));
+        .SetNioEventHandler(std::shared_ptr<NioEventHandler>(new UE4EventHandler<ZoneServer>()));
     this->SetNioServer(builder.Build());
 
     GetNioServer()->GetChannel().MakeConnection(intermediate_server);
     GetNioServer()->GetChannel().GetConnection(intermediate_server).BindFunction(
-        static_cast<int16_t>(IntermediateServerSendPacket::kReactUserMigation),
-        [this](NioSession& session, InputStream& stream) {
-            //std::string user_uuid = stream.ReadString();
-            //std::string lobby_ip = stream.ReadString();
-            //uint16_t looby_port = stream.ReadInt16();
+        static_cast<int16_t>(IntermediateServerSendPacket::kNotifySessionAuthorityInfo),
+        [this](NioSession& session, InputStream& input) {
+            std::string lobby_server_uuid = input.ReadString();
+            std::string user_uuid = input.ReadString();
+            RemoteSessionInfo info;
+            input >> info;
 
-            //auto client = this->GetClient(user_uuid);
-            //if (client) {
-            //    UE4OutPacket out;
-            //    out.WriteInt16(static_cast<int16_t>(ENetworkSCOpcode::kLoginResult));
-            //    out.WriteInt32(true);
-            //    out << lobby_ip;
-            //    out << looby_port;
-            //    out.MakePacketHead();
-            //    client->GetSession()->AsyncSend(out, false, true);
-            //}
+            {
+                std::unique_lock lock(session_authority_guard_);
+                authority_map_.emplace(info.GetId(), info);
+            }
+            GetNioServer()->CreateTimer(
+                [this, info]() {
+                    std::unique_lock lock(session_authority_guard_);
+                    auto iter = authority_map_.find(info.GetId());
+                    if (iter != authority_map_.end()) {
+                        if (iter->second.GetClock().to_int64_t() == info.GetClock().to_int64_t()) {
+                            authority_map_.erase(iter);
+                        }
+                    }
+                }, std::chrono::milliseconds(3000));
+
+            UE4OutPacket out;
+            out.WriteInt16(static_cast<int16_t>(
+                IntermediateServerReceivePacket::kReactSessionAuthorityInfo));
+            out << lobby_server_uuid;
+            out << user_uuid;
+            out.MakePacketHead();
+            session.AsyncSend(out, false, false);
         }
     );
-    game_zone_.emplace("Town", std::make_shared<Zone>());
 }
 
 void ZoneServer::Run()
@@ -182,6 +194,6 @@ void ZoneServer::HandleConfirmRequest(UE4Client& client, NioInPacket& in_packet)
     if (init == false) {
         CloseClient(client.GetUUID().ToString());
     } else {
-        game_zone_["Town"]->SpawnPlayer(chr);
+        Zone::System::GetTown(GameConstant.default_town)->SpawnPlayer(chr);
     }
 }

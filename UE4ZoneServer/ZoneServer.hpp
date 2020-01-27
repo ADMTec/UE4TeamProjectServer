@@ -1,7 +1,6 @@
 #pragma once
 #include "UE4DevelopmentLibrary/Server.hpp"
 #include "UE4DevelopmentLibrary/Utility.hpp"
-#include "Game/Zone.hpp"
 
 using std::shared_ptr;
 using std::unordered_map;
@@ -35,6 +34,4 @@ private:
 private:
     std::shared_mutex session_authority_guard_;
     unordered_map<RemoteSessionInfo::id_t, RemoteSessionInfo> authority_map_;
-
-    unordered_map<std::string, shared_ptr<Zone>> game_zone_;
 };

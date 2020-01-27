@@ -1,8 +1,8 @@
 #include "CharacterInventory.hpp"
-#include "Data/Database.hpp"
-#include "Data/DatabaseTable.hpp"
+#include "Provider/DatabaseTable.hpp"
+#include "UE4DevelopmentLibrary/Database.hpp"
 #include "UE4DevelopmentLibrary/Exception.hpp"
-#include "Constants/GameConstants.hpp"
+#include "GameConstants.hpp"
 #include <sstream>
 
 
@@ -11,7 +11,7 @@ CharacterInventory::CharacterInventory(Character& chr)
 {
 }
 
-void CharacterInventory::Initialize(int32_t db_cid, class Connection& con)
+void CharacterInventory::Initialize(int32_t db_cid, Connection& con)
 {
     auto ps = con.GetPreparedStatement();
     ps->PrepareStatement(InventoryItemTable::GetSelectQueryFromCid());
@@ -125,6 +125,107 @@ std::shared_ptr<BaseItem> CharacterInventory::ExtractEquipItem(GameConstants::Eq
         equipment_[equip_pos_int] = nullptr;
     }
     return equip;
+}
+
+void CharacterInventory::NotifyInventorySlotUpdate(int32_t inventory_slot)
+{
+}
+
+void CharacterInventory::NotifyEquipAndInventorySlotUpdate(GameConstants::EquipPosition equip, int32_t inventry)
+{
+}
+
+int32_t CharacterInventory::GetTotalAddStr() const
+{
+    int32_t str = 0;
+    for (const auto& equip : equipment_) {
+        if (equip) {
+            // 아이템 id를 통해서 접근해서 가져오기
+            str += equip->GetItemId(); 
+        }
+    }
+    return str;
+}
+
+int32_t CharacterInventory::GetTotalAddDex() const
+{
+    int32_t dex = 0;
+    for (const auto& equip : equipment_) {
+        if (equip) {
+            // 아이템 id를 통해서 접근해서 가져오기
+            dex += equip->GetItemId();
+        }
+    }
+    return dex;
+}
+
+int32_t CharacterInventory::GetTotalAddIntel() const
+{
+    int32_t intel = 0;
+    for (const auto& equip : equipment_) {
+        if (equip) {
+            // 아이템 id를 통해서 접근해서 가져오기
+            intel += equip->GetItemId();
+        }
+    }
+    return intel;
+}
+
+float CharacterInventory::GetTotalAttackMin() const
+{
+    auto weapon = equipment_[static_cast<GameConstants::equip_position_t>(GameConstants::EquipPosition::kWeapon)];
+    auto sub = equipment_[static_cast<GameConstants::equip_position_t>(GameConstants::EquipPosition::kSubWeapon)];
+    float attack_min = GameConstant.default_attack_min;
+    if (weapon) {
+        attack_min += weapon->GetItemId(); // itemid 로 attack 구하기
+    }
+    if (sub) {
+        attack_min += sub->GetItemId();
+    }
+    return attack_min;
+}
+
+float CharacterInventory::GetTotalAttackMax() const
+{
+    auto weapon = equipment_[static_cast<GameConstants::equip_position_t>(GameConstants::EquipPosition::kWeapon)];
+    auto sub = equipment_[static_cast<GameConstants::equip_position_t>(GameConstants::EquipPosition::kSubWeapon)];
+    float attack_max = GameConstant.default_attack_min;
+    if (weapon) {
+        attack_max += weapon->GetItemId(); // itemid 로 attack 구하기
+    }
+    if (sub) {
+        attack_max += sub->GetItemId();
+    }
+    return attack_max;
+}
+
+float CharacterInventory::GetTotalDefence() const
+{
+    auto armor = equipment_[static_cast<GameConstants::equip_position_t>(GameConstants::EquipPosition::kArmor)];
+    auto hand = equipment_[static_cast<GameConstants::equip_position_t>(GameConstants::EquipPosition::kHand)];
+    auto shoes = equipment_[static_cast<GameConstants::equip_position_t>(GameConstants::EquipPosition::kShoes)];
+    float defence = 0.0f;
+
+    if (armor) {
+        defence += armor->GetItemId();
+    }
+    if (hand) {
+        defence += hand->GetItemId();
+    }
+    if (shoes) {
+        defence += shoes->GetItemId();
+    }
+    return defence;
+}
+
+float CharacterInventory::GetTotalSpeed() const
+{
+    float speed = GameConstant.default_chr_speed;
+    auto shoes = equipment_[static_cast<GameConstants::equip_position_t>(GameConstants::EquipPosition::kShoes)];
+    if (shoes) {
+        speed += shoes->GetItemId();
+    }
+    return speed;
 }
 
 void CharacterInventory::CheckInventoryTableData(InventoryItemTable& table)

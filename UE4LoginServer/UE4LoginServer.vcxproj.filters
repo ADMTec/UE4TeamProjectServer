@@ -9,10 +9,8 @@
   <ItemGroup>
     <ClCompile Include="login_server_main.cpp" />
     <ClCompile Include="LoginServer.cpp" />
-    <ClCompile Include="LoginServerEventHandler.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LoginServer.hpp" />
-    <ClInclude Include="LoginServerEventHandler.hpp" />
   </ItemGroup>
 </Project>

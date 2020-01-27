@@ -1,7 +1,7 @@
 #pragma once
 #include "UE4DevelopmentLibrary/Utility.hpp"
 #include <optional>
-
+#include <array>
 
 struct GameConstants : public TSingleton<const GameConstants>
 {
@@ -33,6 +33,12 @@ public:
     std::optional<EquipPosition> GetEquipPositionFromItemId(int32_t itemid) const;
 public:
     constexpr static const uint32_t inventory_size = 30;
+    std::array<int32_t, 1> town_ids = { 100, };
+    int32_t default_town = 100;
+
+    float default_attack_min = 50.0f;
+    float default_attack_max = 100.0f;
+    float default_chr_speed = 100.0f;
 public:
 
 };

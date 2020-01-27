@@ -16,6 +16,7 @@ private:
     __UUID();
 public:
     bool operator==(const __UUID& other) const;
+    bool operator!=(const __UUID& other) const;
     const std::string& ToString() const;
     void Clear();
 

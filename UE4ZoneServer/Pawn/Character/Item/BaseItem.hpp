@@ -1,6 +1,6 @@
 #pragma once
 #include "UE4DevelopmentLibrary/Stream.hpp"
-#include "Constants/GameConstants.hpp"
+#include "GameConstants.hpp"
 
 class Character;
 

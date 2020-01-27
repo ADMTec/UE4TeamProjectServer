@@ -1,13 +1,14 @@
 #pragma once
 #include "ZoneObject.hpp"
 
+
 class PawnObject : public ZoneObject
 {
 public:
     PawnObject(const PawnObject& rhs);
     void operator=(const PawnObject& rhs);
 public:
-    PawnObject(ZoneObject::Type template_id, oid_t object_id = -1);
+    PawnObject(ZoneObject::Type type, oid_t object_id = -1);
     virtual ~PawnObject();
 public:
     float GetHP() const;

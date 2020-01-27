@@ -13,6 +13,6 @@ void Monster::operator=(const Monster& rhs)
 }
 
 Monster::Monster()
-    : PawnObject(ZoneObject::Type::kMonster)
+    : PawnObject(Zone::Object::Type::kMonster)
 {
 }

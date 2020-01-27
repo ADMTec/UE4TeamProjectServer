@@ -1,165 +1,151 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
-    <Filter Include="Constants">
-      <UniqueIdentifier>{fadc50e7-96c4-46d1-a31b-87a667cbdc68}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Data">
-      <UniqueIdentifier>{6ddb119c-184c-43e2-8792-1f79dd550330}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Zone">
-      <UniqueIdentifier>{586bb100-4d9d-44dd-971e-0b6b3fdf5e70}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Zone\Character">
-      <UniqueIdentifier>{e2ee3eb3-5962-45cb-bd34-fd5b568c5f38}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Zone\Monster">
-      <UniqueIdentifier>{ec7b8978-2c78-426e-b2ae-c8791681333c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Zone\Npc">
-      <UniqueIdentifier>{7fe4e0e5-28bb-41a5-b82d-fbd33a8694d2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Zone\Character\Item">
-      <UniqueIdentifier>{a4606586-8ba1-4b1a-b888-03bcf412e290}</UniqueIdentifier>
-    </Filter>
     <Filter Include="System">
       <UniqueIdentifier>{4f570dca-b4a6-444f-aacd-bc2aa5497385}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Provider">
+      <UniqueIdentifier>{3f9feb4e-6e9f-482c-a56a-f51deabaedf0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pawn">
+      <UniqueIdentifier>{b8f2bbe3-9a40-4d42-8a3d-53210653603f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pawn\Character">
+      <UniqueIdentifier>{4fd24d88-aaee-4e5b-9ce9-8ab552a2cc1f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pawn\Monster">
+      <UniqueIdentifier>{b377da1c-07da-481c-9008-709d3d0a0040}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pawn\Npc">
+      <UniqueIdentifier>{acd48438-d40c-44f7-a53b-d12319b0b57d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pawn\Character\Item">
+      <UniqueIdentifier>{90ae8ecf-f4ab-4eda-b7af-e6fa603e9c74}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utility">
+      <UniqueIdentifier>{1ff72dd3-8cc7-42a1-8a82-1f5b996cfabf}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="zone_server_main.cpp" />
-    <ClCompile Include="Constants\GameConstants.cpp">
-      <Filter>Constants</Filter>
-    </ClCompile>
-    <ClCompile Include="Constants\ServerConstants.cpp">
-      <Filter>Constants</Filter>
-    </ClCompile>
-    <ClCompile Include="Data\ZoneDataProvider.cpp">
-      <Filter>Data</Filter>
-    </ClCompile>
-    <ClCompile Include="Data\DatabaseTable.cpp">
-      <Filter>Data</Filter>
-    </ClCompile>
-    <ClCompile Include="ZoneEventHandler.cpp" />
     <ClCompile Include="ZoneServer.cpp" />
-    <ClCompile Include="Data\MonsterTemplateProvider.cpp">
-      <Filter>Data</Filter>
-    </ClCompile>
-    <ClCompile Include="Zone\PawnObject.cpp">
-      <Filter>Zone</Filter>
-    </ClCompile>
-    <ClCompile Include="Zone\Zone.cpp">
-      <Filter>Zone</Filter>
-    </ClCompile>
-    <ClCompile Include="Zone\ZoneObject.cpp">
-      <Filter>Zone</Filter>
-    </ClCompile>
-    <ClCompile Include="Zone\Character\Character.cpp">
-      <Filter>Zone\Character</Filter>
-    </ClCompile>
-    <ClCompile Include="Zone\Character\CharacterInventory.cpp">
-      <Filter>Zone\Character</Filter>
-    </ClCompile>
-    <ClCompile Include="Zone\Character\CharacterQuickSlot.cpp">
-      <Filter>Zone\Character</Filter>
-    </ClCompile>
-    <ClCompile Include="Zone\Character\CharacterSkill.cpp">
-      <Filter>Zone\Character</Filter>
-    </ClCompile>
-    <ClCompile Include="Zone\Character\CharacterStat.cpp">
-      <Filter>Zone\Character</Filter>
-    </ClCompile>
-    <ClCompile Include="Zone\Monster\Monster.cpp">
-      <Filter>Zone\Monster</Filter>
-    </ClCompile>
-    <ClCompile Include="Zone\Npc\TalkableNPC.cpp">
-      <Filter>Zone\Npc</Filter>
-    </ClCompile>
-    <ClCompile Include="Zone\Character\Item\BaseItem.cpp">
-      <Filter>Zone\Character\Item</Filter>
-    </ClCompile>
-    <ClCompile Include="Zone\Character\Item\ConsumeItem.cpp">
-      <Filter>Zone\Character\Item</Filter>
-    </ClCompile>
-    <ClCompile Include="Zone\Character\Item\EquipItem.cpp">
-      <Filter>Zone\Character\Item</Filter>
-    </ClCompile>
     <ClCompile Include="System\MatchingSystem.cpp">
       <Filter>System</Filter>
     </ClCompile>
     <ClCompile Include="System\PartySystem.cpp">
       <Filter>System</Filter>
     </ClCompile>
+    <ClCompile Include="Provider\DatabaseTable.cpp">
+      <Filter>Provider</Filter>
+    </ClCompile>
+    <ClCompile Include="Provider\MonsterTemplateProvider.cpp">
+      <Filter>Provider</Filter>
+    </ClCompile>
+    <ClCompile Include="Provider\ZoneDataProvider.cpp">
+      <Filter>Provider</Filter>
+    </ClCompile>
+    <ClCompile Include="GameConstants.cpp" />
+    <ClCompile Include="ServerConstants.cpp" />
+    <ClCompile Include="Pawn\PawnObject.cpp">
+      <Filter>Pawn</Filter>
+    </ClCompile>
+    <ClCompile Include="Pawn\Character\Character.cpp">
+      <Filter>Pawn\Character</Filter>
+    </ClCompile>
+    <ClCompile Include="Pawn\Character\CharacterInventory.cpp">
+      <Filter>Pawn\Character</Filter>
+    </ClCompile>
+    <ClCompile Include="Pawn\Character\CharacterQuickSlot.cpp">
+      <Filter>Pawn\Character</Filter>
+    </ClCompile>
+    <ClCompile Include="Pawn\Character\CharacterSkill.cpp">
+      <Filter>Pawn\Character</Filter>
+    </ClCompile>
+    <ClCompile Include="Pawn\Character\CharacterStat.cpp">
+      <Filter>Pawn\Character</Filter>
+    </ClCompile>
+    <ClCompile Include="Pawn\Monster\Monster.cpp">
+      <Filter>Pawn\Monster</Filter>
+    </ClCompile>
+    <ClCompile Include="Pawn\Npc\TalkableNPC.cpp">
+      <Filter>Pawn\Npc</Filter>
+    </ClCompile>
+    <ClCompile Include="Pawn\Character\Item\BaseItem.cpp">
+      <Filter>Pawn\Character\Item</Filter>
+    </ClCompile>
+    <ClCompile Include="Pawn\Character\Item\ConsumeItem.cpp">
+      <Filter>Pawn\Character\Item</Filter>
+    </ClCompile>
+    <ClCompile Include="Pawn\Character\Item\EquipItem.cpp">
+      <Filter>Pawn\Character\Item</Filter>
+    </ClCompile>
+    <ClCompile Include="System\ZoneSystem.cpp">
+      <Filter>System</Filter>
+    </ClCompile>
+    <ClCompile Include="Pawn\ZoneObject.cpp">
+      <Filter>Pawn</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Constants\GameConstants.hpp">
-      <Filter>Constants</Filter>
-    </ClInclude>
-    <ClInclude Include="Constants\ServerConstants.hpp">
-      <Filter>Constants</Filter>
-    </ClInclude>
-    <ClInclude Include="Data\ZoneDataProvider.hpp">
-      <Filter>Data</Filter>
-    </ClInclude>
-    <ClInclude Include="Data\DatabaseTable.hpp">
-      <Filter>Data</Filter>
-    </ClInclude>
-    <ClInclude Include="ZoneEventHandler.hpp" />
     <ClInclude Include="ZoneServer.hpp" />
-    <ClInclude Include="Data\MonsterTemplateProvider.hpp">
-      <Filter>Data</Filter>
-    </ClInclude>
-    <ClInclude Include="Zone\FVector.hpp">
-      <Filter>Zone</Filter>
-    </ClInclude>
-    <ClInclude Include="Zone\PawnObject.hpp">
-      <Filter>Zone</Filter>
-    </ClInclude>
-    <ClInclude Include="Zone\Zone.hpp">
-      <Filter>Zone</Filter>
-    </ClInclude>
-    <ClInclude Include="Zone\ZoneObject.hpp">
-      <Filter>Zone</Filter>
-    </ClInclude>
-    <ClInclude Include="Zone\Character\Character.hpp">
-      <Filter>Zone\Character</Filter>
-    </ClInclude>
-    <ClInclude Include="Zone\Character\CharacterInventory.hpp">
-      <Filter>Zone\Character</Filter>
-    </ClInclude>
-    <ClInclude Include="Zone\Character\CharacterQuickSlot.hpp">
-      <Filter>Zone\Character</Filter>
-    </ClInclude>
-    <ClInclude Include="Zone\Character\CharacterSkill.hpp">
-      <Filter>Zone\Character</Filter>
-    </ClInclude>
-    <ClInclude Include="Zone\Character\CharacterStat.hpp">
-      <Filter>Zone\Character</Filter>
-    </ClInclude>
-    <ClInclude Include="Zone\Monster\Monster.hpp">
-      <Filter>Zone\Monster</Filter>
-    </ClInclude>
-    <ClInclude Include="Zone\Npc\TalkableNPC.hpp">
-      <Filter>Zone\Npc</Filter>
-    </ClInclude>
-    <ClInclude Include="Zone\Character\Item\BaseItem.hpp">
-      <Filter>Zone\Character\Item</Filter>
-    </ClInclude>
-    <ClInclude Include="Zone\Character\Item\ConsumeItem.hpp">
-      <Filter>Zone\Character\Item</Filter>
-    </ClInclude>
-    <ClInclude Include="Zone\Character\Item\EquipItem.hpp">
-      <Filter>Zone\Character\Item</Filter>
-    </ClInclude>
     <ClInclude Include="System\MatchingSystem.hpp">
       <Filter>System</Filter>
     </ClInclude>
     <ClInclude Include="System\PartySystem.hpp">
       <Filter>System</Filter>
+    </ClInclude>
+    <ClInclude Include="Provider\DatabaseTable.hpp">
+      <Filter>Provider</Filter>
+    </ClInclude>
+    <ClInclude Include="Provider\MonsterTemplateProvider.hpp">
+      <Filter>Provider</Filter>
+    </ClInclude>
+    <ClInclude Include="Provider\ZoneDataProvider.hpp">
+      <Filter>Provider</Filter>
+    </ClInclude>
+    <ClInclude Include="GameConstants.hpp" />
+    <ClInclude Include="ServerConstants.hpp" />
+    <ClInclude Include="Pawn\PawnObject.hpp">
+      <Filter>Pawn</Filter>
+    </ClInclude>
+    <ClInclude Include="Pawn\Character\Character.hpp">
+      <Filter>Pawn\Character</Filter>
+    </ClInclude>
+    <ClInclude Include="Pawn\Character\CharacterInventory.hpp">
+      <Filter>Pawn\Character</Filter>
+    </ClInclude>
+    <ClInclude Include="Pawn\Character\CharacterQuickSlot.hpp">
+      <Filter>Pawn\Character</Filter>
+    </ClInclude>
+    <ClInclude Include="Pawn\Character\CharacterSkill.hpp">
+      <Filter>Pawn\Character</Filter>
+    </ClInclude>
+    <ClInclude Include="Pawn\Character\CharacterStat.hpp">
+      <Filter>Pawn\Character</Filter>
+    </ClInclude>
+    <ClInclude Include="Pawn\Monster\Monster.hpp">
+      <Filter>Pawn\Monster</Filter>
+    </ClInclude>
+    <ClInclude Include="Pawn\Npc\TalkableNPC.hpp">
+      <Filter>Pawn\Npc</Filter>
+    </ClInclude>
+    <ClInclude Include="Pawn\Character\Item\BaseItem.hpp">
+      <Filter>Pawn\Character\Item</Filter>
+    </ClInclude>
+    <ClInclude Include="Pawn\Character\Item\ConsumeItem.hpp">
+      <Filter>Pawn\Character\Item</Filter>
+    </ClInclude>
+    <ClInclude Include="Pawn\Character\Item\EquipItem.hpp">
+      <Filter>Pawn\Character\Item</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\FVector.hpp">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="System\ZoneSystem.hpp">
+      <Filter>System</Filter>
+    </ClInclude>
+    <ClInclude Include="Pawn\ZoneObject.hpp">
+      <Filter>Pawn</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

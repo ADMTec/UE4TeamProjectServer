@@ -1,6 +1,6 @@
 #pragma once
 #include "UE4DevelopmentLibrary/Stream.hpp"
-#include "Constants/GameConstants.hpp"
+#include "GameConstants.hpp"
 #include "Item/EquipItem.hpp"
 #include "Item/ConsumeItem.hpp"
 #include <memory>
@@ -34,8 +34,16 @@ public:
     pair<uint32_t, shared_ptr<BaseItem>> ExtractItem(int32_t inventory_index);
     shared_ptr<BaseItem> ExtractEquipItem(GameConstants::EquipPosition equip_pos);
 
-    void SendSingleInventorySlotUpdateResult(int32_t inventory_slot);
-    void SendEquipAndInventorySlotUpdateResult(GameConstants::EquipPosition equip, int32_t inventry);
+    void NotifyInventorySlotUpdate(int32_t inventory_slot);
+    void NotifyEquipAndInventorySlotUpdate(GameConstants::EquipPosition equip, int32_t inventry);
+
+    int32_t GetTotalAddStr() const;
+    int32_t GetTotalAddDex() const;
+    int32_t GetTotalAddIntel() const;
+    float GetTotalAttackMin() const;
+    float GetTotalAttackMax() const;
+    float GetTotalDefence() const;
+    float GetTotalSpeed() const;
 private:
     void CheckInventoryTableData(class InventoryItemTable& table);
 public:

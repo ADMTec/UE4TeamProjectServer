@@ -1,5 +1,4 @@
 #include "LoginServer.hpp"
-#include "LoginServerEventHandler.hpp"
 #include "UE4DevelopmentLibrary/Exception.hpp"
 #include "UE4DevelopmentLibrary/Time.hpp"
 #include "../InterServerOpcode.hpp"
@@ -51,7 +50,7 @@ void LoginServer::Initialize()
         .SetNioThreadCount(*opt_worker_size)
         .SetNioInternalBufferSize(2048)
         .SetNioPacketCipher(std::shared_ptr<NioCipher>(new UE4PacketCipher()))
-        .SetNioEventHandler(std::shared_ptr<NioEventHandler>(new LoginServerEventHandler()));
+        .SetNioEventHandler(std::shared_ptr<NioEventHandler>(new UE4EventHandler<LoginServer>()));
     this->SetNioServer(builder.Build());
 
     GetNioServer()->GetChannel().MakeConnection(intermediate_server);

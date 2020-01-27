@@ -164,6 +164,9 @@
     <ClInclude Include="Database\ODBCConnectionPool.hpp">
       <Filter>Database</Filter>
     </ClInclude>
+    <ClInclude Include="Server\UE4EventHandler.hpp">
+      <Filter>Server</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Exception\StackTraceException.cpp">

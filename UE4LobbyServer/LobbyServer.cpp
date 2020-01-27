@@ -1,5 +1,4 @@
 #include "LobbyServer.hpp"
-#include "LobbyEventHandler.hpp"
 #include "PacketGenerateHelper.hpp"
 #include "UE4DevelopmentLibrary/Exception.hpp"
 #include "UE4DevelopmentLibrary/Time.hpp"
@@ -49,11 +48,12 @@ void LobbyServer::Initialize()
         .SetNioThreadCount(*opt_worker_size)
         .SetNioInternalBufferSize(2048)
         .SetNioPacketCipher(std::shared_ptr<NioCipher>(new UE4PacketCipher()))
-        .SetNioEventHandler(std::shared_ptr<NioEventHandler>(new LobbyEventHandler()));
+        .SetNioEventHandler(std::shared_ptr<NioEventHandler>(new UE4EventHandler<LobbyServer>()));
     this->SetNioServer(builder.Build());
 
     GetNioServer()->GetChannel().MakeConnection(intermediate_server);
-    GetNioServer()->GetChannel().GetConnection(intermediate_server).BindFunction(
+    auto conn = GetNioServer()->GetChannel().GetConnection(intermediate_server);
+    conn.BindFunction(
         static_cast<int16_t>(IntermediateServerSendPacket::kNotifySessionAuthorityInfo),
         [this](NioSession& session, InputStream& input) {
             std::string login_server_uuid = input.ReadString();
@@ -83,6 +83,24 @@ void LobbyServer::Initialize()
             out << user_uuid;
             out.MakePacketHead();
             session.AsyncSend(out, false, false);
+        }
+    );
+    conn.BindFunction( // response from ZoneServer
+        static_cast<int16_t>(IntermediateServerSendPacket::kReactUserMigation),
+        [this](NioSession& session, InputStream& input) {
+            std::string user_uuid = input.ReadString();
+            std::string zone_ip = input.ReadString();
+            uint16_t zone_port = input.ReadInt16();
+
+            auto client = this->GetClient(user_uuid);
+            if (client) {
+                UE4OutPacket out;
+                out.WriteInt16(static_cast<int16_t>(ENetworkSCOpcode::kMigrateZoneNotify));
+                out << zone_ip;
+                out << zone_port;
+                out.MakePacketHead();
+                client->GetSession()->AsyncSend(out, false, true);
+            }
         }
     );
 }
@@ -224,6 +242,7 @@ void LobbyServer::HandleConfirmRequest(UE4Client& client, NioInPacket& in_packet
         if (iter != authority_map_.end() && iter->second.GetIp() == ip) {
             client.SetState(LobbyServer::kConfirm);
             client.SetAccid(iter->second.GetAccid());
+            client.SetContext(0, id);
             result = true;
         }
     }
@@ -232,7 +251,6 @@ void LobbyServer::HandleConfirmRequest(UE4Client& client, NioInPacket& in_packet
     } else {
         // 실패 보내기
     }
-    
 }
 
 void LobbyServer::HandleCharacterListRequest(UE4Client& client, NioInPacket& in_packet)
@@ -258,6 +276,30 @@ void LobbyServer::HandleCharacterSelectRequest(UE4Client& client, NioInPacket& i
 {
     if (client.GetState() != ClientState::kConfirm)
         return;
+    client.SetState(ClientState::kReserveToMigrate);
+
+    int32_t slot = in_packet.ReadInt32();
+    std::shared_lock lock(slot_info_lock);
+    if (slot < 0 || slot >= slot_size || slot_info_[client.GetUUID()][slot] == -1) {
+        Clock clock;
+        std::stringstream ss;
+        ss << "[" << Calendar::DateTime(clock) << "] Invalid Character Select Reqeust... slot: " << slot;
+        throw StackTraceException(ExceptionType::kRunTimeError, ss.str().c_str());
+    }
+
+    RemoteSessionInfo info;
+    info.SetAccid(client.GetAccid());
+    info.SetCid(slot_info_[client.GetUUID()][slot]);
+    auto opt_any_id = client.GetContext(0);
+    info.SetId(std::any_cast<std::string>(*opt_any_id));
+    info.SetIp(client.GetSession()->GetRemoteAddress());
+
+    UE4OutPacket out;
+    out.WriteInt16(static_cast<int16_t>(IntermediateServerReceivePacket::kRequestUserMigration)); // opcode
+    out << static_cast<int16_t>(ServerType::kZoneServer);
+    out << info;
+    out.MakePacketHead();
+    GetNioServer()->GetChannel().GetConnection(intermediate_server).Send(out);
 }
 
 void LobbyServer::SendCharacterList(UE4Client& client)
@@ -283,6 +325,9 @@ void LobbyServer::SendCharacterList(UE4Client& client)
     UE4OutPacket out;
     out.WriteInt16(static_cast<int16_t>(ENetworkSCOpcode::kCharacterListNotify));
     out.WriteInt32(cids_.size());
+
+    std::array<int32_t, slot_size> slot_cid;
+    slot_cid.fill(-1);
     if (cids_.size() > 0) 
     {
         for (size_t i = 0; i < cids_.size(); ++i)
@@ -318,6 +363,9 @@ void LobbyServer::SendCharacterList(UE4Client& client)
             rs->BindInt32(18, &itemid);
             int count = 0;
             while (rs->Next()) {
+                if (info.slot < 0 || info.slot >= slot_size) {
+                    throw StackTraceException(ExceptionType::kSQLError, "stored slot index is wrong");
+                }
                 switch ((itemid / 100000) % 10) {
                     case 0:
                         info.armor_itemid = itemid;
@@ -339,8 +387,12 @@ void LobbyServer::SendCharacterList(UE4Client& client)
             PacketGenerateHelper::WriteLobbyCharacterInfo(out, info);
             rs->Close();
             ps->Close();
+            slot_cid[info.slot] = cids_[i];
         }
     }
     out.MakePacketHead();
     client.GetSession()->AsyncSend(out, false, true);
+
+    std::unique_lock lock(slot_info_lock);
+    slot_info_[client.GetUUID()] = slot_cid;
 }

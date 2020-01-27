@@ -59,6 +59,7 @@ void UE4BaseServer::ProcessPacket(NioSession& session, const shared_ptr<NioInPac
         ss << "Packet Dump: " << in_packet->GetDebugString() << '\n';
         std::cout << ss.str();
     }
+    in_packet->SetAccesOffset(2);
     this->OnProcessPacket(client, in_packet);
 }
 

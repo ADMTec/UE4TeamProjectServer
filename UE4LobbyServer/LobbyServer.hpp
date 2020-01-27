@@ -5,13 +5,17 @@
 #include <unordered_set>
 #include <shared_mutex>
 #include <memory>
+#include <array>
 
 using std::shared_ptr;
 using std::unique_ptr;
+using std::shared_mutex;
+using std::unordered_map;
 
 class LobbyServer : public UE4BaseServer, public TSingleton<LobbyServer>
 {
     static constexpr int intermediate_server = 0;
+    static constexpr int slot_size = 5;
     friend class TSingleton<LobbyServer>;
     LobbyServer();
 public:
@@ -43,6 +47,9 @@ private:
     string_t db_id_;
     string_t db_pw_;
 
-    std::shared_mutex session_authority_guard_;
-    std::unordered_map<RemoteSessionInfo::id_t, RemoteSessionInfo> authority_map_;
+    shared_mutex session_authority_guard_;
+    unordered_map<RemoteSessionInfo::id_t, RemoteSessionInfo> authority_map_;
+
+    shared_mutex slot_info_lock;
+    unordered_map<__UUID, std::array<int32_t, slot_size>> slot_info_;
 };

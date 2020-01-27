@@ -26,8 +26,8 @@ void PawnObject::operator=(const PawnObject& rhs)
     speed_ = rhs.speed_;
 }
 
-PawnObject::PawnObject(ZoneObject::Type template_id, oid_t object_id)
-    : ZoneObject(template_id, object_id)
+PawnObject::PawnObject(ZoneObject::Type type, oid_t object_id)
+    : ZoneObject(type, object_id)
 {
 }
 

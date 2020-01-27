@@ -2,7 +2,7 @@
 #include "UE4DevelopmentLibrary/Database.hpp"
 #include "UE4DevelopmentLibrary/Exception.hpp"
 #include "UE4DevelopmentLibrary/Server/UE4Client.hpp"
-#include "Data/DatabaseTable.hpp"
+#include "Provider/DatabaseTable.hpp"
 
 
 Character::Character(int accid, int cid)
@@ -43,6 +43,17 @@ void Character::Initialize()
     } else {
         throw StackTraceException(ExceptionType::kSQLError, "CharacterTable no data");
     }
+    UpdatePawnStat();
+}
+
+void Character::UpdatePawnStat()
+{
+    SetAttackMin(inventory_.GetTotalAttackMin());
+    SetAttackMax(inventory_.GetTotalAttackMax());
+    //SetAttackRange();
+    //SetAttackSpeed();
+    SetDefence(inventory_.GetTotalAttackMin());
+    SetSpeed(inventory_.GetTotalSpeed());
 }
 
 void Character::EquipItem(int32_t item_inventory_index)
@@ -59,8 +70,9 @@ void Character::EquipItem(int32_t item_inventory_index)
             if (off_item) {
                 inventory_.SetItem(item_inventory_index, off_item, 1);
             }
-            inventory_.SendEquipAndInventorySlotUpdateResult(*opt_equip_pos, item_inventory_index);
+            inventory_.NotifyEquipAndInventorySlotUpdate(*opt_equip_pos, item_inventory_index);
         }
+        UpdatePawnStat();
     }
 }
 
@@ -77,6 +89,7 @@ void Character::UnequipItem(int32_t equip_position)
     }
     auto item = inventory_.ExtractEquipItem(*equip_pos);
     inventory_.SetItem(*slot, item, 1);
+    UpdatePawnStat();
 }
 
 void Character::ConsumeItem(int32_t item_inventory_index)

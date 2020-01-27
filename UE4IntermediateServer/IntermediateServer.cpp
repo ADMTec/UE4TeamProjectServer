@@ -1,5 +1,4 @@
 #include "IntermediateServer.hpp"
-#include "IntermediateEventHandler.hpp"
 #include "UE4DevelopmentLibrary/Exception.hpp"
 #include "UE4DevelopmentLibrary/Time.hpp"
 #include "../InterServerOpcode.hpp"
@@ -29,7 +28,7 @@ void IntermediateServer::Initialize()
         .SetNioThreadCount(*opt_worker_size)
         .SetNioInternalBufferSize(2048)
         .SetNioPacketCipher(std::shared_ptr<NioCipher>(new UE4PacketCipher()))
-        .SetNioEventHandler(std::shared_ptr<NioEventHandler>(new IntermediateEventHandler()));
+        .SetNioEventHandler(std::shared_ptr<NioEventHandler>(new UE4EventHandler<IntermediateServer>()));
     this->SetNioServer(builder.Build());
 
 #ifdef _UNICODE
@@ -198,16 +197,16 @@ void IntermediateServer::HandleReactSessionAuthorityInfo(UE4Client& client, NioI
     std::string user_uuid = packet.ReadString();
     {
         std::shared_lock lock(data_guard_);
-        auto login = server_map_.find(server_uuid);
-        auto lobby = server_map_.find(client.GetUUID().ToString());
-        if(login != server_map_.end() && lobby != server_map_.end()) {
-            auto client = login->second.GetWeak().lock();
+        auto origin = server_map_.find(server_uuid);
+        auto dest = server_map_.find(client.GetUUID().ToString());
+        if(origin != server_map_.end() && dest != server_map_.end()) {
+            auto client = origin->second.GetWeak().lock();
             if (client) {
                 UE4OutPacket out;
                 out.WriteInt16(static_cast<int16_t>(IntermediateServerSendPacket::kReactUserMigation));
                 out << user_uuid;
-                out << lobby->second.GetIP();
-                out << lobby->second.GetPort();
+                out << dest->second.GetIP();
+                out << dest->second.GetPort();
                 out.MakePacketHead();
                 client->GetSession()->AsyncSend(out, false, false);
             }

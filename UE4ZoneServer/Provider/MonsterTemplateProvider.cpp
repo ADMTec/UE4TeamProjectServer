@@ -1,5 +1,5 @@
 #include "MonsterTemplateProvider.hpp"
-#include "Constants/ServerConstants.hpp"
+#include "ServerConstants.hpp"
 #include <filesystem>
 
 

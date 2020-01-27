@@ -30,7 +30,12 @@ __UUID::__UUID()
 
 bool __UUID::operator==(const __UUID& other) const
 {
-    return str_data_.compare(other.str_data_) == 0;
+    return str_data_ == other.str_data_;
+}
+
+bool __UUID::operator!=(const __UUID& other) const
+{
+    return str_data_ != other.str_data_;
 }
 
 const std::string& __UUID::ToString() const
