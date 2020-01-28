@@ -6,7 +6,7 @@ class PacketGenerateHelper
 public:
     struct LobbyCharacterInfo
     {
-        int32_t slot;
+        int32_t slot; // 실패할 경우 이 자리에 -1 담아서 보내기
         char name[100]; // std::string
         int32_t gender;
         int32_t level;
@@ -29,5 +29,6 @@ public:
     };
 public:
     static void WriteLobbyCharacterInfo(class OutputStream& output, const LobbyCharacterInfo& info);
+    static void ReadLobbyCharacterInfo(class InputStream& input, LobbyCharacterInfo& info);
 };
 

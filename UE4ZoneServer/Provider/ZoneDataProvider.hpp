@@ -1,5 +1,5 @@
 #pragma once
-#include "UE4DevelopmentLibrary/Utility.hpp
+#include "UE4DevelopmentLibrary/Utility/TSingleton.hpp"
 #include "UE4Model/FVector.hpp"
 #include <cstdint>
 #include <string>

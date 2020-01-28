@@ -3,10 +3,10 @@
 
 #ifdef UE4MODEL_EXPORTS
 #define UE4MODEL_DLLCLASS __declspec(dllexport)
-#define UE4MODE_DLLEXPORT
+#define UE4MODEL_DLLEXPORT
 #else
 #define UE4MODEL_DLLCLASS __declspec(dllimport)
-#define UE4MODE_DLLEXPORT extern
+#define UE4MODEL_DLLEXPORT extern
 #endif
 
 template<typename T>

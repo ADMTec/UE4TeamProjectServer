@@ -15,6 +15,9 @@
     <Filter Include="Public\Item">
       <UniqueIdentifier>{86e7cd00-99b4-488f-b8ad-9bbeeec46588}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Public\Monster">
+      <UniqueIdentifier>{3170691a-5405-408f-8679-6562d6f76d60}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Public\PawnObject.cpp">
@@ -48,6 +51,15 @@
       <Filter>Public\Character</Filter>
     </ClCompile>
     <ClCompile Include="Private\PythonExport.cpp">
+      <Filter>Private</Filter>
+    </ClCompile>
+    <ClCompile Include="Public\Monster\Monster.cpp">
+      <Filter>Public\Monster</Filter>
+    </ClCompile>
+    <ClCompile Include="Public\Zone.cpp">
+      <Filter>Public</Filter>
+    </ClCompile>
+    <ClCompile Include="Private\ZoneImpl.cpp">
       <Filter>Private</Filter>
     </ClCompile>
   </ItemGroup>
@@ -87,6 +99,15 @@
     </ClInclude>
     <ClInclude Include="Public\Character\Character.hpp">
       <Filter>Public\Character</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\Monster\Monster.hpp">
+      <Filter>Public\Monster</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\Zone.hpp">
+      <Filter>Public</Filter>
+    </ClInclude>
+    <ClInclude Include="Private\ZoneImpl.hpp">
+      <Filter>Private</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

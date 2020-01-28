@@ -1,4 +1,5 @@
 #include "Public/Character/Character.hpp"
+#include "Public/Zone.hpp"
 #include "boost/python.hpp"
 
 BOOST_PYTHON_MODULE(UE4Model)
@@ -39,4 +40,6 @@ BOOST_PYTHON_MODULE(UE4Model)
         .add_property("total_add_str", &Equipment::GetTotalAddStr)
         .add_property("total_add_dex", &Equipment::GetTotalAddDex)
         .add_property("total_add_intel", &Equipment::GetTotalAddIntel);
+    class_<Zone, boost::noncopyable>("Zone")
+        .def("SpawnMonster", &Zone::SpawnMonster);
 }

@@ -8,8 +8,7 @@
 #include <array>
 
 
-UE4MODE_DLLEXPORT template class UE4MODEL_DLLCLASS std::pair<uint32_t, std::shared_ptr<Item>>;
-UE4MODE_DLLEXPORT template class UE4MODEL_DLLCLASS std::shared_ptr<Item>;
+UE4MODEL_DLLEXPORT template class UE4MODEL_DLLCLASS std::shared_ptr<Item>;
 
 
 class UE4MODEL_DLLCLASS Inventory : public SerializeInterface

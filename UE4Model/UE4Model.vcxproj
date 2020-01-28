@@ -105,7 +105,8 @@
     <PostBuildEvent>
       <Command>copy "Public\*.hpp" "..\include\$(ProjectName)\"
 copy "Public\Character\*.hpp" "..\include\$(ProjectName)\Character\"
-copy "Public\Item\*.hpp" "..\include\$(ProjectName)\Item\"</Command>
+copy "Public\Item\*.hpp" "..\include\$(ProjectName)\Item\"
+copy "Public\Monster\*.hpp" "..\include\$(ProjectName)\Monster\"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -127,7 +128,8 @@ copy "Public\Item\*.hpp" "..\include\$(ProjectName)\Item\"</Command>
     <PostBuildEvent>
       <Command>copy "Public\*.hpp" "..\include\$(ProjectName)\"
 copy "Public\Character\*.hpp" "..\include\$(ProjectName)\Character\"
-copy "Public\Item\*.hpp" "..\include\$(ProjectName)\Item\"</Command>
+copy "Public\Item\*.hpp" "..\include\$(ProjectName)\Item\"
+copy "Public\Monster\*.hpp" "..\include\$(ProjectName)\Monster\"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -153,7 +155,8 @@ copy "Public\Item\*.hpp" "..\include\$(ProjectName)\Item\"</Command>
     <PostBuildEvent>
       <Command>copy "Public\*.hpp" "..\include\$(ProjectName)\"
 copy "Public\Character\*.hpp" "..\include\$(ProjectName)\Character\"
-copy "Public\Item\*.hpp" "..\include\$(ProjectName)\Item\"</Command>
+copy "Public\Item\*.hpp" "..\include\$(ProjectName)\Item\"
+copy "Public\Monster\*.hpp" "..\include\$(ProjectName)\Monster\"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -179,11 +182,13 @@ copy "Public\Item\*.hpp" "..\include\$(ProjectName)\Item\"</Command>
     <PostBuildEvent>
       <Command>copy "Public\*.hpp" "..\include\$(ProjectName)\"
 copy "Public\Character\*.hpp" "..\include\$(ProjectName)\Character\"
-copy "Public\Item\*.hpp" "..\include\$(ProjectName)\Item\"</Command>
+copy "Public\Item\*.hpp" "..\include\$(ProjectName)\Item\"
+copy "Public\Monster\*.hpp" "..\include\$(ProjectName)\Monster\"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Private\PythonExport.cpp" />
+    <ClCompile Include="Private\ZoneImpl.cpp" />
     <ClCompile Include="Public\Character\Character.cpp" />
     <ClCompile Include="Public\Character\CharacterQuickSlot.cpp" />
     <ClCompile Include="Public\Character\CharacterSkill.cpp" />
@@ -192,10 +197,13 @@ copy "Public\Item\*.hpp" "..\include\$(ProjectName)\Item\"</Command>
     <ClCompile Include="Public\Item\Item.cpp" />
     <ClCompile Include="Public\Item\ConsumeItem.cpp" />
     <ClCompile Include="Public\Item\EquipItem.cpp" />
+    <ClCompile Include="Public\Monster\Monster.cpp" />
     <ClCompile Include="Public\PawnObject.cpp" />
+    <ClCompile Include="Public\Zone.cpp" />
     <ClCompile Include="Public\ZoneObject.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Private\ZoneImpl.hpp" />
     <ClInclude Include="Public\Character\Character.hpp" />
     <ClInclude Include="Public\Character\CharacterQuickSlot.hpp" />
     <ClInclude Include="Public\Character\CharacterSkill.hpp" />
@@ -205,8 +213,10 @@ copy "Public\Item\*.hpp" "..\include\$(ProjectName)\Item\"</Command>
     <ClInclude Include="Public\Item\Item.hpp" />
     <ClInclude Include="Public\Item\ConsumeItem.hpp" />
     <ClInclude Include="Public\Item\EquipItem.hpp" />
+    <ClInclude Include="Public\Monster\Monster.hpp" />
     <ClInclude Include="Public\PawnObject.hpp" />
     <ClInclude Include="Public\UE4Model.hpp" />
+    <ClInclude Include="Public\Zone.hpp" />
     <ClInclude Include="Public\ZoneObject.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -10,7 +10,7 @@ class UE4MODEL_DLLCLASS ZoneObject : public SerializeInterface
 public:
     using oid_t = int64_t;
     using template_id_t = int32_t;
-    enum Type : int32_t {
+    enum class Type : int32_t {
         kCharacter = 0,
         kMonster,
         kNpc,

@@ -16,9 +16,8 @@ public:
         kConfirm,
         kReserveToMigrate,
     };
-    enum ClientContextKey {
-        CharacterWeakPtr,
-        ZoneWeakPtr,
+    enum class ClientContextKey {
+        kCharacter,
     };
 public:
     ~ZoneServer();
@@ -30,8 +29,10 @@ public:
     virtual void OnCloseClient(UE4Client& client);
     virtual void OnProcessPacket(const shared_ptr<UE4Client>& client, const shared_ptr<NioInPacket>& in_packet);
 private:
-    void HandleConfirmRequest(UE4Client& client, NioInPacket& in_packet);
+    void HandleConfirmRequest(const shared_ptr<UE4Client>& client, NioInPacket& in_packet);
 private:
     std::shared_mutex session_authority_guard_;
     unordered_map<RemoteSessionInfo::id_t, RemoteSessionInfo> authority_map_;
+
+    std::shared_ptr<class Zone> town_;
 };

@@ -65,7 +65,7 @@ void LoginServer::Initialize()
             if (client) {
                 UE4OutPacket out;
                 out.WriteInt16(static_cast<int16_t>(ENetworkSCOpcode::kLoginResult));
-                out.WriteInt32(true);
+                out.WriteInt8(true);
                 out << lobby_ip;
                 out << looby_port;
                 out.MakePacketHead();
@@ -265,14 +265,14 @@ void LoginServer::HandleLoginRequest(UE4Client& client, NioInPacket& in_packet)
             } else { // current connected id
                 UE4OutPacket out;
                 out.WriteInt16(static_cast<int16_t>(ENetworkSCOpcode::kLoginResult));
-                out.WriteInt32(3);
+                out.WriteInt8(2);
                 out.MakePacketHead();
                 client.GetSession()->AsyncSend(out, false, true);
             }
         } else { // wrong id or password
             UE4OutPacket out;
             out.WriteInt16(static_cast<int16_t>(ENetworkSCOpcode::kLoginResult));
-            out.WriteInt32(login_ok);
+            out.WriteInt8(login_ok);
             out.MakePacketHead();
             client.GetSession()->AsyncSend(out, false, true);
         }

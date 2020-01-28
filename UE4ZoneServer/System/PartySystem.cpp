@@ -1,7 +1,11 @@
 #include "PartySystem.hpp"
-#include "UE4DevelopmentLibrary/Server.hpp"
+#include "UE4DevelopmentLibrary/Server/UE4Client.hpp"
 #include <algorithm>
 #include <atomic>
+
+
+std::shared_mutex Party::System::party_array_garud_;
+std::vector<std::shared_ptr<Party>> Party::System::party_array_;
 
 
 std::optional<int64_t> Party::System::CreateParty(const std::shared_ptr<UE4Client>& client)
@@ -19,7 +23,7 @@ std::optional<int64_t> Party::System::CreateParty(const std::shared_ptr<UE4Clien
 
 void Party::System::DisbandParty(int64_t party_id, int64_t chr_cid)
 {
-
+    // leader_check
 
 }
 
@@ -77,6 +81,18 @@ int64_t Party::System::GetNewPartyId()
 {
     static std::atomic<int64_t> party_id_;
     return party_id_.fetch_add(1);
+}
+
+// ----------------------------------------------------------------------------------------
+Party::Party(int64_t party_id, const std::shared_ptr<UE4Client>& client)
+    : party_id_(party_id)
+{
+    party_leader_uuid_ = client->GetUUID();
+}
+
+Party::Party()
+    : party_id_(-1)
+{
 }
 
 void Party::BraodCast(NioOutPacket& out)

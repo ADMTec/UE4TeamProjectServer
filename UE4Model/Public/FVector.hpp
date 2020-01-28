@@ -17,7 +17,10 @@ public:
         : x(_x), y(_y), z(_z)
     {
     }
-    FVector() = default;
+    FVector() : FVector(0.0, 0.0, 0.0)
+    {
+
+    }
     virtual void Write(OutputStream& output) const {
         output << x;
         output << y;

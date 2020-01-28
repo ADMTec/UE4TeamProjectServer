@@ -93,11 +93,25 @@ Character::Character(int accid, int cid)
 
 
 void Character::SetWeakClient(const std::weak_ptr<class UE4Client>& client) {
+    std::unique_lock lock(pointer_guard_);
     weak_client_ = client;
 }
 
-const std::weak_ptr<class UE4Client>& Character::GetWeakClient() const {
-    return weak_client_;
+std::shared_ptr<Zone> Character::GetZone() const
+{
+    std::shared_lock lock(pointer_guard_);
+    return zone_;
+}
+
+void Character::SetZone(const std::shared_ptr<Zone>& zone)
+{
+    std::unique_lock lock(pointer_guard_);
+    zone_ = zone;
+}
+
+const std::shared_ptr<class UE4Client>& Character::GetClient() const {
+    std::shared_lock lock(pointer_guard_);
+    return weak_client_.lock();
 }
 
 

@@ -8,6 +8,12 @@
 #include <shared_mutex>
 #include <memory>
 
+class UE4Client;
+
+//UE4MODEL_DLLEXPORT template class UE4MODEL_DLLCLASS std::weak_ptr<UE4Client>;
+UE4MODEL_DLLEXPORT class UE4MODEL_DLLCLASS std::shared_mutex;
+
+class Zone;
 
 class UE4MODEL_DLLCLASS Character : public PawnObject
 {
@@ -16,8 +22,10 @@ private:
     void operator=(const Character&);
 public:
     Character(int accid, int cid);
-    void SetWeakClient(const std::weak_ptr<class UE4Client>& client);
-    const std::weak_ptr<class UE4Client>& GetWeakClient() const;
+    const std::shared_ptr<UE4Client>& GetClient() const;
+    void SetWeakClient(const std::weak_ptr<UE4Client>& client);
+    std::shared_ptr<Zone> GetZone() const;
+    void SetZone(const std::shared_ptr<Zone>& zone);
     void Initialize(class Connection& con);
     void UpdatePawnStat();
 
@@ -32,6 +40,7 @@ public:
 public:
     const std::string& GetName() const;
     int32_t GetLevel() const;
+#undef GetJob
     int32_t GetJob() const;
     int32_t GetStr() const;
     int32_t GetDex() const;
@@ -44,7 +53,10 @@ public:
     virtual void Write(OutputStream& output) const override;
     virtual void Read(InputStream& input) override;
 private:
-    std::weak_ptr<class UE4Client> weak_client_;
+    mutable std::shared_mutex pointer_guard_;
+    std::weak_ptr<UE4Client> weak_client_;
+    std::shared_ptr<Zone> zone_;
+
     int32_t accid_;
     int32_t cid_;
     std::string name_;

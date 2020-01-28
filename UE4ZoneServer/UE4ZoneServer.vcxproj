@@ -160,7 +160,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="GameConstants.cpp" />
-    <ClCompile Include="Provider\DatabaseTable.cpp" />
+    <ClCompile Include="Provider\CSV\EquipTableData.cpp" />
+    <ClCompile Include="Provider\CSV\MonsterTableData.cpp" />
     <ClCompile Include="Provider\MonsterTemplateProvider.cpp" />
     <ClCompile Include="Provider\ZoneDataProvider.cpp" />
     <ClCompile Include="ServerConstants.cpp" />
@@ -173,7 +174,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameConstants.hpp" />
-    <ClInclude Include="Provider\DatabaseTable.hpp" />
+    <ClInclude Include="Provider\CSVDataProvider.hpp" />
+    <ClInclude Include="Provider\CSV\EquipTableData.hpp" />
+    <ClInclude Include="Provider\CSV\MonsterTableData.hpp" />
     <ClInclude Include="Provider\MonsterTemplateProvider.hpp" />
     <ClInclude Include="Provider\ZoneDataProvider.hpp" />
     <ClInclude Include="ServerConstants.hpp" />

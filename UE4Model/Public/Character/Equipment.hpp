@@ -4,7 +4,7 @@
 #include <shared_mutex>
 #include <array>
 
-UE4MODE_DLLEXPORT template class std::shared_ptr<EquipItem>;
+UE4MODEL_DLLEXPORT template class std::shared_ptr<EquipItem>;
 
 
 class UE4MODEL_DLLCLASS Equipment

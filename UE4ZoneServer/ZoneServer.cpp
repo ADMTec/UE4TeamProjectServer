@@ -1,9 +1,11 @@
 #include "ZoneServer.hpp"
 #include "ServerConstants.hpp"
 #include "UE4DevelopmentLibrary/Exception.hpp"
+#include "UE4DevelopmentLibrary/Database.hpp"
+#include "UE4Model/Character/Character.hpp"
 #include "../InterServerOpcode.hpp"
 #include "../NetworkOpcode.h"
-#include "Pawn/Character/Character.hpp"
+#include "GameConstants.hpp"
 #include "System/ZoneSystem.hpp"
 #include <iostream>
 #include <sstream>
@@ -61,6 +63,7 @@ void ZoneServer::Initialize()
             session.AsyncSend(out, false, false);
         }
     );
+    town_ = ZoneSystem::CreateNewInstance(100);
 }
 
 void ZoneServer::Run()
@@ -136,13 +139,23 @@ void ZoneServer::OnActiveClient(UE4Client& client)
 
 void ZoneServer::OnCloseClient(UE4Client& client)
 {
+    if (client.GetState() == ClientState::kConfirm) {
+        auto any_chr = client.GetContext(ToInt32(ClientContextKey::kCharacter));
+        if (any_chr.has_value()) {
+            std::shared_ptr<Character> chr = std::any_cast<std::shared_ptr<Character>>(chr);
+            auto zone = chr->GetZone();
+            // zone에 없애기
+            chr->SetZone(nullptr);
+        }
+    } 
     if (client.GetState() != ClientState::kConfirm) {
-        UE4OutPacket out;
+        
+    }
+    /*UE4OutPacket out;
         out.WriteInt16(static_cast<int16_t>(IntermediateServerReceivePacket::kNotifyUserLogout));
         out.WriteInt32(client.GetAccid());
         out.MakePacketHead();
-        GetNioServer()->GetChannel().GetConnection(intermediate_server).Send(out);
-    }
+        GetNioServer()->GetChannel().GetConnection(intermediate_server).Send(out);*/
 }
 
 void ZoneServer::OnProcessPacket(const shared_ptr<UE4Client>& client, const shared_ptr<NioInPacket>& in_packet)
@@ -151,7 +164,7 @@ void ZoneServer::OnProcessPacket(const shared_ptr<UE4Client>& client, const shar
         int16_t opcode = in_packet->ReadInt16();
         switch (static_cast<ENetworkCSOpcode>(opcode)) {
             case ENetworkCSOpcode::kZoneConrifmRequest:
-                HandleConfirmRequest(*client, *in_packet);
+                HandleConfirmRequest(client, *in_packet);
                 break;
             case ENetworkCSOpcode::kNotifyCurrentChrPosition:
                 break;
@@ -167,33 +180,37 @@ void ZoneServer::OnProcessPacket(const shared_ptr<UE4Client>& client, const shar
     }
 }
 
-void ZoneServer::HandleConfirmRequest(UE4Client& client, NioInPacket& in_packet)
+void ZoneServer::HandleConfirmRequest(const shared_ptr<UE4Client>& client, NioInPacket& in_packet)
 {
     std::string id = in_packet.ReadString();
-    const auto& ip = client.GetSession()->GetRemoteAddress();
+    const auto& ip = client->GetSession()->GetRemoteAddress();
     {
         std::shared_lock lock(session_authority_guard_);
         auto iter = authority_map_.find(id);
-        if (iter == authority_map_.end())
+        if (iter != authority_map_.end() && iter->second.GetIp() == ip) {
+            client->SetState(ClientState::kConfirm);
+            client->SetAccid(iter->second.GetAccid());
+            client->SetCid(iter->second.GetCid());
+        } else {
+            CloseClient(client->GetUUID().ToString());
             return;
-        if (iter->second.GetIp() != ip)
-            return;
-        client.SetState(ClientState::kConfirm);
-        client.SetAccid(iter->second.GetAccid());
-        client.SetCid(iter->second.GetCid());
+        }
     }
-    std::shared_ptr<Character> chr = std::make_shared<Character>(client.GetAccid(), client.GetCid());
-    bool init = false;
+    std::shared_ptr<Character> chr = std::make_shared<Character>(client->GetAccid(), client->GetCid());
+    bool result{ false };
     try {
-        chr->Initialize();
-        init = true;
+        chr->Initialize(*ODBCConnectionPool::Instance().GetConnection());
+        chr->SetWeakClient(client);
+        client->SetContext(ToInt32(ClientContextKey::kCharacter), chr);
+        result = true;
     }
     catch (const std::exception & e) {
         std::cout << e.what();
     }
-    if (init == false) {
-        CloseClient(client.GetUUID().ToString());
+    if (result == false) {
+        CloseClient(client->GetUUID().ToString());
     } else {
-        Zone::System::GetTown(GameConstant.default_town)->SpawnPlayer(chr);
+        chr->SetZone(town_);
+        town_->SpawnPlayer(chr);
     }
 }

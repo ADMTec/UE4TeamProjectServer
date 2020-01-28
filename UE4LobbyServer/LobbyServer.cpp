@@ -176,14 +176,14 @@ void LobbyServer::ConnectChannel()
 void LobbyServer::OnActiveClient(UE4Client& client)
 {
     client.SetState(ClientState::kNotConfirm);
-    GetNioServer()->CreateTimer(
-        [uuid = client.GetUUID(), this]() 
-        {
-            auto client = this->GetClient(uuid.ToString());
-            if (client && client->GetState() == ClientState::kNotConfirm) {
-                this->CloseClient(uuid.ToString());
-            }
-        }, std::chrono::milliseconds(1000));
+    //GetNioServer()->CreateTimer(
+    //    [uuid = client.GetUUID(), this]() 
+    //    {
+    //        auto client = this->GetClient(uuid.ToString());
+    //        if (client && client->GetState() == ClientState::kNotConfirm) {
+    //            this->CloseClient(uuid.ToString());
+    //        }
+    //    }, std::chrono::milliseconds(1000));
 }
 
 void LobbyServer::OnCloseClient(UE4Client& client)
@@ -262,14 +262,111 @@ void LobbyServer::HandleCharacterListRequest(UE4Client& client, NioInPacket& in_
 
 void LobbyServer::HandleCharacterCreateRequest(UE4Client& client, NioInPacket& in_packet)
 {
-    if (client.GetState() != ClientState::kConfirm)
+    if (client.GetState() != ClientState::kConfirm) // log 추가
         return;
+    int32_t accid = client.GetAccid();
+    PacketGenerateHelper::LobbyCharacterInfo info;
+    PacketGenerateHelper::ReadLobbyCharacterInfo(in_packet, info);
+    if (info.slot < 0 || info.slot >= slot_size) { // log 추가
+        CloseClient(client.GetUUID().ToString());
+        return;
+    }
+    {
+        std::shared_lock lock(slot_info_lock);
+        if (slot_info_[client.GetUUID()][info.slot] != -1) {
+            CloseClient(client.GetUUID().ToString());
+            return;
+        }
+    }
+    info.level = 1;
+    info.hair = 0;
+    info.face = 0;
+    info.str = 10;
+    info.dex = 10;
+    info.intel = 10;
+    info.zone = 100;
+    info.x = 0.0f;
+    info.y = 0.0f;
+    info.z = 0.0f;
+    info.gold = 0;
+    info.armor_itemid = 3000001;
+    info.hand_itemid = 3100001;
+    info.shoes_itemid = 3200001;
+    info.weapon_itemid = 3300001;
+    info.sub_weapon_itemid = 3400001;
+
+    std::string name = info.name;
+    auto con = ODBCConnectionPool::Instance().GetConnection();
+    auto ps = con->GetPreparedStatement();
+    ps->PrepareStatement(L"insert into characters\
+(accid, slot, name, level, str, dex, intel, job, face, hair, gold, zone, x, y, z, gender) values\
+(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    ps->SetInt32(1, &accid);
+    ps->SetInt32(2, &info.slot);
+    ps->SetString(3, name);
+    ps->SetInt32(4, &info.level);
+    ps->SetInt32(5, &info.str);
+    ps->SetInt32(6, &info.dex);
+    ps->SetInt32(7, &info.intel);
+    ps->SetInt32(8, &info.job);
+    ps->SetInt32(9, &info.face);
+    ps->SetInt32(10, &info.hair);
+    ps->SetInt32(11, &info.gold);
+    ps->SetInt32(12, &info.zone);
+    ps->SetFloat32(13, &info.x);
+    ps->SetFloat32(14, &info.y);
+    ps->SetFloat32(15, &info.z);
+    ps->SetInt32(16, &info.gender);
+    ps->SetInt32(17, &info);
+    ps->ExecuteUpdate();
+
+    ps->Close();
+    ps->PrepareStatement(L"select cid from characters where name = ?");
+    ps->SetString(1, name);
+    auto rs = ps->Execute();
+    int32_t cid = -1;
+    rs->BindInt32(1, &cid);
+
+    UE4OutPacket out;
+    out.WriteInt16(static_cast<int16_t>(ENetworkSCOpcode::kCharacterSlotNotify));
+    if (rs->Next()) {
+        std::shared_lock lock(slot_info_lock);
+        slot_info_[client.GetUUID()][info.slot] = cid;
+
+        PacketGenerateHelper::WriteLobbyCharacterInfo(out, info);
+    } else {
+        out.WriteInt32(-1);
+    }
+    out.MakePacketHead();
+    client.GetSession()->AsyncSend(out, false, true);
+    // 실패
 }
 
 void LobbyServer::HandleCharacterDeleteRequest(UE4Client& client, NioInPacket& in_packet)
 {
     if (client.GetState() != ClientState::kConfirm)
         return;
+
+    int32_t slot = in_packet.ReadInt32();
+    if (slot < 0 || slot > slot_size) { // log 추가
+        CloseClient(client.GetUUID().ToString());
+        return;
+    }
+    int32_t cid = 0;
+    {
+        std::shared_lock lock(slot_info_lock);
+        cid = slot_info_[client.GetUUID()][slot];
+    }
+    if (cid == -1) {
+        CloseClient(client.GetUUID().ToString());
+        return;
+    }
+    auto con = ODBCConnectionPool::Instance().GetConnection();
+    auto ps = con->GetPreparedStatement();
+    ps->PrepareStatement(L"delete from characters where cid = ?");
+    ps->SetInt32(1, &cid);
+    ps->ExecuteUpdate();
+
 }
 
 void LobbyServer::HandleCharacterSelectRequest(UE4Client& client, NioInPacket& in_packet)
@@ -333,61 +430,65 @@ void LobbyServer::SendCharacterList(UE4Client& client)
         for (size_t i = 0; i < cids_.size(); ++i)
         {
             ps = con->GetPreparedStatement();
-            ps->PrepareStatement(L"select characters.*, inventoryitems.itemid from characters, inventoryitems where characters.cid = inventoryitems.cid and inventoryitems.equipped = 1 and characters.cid = ?;");
+            ps->PrepareStatement(L"select slot, name, level, str, dex, intel, job, face, hair, gold, zone, x, y, z, gender from characters where cid = ?");
             ps->SetInt32(1, &cids_[i]);
             
             rs = ps->Execute();
 
             PacketGenerateHelper::LobbyCharacterInfo info;
-
-            int32_t db_cid;
-            int32_t accid;
-            int32_t itemid;
-            rs->BindInt32(1, &db_cid);
-            rs->BindInt32(2, &accid);
-            rs->BindInt32(3, &info.slot);
-            rs->BindString(4, info.name, 100);
-            rs->BindInt32(5, &info.level);
-            rs->BindInt32(6, &info.str);
-            rs->BindInt32(7, &info.dex);
-            rs->BindInt32(8, &info.intel);
-            rs->BindInt32(9, &info.job);
-            rs->BindInt32(10, &info.face);
-            rs->BindInt32(11, &info.hair);
-            rs->BindInt32(12, &info.gold);
-            rs->BindInt32(13, &info.zone);
-            rs->BindFloat32(14, &info.x);
-            rs->BindFloat32(15, &info.y);
-            rs->BindFloat32(16, &info.z);
-            rs->BindInt32(17, &info.gender);
-            rs->BindInt32(18, &itemid);
+            rs->BindInt32(1, &info.slot);
+            rs->BindString(2, info.name, 100);
+            rs->BindInt32(3, &info.level);
+            rs->BindInt32(4, &info.str);
+            rs->BindInt32(5, &info.dex);
+            rs->BindInt32(6, &info.intel);
+            rs->BindInt32(7, &info.job);
+            rs->BindInt32(8, &info.face);
+            rs->BindInt32(9, &info.hair);
+            rs->BindInt32(10, &info.gold);
+            rs->BindInt32(11, &info.zone);
+            rs->BindFloat32(12, &info.x);
+            rs->BindFloat32(13, &info.y);
+            rs->BindFloat32(14, &info.z);
+            rs->BindInt32(15, &info.gender);
             int count = 0;
-            while (rs->Next()) {
+            if (rs->Next()) {
                 if (info.slot < 0 || info.slot >= slot_size) {
                     throw StackTraceException(ExceptionType::kSQLError, "stored slot index is wrong");
                 }
-                switch ((itemid / 100000) % 10) {
-                    case 0:
-                        info.armor_itemid = itemid;
-                        break;
-                    case 1:
-                        info.hand_itemid = itemid;
-                        break;
-                    case 2:
-                        info.shoes_itemid = itemid;
-                        break;
-                    case 3:
-                        info.weapon_itemid = itemid;
-                        break;
-                    case 4:
-                        info.sub_weapon_itemid = itemid;
-                        break;
+                rs->Close();
+                ps->Close();
+                ps->PrepareStatement(L"select itemid from inventoryitems where cid = ? and equipped = 1");
+                ps->SetInt32(1, &cids_[i]);
+                rs = ps->Execute();
+                int32_t itemid;
+                rs->BindInt32(1, &itemid);
+                while (rs->Next()) {
+                    switch ((itemid / 100000) % 10) {
+                        case 0:
+                            info.armor_itemid = itemid;
+                            break;
+                        case 1:
+                            info.hand_itemid = itemid;
+                            break;
+                        case 2:
+                            info.shoes_itemid = itemid;
+                            break;
+                        case 3:
+                            info.weapon_itemid = itemid;
+                            break;
+                        case 4:
+                            info.sub_weapon_itemid = itemid;
+                            break;
+                    }
                 }
+                PacketGenerateHelper::WriteLobbyCharacterInfo(out, info);
+                slot_cid[info.slot] = cids_[i];
+            } else {
+                // 실패 패킷 보내기
             }
-            PacketGenerateHelper::WriteLobbyCharacterInfo(out, info);
             rs->Close();
             ps->Close();
-            slot_cid[info.slot] = cids_[i];
         }
     }
     out.MakePacketHead();

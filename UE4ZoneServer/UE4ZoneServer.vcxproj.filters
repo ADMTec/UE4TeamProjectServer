@@ -7,6 +7,9 @@
     <Filter Include="Provider">
       <UniqueIdentifier>{3f9feb4e-6e9f-482c-a56a-f51deabaedf0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Provider\CSV">
+      <UniqueIdentifier>{4090427e-4597-42fd-b898-7fe9a3c55e8c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="zone_server_main.cpp" />
@@ -17,22 +20,27 @@
     <ClCompile Include="System\PartySystem.cpp">
       <Filter>System</Filter>
     </ClCompile>
-    <ClCompile Include="Provider\DatabaseTable.cpp">
-      <Filter>Provider</Filter>
-    </ClCompile>
     <ClCompile Include="Provider\MonsterTemplateProvider.cpp">
       <Filter>Provider</Filter>
     </ClCompile>
     <ClCompile Include="Provider\ZoneDataProvider.cpp">
       <Filter>Provider</Filter>
     </ClCompile>
-    <ClCompile Include="GameConstants.cpp" />
     <ClCompile Include="ServerConstants.cpp" />
     <ClCompile Include="System\ZoneSystem.cpp">
       <Filter>System</Filter>
     </ClCompile>
     <ClCompile Include="System\PythonScriptSystem.cpp">
       <Filter>System</Filter>
+    </ClCompile>
+    <ClCompile Include="GameConstants.cpp">
+      <Filter>System</Filter>
+    </ClCompile>
+    <ClCompile Include="Provider\CSV\EquipTableData.cpp">
+      <Filter>Provider\CSV</Filter>
+    </ClCompile>
+    <ClCompile Include="Provider\CSV\MonsterTableData.cpp">
+      <Filter>Provider\CSV</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -42,9 +50,6 @@
     </ClInclude>
     <ClInclude Include="System\PartySystem.hpp">
       <Filter>System</Filter>
-    </ClInclude>
-    <ClInclude Include="Provider\DatabaseTable.hpp">
-      <Filter>Provider</Filter>
     </ClInclude>
     <ClInclude Include="Provider\MonsterTemplateProvider.hpp">
       <Filter>Provider</Filter>
@@ -59,6 +64,15 @@
     </ClInclude>
     <ClInclude Include="System\PythonScriptSystem.hpp">
       <Filter>System</Filter>
+    </ClInclude>
+    <ClInclude Include="Provider\CSVDataProvider.hpp">
+      <Filter>Provider</Filter>
+    </ClInclude>
+    <ClInclude Include="Provider\CSV\EquipTableData.hpp">
+      <Filter>Provider\CSV</Filter>
+    </ClInclude>
+    <ClInclude Include="Provider\CSV\MonsterTableData.hpp">
+      <Filter>Provider\CSV</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
