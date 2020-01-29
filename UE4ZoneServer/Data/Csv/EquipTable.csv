@@ -1,0 +1,6 @@
+ID,Name,IconID,MaleMeshID,FemaleMeshID,Type,SubType,RequiredLevel,ATK,DEF,STR,DEX,INT,RequiredSTR,RequiredDEX,RequiredINT,ToolTip
+3000001,초보자의 옷,0,0,0,0,1,1,0,10,0,0,0,0,0,0,기본 지급 받는 초보자의 옷이다.
+3100001,초보자의 장갑,0,0,0,1,1,1,0,0,0,0,0,0,0,0,NULL
+3200001,초보자의 신발,0,0,0,2,1,1,0,0,0,0,0,0,0,0,NULL
+3300001,낡은 검,0,0,0,3,1,1,10,0,0,0,0,0,0,0,NULL
+3400001,나무방패,0,0,0,4,1,1,0,0,0,0,0,0,0,0,NULL

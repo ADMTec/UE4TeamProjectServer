@@ -63,23 +63,29 @@ int32_t Inventory::GetEmptySlotIndex() const
     return index;
 }
 
+const std::array<std::optional<Inventory::Slot>, Inventory::inventory_size>& Inventory::GetData() const
+{
+    return inventory_;
+}
+
 void Inventory::Write(OutputStream& output) const
 {
-    output << inventory_size;
+    //output << inventory_size;
     for (int i = 0; i < inventory_size; ++i)
     {
-        bool has_item = inventory_[i].has_value();
-        output << has_item;
+        int32_t has_item = inventory_[i].has_value();
         if (has_item) {
             output << *inventory_[i]->item.get();
             output << inventory_[i]->count;
+        } else {
+            output << has_item;
         }
     }
 }
 
 void Inventory::Read(InputStream& input)
 {
-    int inventory_size = input.ReadInt32();
+    //int inventory_size = input.ReadInt32();
     for (int i = 0; i < inventory_size; ++i)
     {
         bool has_item = input.ReadInt8();

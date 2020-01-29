@@ -7,6 +7,7 @@ class UE4MODEL_DLLCLASS Item : public SerializeInterface
 {
 public:
     enum class Type : int32_t {
+        kNull = 0,
         kETC = 1,
         kConsume = 2,
         kEquip = 3,

@@ -1,5 +1,6 @@
 #include "Equipment.hpp"
 
+
 bool Equipment::HasEquipItem(Equipment::Position pos)
 {
     return equipments_[ToInt32(pos)].operator bool();
@@ -48,6 +49,11 @@ int32_t Equipment::GetTotalAddIntel() const
         }
     } 
     return str;
+}
+
+const std::array<std::shared_ptr<EquipItem>, ToInt32(Equipment::Position::kCount)>& Equipment::GetData() const
+{
+    return equipments_;
 }
 
 int32_t Equipment::GetTotalATK() const

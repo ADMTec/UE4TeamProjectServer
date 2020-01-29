@@ -107,6 +107,28 @@ void ZoneImpl::SetPlayerSpawn(Location location)
     player_spawn_ = location;
 }
 
+std::vector<std::shared_ptr<Character>> ZoneImpl::GetCharactersCopy() const
+{
+    std::vector<std::shared_ptr<Character>> chr;
+    std::shared_lock lock(object_guard_[ToInt32(ZoneObject::Type::kCharacter)]);
+    chr.reserve(chrs_.size());
+    for (const auto& element : chrs_) {
+        chr.emplace_back(element.second);
+    }
+    return chr;
+}
+
+std::vector<Monster> ZoneImpl::GetMonsterCopy() const
+{
+    std::vector<Monster> mob;
+    std::shared_lock lock(object_guard_[ToInt32(ZoneObject::Type::kMonster)]);
+    mob.reserve(mobs_.size());
+    for (const auto& element : mobs_) {
+        mob.emplace_back(element.second);
+    }
+    return mob;
+}
+
 int64_t ZoneImpl::GetNewObjectId()
 {
     return last_object_id_.fetch_add(1);

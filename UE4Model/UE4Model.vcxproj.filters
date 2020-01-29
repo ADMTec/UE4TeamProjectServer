@@ -26,9 +26,6 @@
     <ClCompile Include="Public\ZoneObject.cpp">
       <Filter>Public</Filter>
     </ClCompile>
-    <ClCompile Include="Public\Character\CharacterQuickSlot.cpp">
-      <Filter>Public\Character</Filter>
-    </ClCompile>
     <ClCompile Include="Public\Character\CharacterSkill.cpp">
       <Filter>Public\Character</Filter>
     </ClCompile>
@@ -62,6 +59,12 @@
     <ClCompile Include="Private\ZoneImpl.cpp">
       <Filter>Private</Filter>
     </ClCompile>
+    <ClCompile Include="Private\PacketHelper.cpp">
+      <Filter>Private</Filter>
+    </ClCompile>
+    <ClCompile Include="Private\PacketGenerator.cpp">
+      <Filter>Private</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Public\PawnObject.hpp">
@@ -75,9 +78,6 @@
     </ClInclude>
     <ClInclude Include="Public\FVector.hpp">
       <Filter>Public</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\Character\CharacterQuickSlot.hpp">
-      <Filter>Public\Character</Filter>
     </ClInclude>
     <ClInclude Include="Public\Character\CharacterSkill.hpp">
       <Filter>Public\Character</Filter>
@@ -108,6 +108,18 @@
     </ClInclude>
     <ClInclude Include="Private\ZoneImpl.hpp">
       <Filter>Private</Filter>
+    </ClInclude>
+    <ClInclude Include="Private\PacketHelper.hpp">
+      <Filter>Private</Filter>
+    </ClInclude>
+    <ClInclude Include="Private\PythonScriptEngine.hpp">
+      <Filter>Private</Filter>
+    </ClInclude>
+    <ClInclude Include="Private\PacketGenerator.hpp">
+      <Filter>Private</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\Character\QuickSlot.hpp">
+      <Filter>Public\Character</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

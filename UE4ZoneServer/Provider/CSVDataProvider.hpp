@@ -16,14 +16,15 @@ namespace fs = std::filesystem;
 using concurrency::concurrent_unordered_map;
 
 template<typename T>
-class CSVDataProvider : public TSingleton<CSVDataProvider<T>>
+class CSVDataProvider : public TSingleton<const CSVDataProvider<T>>
 {
-    friend class TSingleton<CSVDataProvider<T>>;
+    friend class TSingleton<const CSVDataProvider<T>>;
     CSVDataProvider() {}
 public:
     void Initialize() {
         auto data_path = fs::current_path();
         data_path /= "Data";
+        data_path /= ServerConstant.csv_data_root;
         data_path /= T::file_name_;
         std::ifstream file(data_path);
         if (file.is_open() == false) {
@@ -36,11 +37,11 @@ public:
         std::getline(file, input_line); // 이름 버리기용
         while (true)
         {
+            std::getline(file, input_line);
+            boost::split(variable, input_line, boost::is_any_of(","));
             if (input_line.empty() || file.eof()) {
                 break;
             }
-            std::getline(file, input_line);
-            boost::split(variable, input_line, boost::is_any_of(","));
 
             T data;
             data.Read(variable);
@@ -48,7 +49,7 @@ public:
         }
     }
 
-    T* GetData(int32_t id) {
+    const T* const GetData(int32_t id) const {
         auto iter = table_.find(id);
         if (iter != table_.end()) {
             return  &iter->second;

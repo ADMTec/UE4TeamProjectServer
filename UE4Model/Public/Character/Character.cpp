@@ -5,6 +5,7 @@
 #include "../Item/EquipItem.hpp"
 #include "../Item/ConsumeItem.hpp"
 #include "boost/python.hpp"
+#include "Private/PythonScriptEngine.hpp"
 
 struct CharacterTable
 {
@@ -54,12 +55,13 @@ struct InventoryItemTable
     int32_t quantity;
     int32_t slot;
     int32_t atk;
+    int32_t def;
     int32_t str;
     int32_t dex;
     int32_t intel;
     int32_t equipped;
     static const wchar_t* GetSelectQueryFromCid() {
-        return L"select itemid, type, quantity, slot, atk, str, dex, intel, equipped from inventoryitems where cid = ?";
+        return L"select itemid, type, quantity, slot, atk, def, str, dex, intel, equipped from inventoryitems where cid = ?";
     }
     static void BindResultSet(class ResultSet& rs, InventoryItemTable* data) {
         rs.BindInt32(1, &data->itemid);
@@ -67,10 +69,11 @@ struct InventoryItemTable
         rs.BindInt32(3, &data->quantity);
         rs.BindInt32(4, &data->slot);
         rs.BindInt32(5, &data->atk);
-        rs.BindInt32(6, &data->str);
-        rs.BindInt32(7, &data->dex);
-        rs.BindInt32(8, &data->intel);
-        rs.BindInt32(9, &data->equipped);
+        rs.BindInt32(6, &data->def);
+        rs.BindInt32(7, &data->str);
+        rs.BindInt32(8, &data->dex);
+        rs.BindInt32(9, &data->intel);
+        rs.BindInt32(10, &data->equipped);
     }
     static const wchar_t* GetDeleteQueryFromCid() {
         return L"delete from inventoryitems where cid = ?";
@@ -130,7 +133,7 @@ void Character::Initialize(Connection& con)
         ZoneObject::GetLocation().y = chr_data.y;
         ZoneObject::GetLocation().z = chr_data.z;
         name_ = chr_data.name;
-        zone_id_ = chr_data.zone_id;
+        map_id_ = chr_data.zone_id;
         gender_ = chr_data.gender;
         face_id_ = chr_data.face;
         hair_id_ = chr_data.hair;
@@ -158,12 +161,13 @@ void Character::Initialize(Connection& con)
                 equip->SetItemId(inven_data.itemid);
                 equip->SetItemType(item_type);
                 equip->SetAddATK(inven_data.atk);
+                equip->SetAddDEF(inven_data.def);
                 equip->SetAddStr(inven_data.str);
                 equip->SetAddDex(inven_data.dex);
                 equip->SetAddInt(inven_data.intel);
                 if (inven_data.equipped) {
                     auto equip_slot = (inven_data.itemid / 100000) % 10;
-                    if (equip_slot >= ToInt32(Equipment::Position::kArmor) && equip_slot <= ToInt32(Equipment::Position::kSubWeapon)) {
+                    if (equip_slot >= ToInt32(Equipment::Position::kArmor) && equip_slot <= ToInt32(Equipment::Position::kWeapon)) {
                         equipment_.Equip(static_cast<Equipment::Position>(equip_slot), equip);
                     }
                 } else {
@@ -187,6 +191,22 @@ void Character::Initialize(Connection& con)
         }
         rs->Close();
         ps->Close();
+        ps->PrepareStatement(L"select slot, type, id from quickslot where cid = ?");
+        ps->SetInt32(1, &cid_);
+        rs = ps->Execute();
+        int32_t slot, type, id;
+        rs->BindInt32(1, &slot);
+        rs->BindInt32(2, &type);
+        rs->BindInt32(3, &id);
+        while (rs->Next()) {
+            if (type >= ToInt32(QuickSlot::Type::kNull) && type <= ToInt32(QuickSlot::Type::kItem) && slot >= 0 && slot < 10) {
+                std::lock_guard lock(quick_slot_guard_);
+                quick_slot_[slot].type = static_cast<QuickSlot::Type>(type);
+                quick_slot_[slot].id = id;
+            }
+        }
+        rs->Close();
+        ps->Close();
     } else {
         throw StackTraceException(ExceptionType::kSQLError, "CharacterTable no data");
     }
@@ -195,15 +215,8 @@ void Character::Initialize(Connection& con)
 
 void Character::UpdatePawnStat()
 {
-    //try {
-    //    boost::python::object py_obj;
-    //    py_obj = boost::python::import("data.character.stat");
-    //    boost::python::import("imp").attr("reload")(py_obj);
-    //    py_obj.attr("Start")(*this);
-    //}
-    //catch (const std::exception & e) {
-
-    //}
+    PythonScript::Engine::Instance().ReloadExecute(
+        PythonScript::Path::kCharacter, "StatUpdate", "Start", PYTHON_PASSING_BY_REFERENCE(*this));
 }
 
 bool Character::InventoryToEquipment(int32_t inventory_index, Equipment::Position pos)
@@ -291,6 +304,12 @@ bool Character::DestoryItem(int32_t inventory_index)
     return true;
 }
 
+std::array<QuickSlot, 10> Character::GetQuickSlot() const
+{
+    std::shared_lock lock(quick_slot_guard_);
+    return quick_slot_;
+}
+
 const std::string& Character::GetName() const
 {
     return name_;
@@ -299,6 +318,26 @@ const std::string& Character::GetName() const
 int32_t Character::GetLevel() const
 {
     return lv_;
+}
+
+int32_t Character::GetMapId() const
+{
+    return map_id_;
+}
+
+int32_t Character::GetGender() const
+{
+    return gender_;
+}
+
+int32_t Character::GetHair() const
+{
+    return hair_id_;
+}
+
+int32_t Character::GetFace() const
+{
+    return face_id_;
 }
 
 #undef GetJob
@@ -340,6 +379,11 @@ float Character::GetMaxStamina() const
 const Equipment& Character::GetEquipment() const
 {
     return equipment_;
+}
+
+const Inventory& Character::GetInventory() const
+{
+    return inventory_;
 }
 
 void Character::Write(OutputStream& output) const

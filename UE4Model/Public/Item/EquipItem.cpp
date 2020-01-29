@@ -2,13 +2,18 @@
 
 
 EquipItem::EquipItem(int32_t itemid)
-    : Item(itemid, Item::Type::kEquip), attack_(0)
+    : Item(itemid, Item::Type::kEquip), add_atk_(0)
 {
 }
 
 void EquipItem::SetAddATK(int32_t value)
 {
-    attack_ = value;
+    add_atk_ = value;
+}
+
+void EquipItem::SetAddDEF(int32_t value)
+{
+    add_def_ = value;
 }
 
 void EquipItem::SetAddStr(int32_t value)
@@ -28,7 +33,12 @@ void EquipItem::SetAddInt(int32_t value)
 
 int32_t EquipItem::GetAddATK() const
 {
-    return attack_;
+    return add_atk_;
+}
+
+int32_t EquipItem::GetAddDEF() const
+{
+    return add_def_;
 }
 
 int32_t EquipItem::GetAddStr() const
@@ -49,7 +59,8 @@ int32_t EquipItem::GetAddInt() const
 void EquipItem::Write(OutputStream& output) const
 {
     Item::Write(output);
-    output << attack_;
+    output << add_atk_;
+    output << add_def_;
     output << add_str_;
     output << add_dex_;
     output << add_int_;
@@ -58,7 +69,8 @@ void EquipItem::Write(OutputStream& output) const
 void EquipItem::Read(InputStream& input)
 {
     Item::Read(input);
-    input >> attack_;
+    input >> add_atk_;
+    input >> add_def_;
     input >> add_str_;
     input >> add_dex_;
     input >> add_int_;

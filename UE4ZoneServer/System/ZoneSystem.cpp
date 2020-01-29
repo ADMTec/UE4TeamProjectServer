@@ -22,7 +22,7 @@ std::shared_ptr<Zone> ZoneSystem::CreateNewInstance(int32_t mapid)
     int64_t new_id = new_instance_id.fetch_add(1);
     auto data = ZoneDataProvider::Instance().GetData(mapid);
     if (!data) {
-        nullptr;
+        return nullptr;
     }
     const auto& data_ptr = *data;
 

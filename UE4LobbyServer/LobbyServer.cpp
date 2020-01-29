@@ -65,6 +65,13 @@ void LobbyServer::Initialize()
                 std::unique_lock lock(session_authority_guard_);
                 authority_map_.emplace(info.GetId(), info);
             }
+            UE4OutPacket out;
+            out.WriteInt16(static_cast<int16_t>(
+                IntermediateServerReceivePacket::kReactSessionAuthorityInfo));
+            out << login_server_uuid;
+            out << user_uuid;
+            out.MakePacketHead();
+            session.AsyncSend(out, false, false);
             GetNioServer()->CreateTimer(
                 [this, info]() {
                     std::unique_lock lock(session_authority_guard_);
@@ -75,14 +82,6 @@ void LobbyServer::Initialize()
                         }
                     }
                 }, std::chrono::milliseconds(3000));
-            
-            UE4OutPacket out;
-            out.WriteInt16(static_cast<int16_t>(
-                IntermediateServerReceivePacket::kReactSessionAuthorityInfo));
-            out << login_server_uuid;
-            out << user_uuid;
-            out.MakePacketHead();
-            session.AsyncSend(out, false, false);
         }
     );
     conn.BindFunction( // response from ZoneServer
@@ -279,8 +278,8 @@ void LobbyServer::HandleCharacterCreateRequest(UE4Client& client, NioInPacket& i
         }
     }
     info.level = 1;
-    info.hair = 0;
-    info.face = 0;
+    //info.hair = 110;
+    //info.face = 120;
     info.str = 10;
     info.dex = 10;
     info.intel = 10;
@@ -328,15 +327,33 @@ void LobbyServer::HandleCharacterCreateRequest(UE4Client& client, NioInPacket& i
     rs->BindInt32(1, &cid);
 
     UE4OutPacket out;
-    out.WriteInt16(static_cast<int16_t>(ENetworkSCOpcode::kCharacterSlotNotify));
+    out.WriteInt16(static_cast<int16_t>(ENetworkSCOpcode::kCharacterCreateNotify));
     if (rs->Next()) {
+        rs->Close();
+        static std::array<int32_t, 5> default_items = { 3000001 , 3100001 , 3200001 ,3300001 ,3400001 };
+        info.armor_itemid = 3000001;
+        info.hand_itemid = 3100001;
+        info.shoes_itemid = 3200001;
+        info.weapon_itemid = 3300001;
+        info.sub_weapon_itemid = 3400001;
         std::shared_lock lock(slot_info_lock);
         slot_info_[client.GetUUID()][info.slot] = cid;
-
+        for (int i = 0; i < 5; ++i)
+        {
+            ps->Close();
+            ps->PrepareStatement(L"insert into inventoryitems\
+(cid, accid, itemid, type, quantity, slot, atk, def, str, dex, intel, equipped) values\
+(?, ?, ?, 3, 1, -1, 0, 0, 0, 0, 0, 1)");
+            ps->SetInt32(1, &cid);
+            ps->SetInt32(2, &accid);
+            ps->SetInt32(3, &default_items[i]);
+            ps->ExecuteUpdate();
+        }
         PacketGenerateHelper::WriteLobbyCharacterInfo(out, info);
     } else {
         out.WriteInt32(-1);
     }
+    ps->Close();
     out.MakePacketHead();
     client.GetSession()->AsyncSend(out, false, true);
     // ½ÇÆÐ
@@ -367,6 +384,11 @@ void LobbyServer::HandleCharacterDeleteRequest(UE4Client& client, NioInPacket& i
     ps->SetInt32(1, &cid);
     ps->ExecuteUpdate();
 
+    UE4OutPacket out;
+    out.WriteInt16(static_cast<int16_t>(ENetworkSCOpcode::kCharacterDeleteNotify));
+    out.WriteInt32(slot);
+    out.MakePacketHead();
+    client.GetSession()->AsyncSend(out, false, true);
 }
 
 void LobbyServer::HandleCharacterSelectRequest(UE4Client& client, NioInPacket& in_packet)
@@ -394,6 +416,7 @@ void LobbyServer::HandleCharacterSelectRequest(UE4Client& client, NioInPacket& i
     UE4OutPacket out;
     out.WriteInt16(static_cast<int16_t>(IntermediateServerReceivePacket::kRequestUserMigration)); // opcode
     out << static_cast<int16_t>(ServerType::kZoneServer);
+    out << client.GetUUID();
     out << info;
     out.MakePacketHead();
     GetNioServer()->GetChannel().GetConnection(intermediate_server).Send(out);
@@ -413,7 +436,7 @@ void LobbyServer::SendCharacterList(UE4Client& client)
 
     int cid;
     rs->BindInt32(1, &cid);
-    if (rs->Next()) {
+    while (rs->Next()) {
         cids_.push_back(cid);
     }
     rs->Close();

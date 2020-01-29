@@ -10,12 +10,13 @@ void ServerConstants::Initialize()
         auto opt_odbc = reader.GetString("ODBC");
         auto opt_db_id = reader.GetString("DB_ID");
         auto opt_db_pw = reader.GetString("DB_PW");
+        auto opt_ip = reader.GetString("ZONE_SERVER_IP");
         auto opt_port = reader.GetInt32("ZONE_SERVER_PORT");
         auto opt_max_conn = reader.GetInt32("ZONE_SERVER_MAX_CONNECTION");
         auto opt_worker_size = reader.GetInt32("ZONE_SERVER_NUM_IO_WORKER");
         auto inter_ip = reader.GetString("INTERMEDIATE_SERVER_IP");
         auto inter_port = reader.GetInt32("INTERMEDIATE_SERVER_PORT");
-        if (!opt_odbc || !opt_db_id || !opt_db_pw || !opt_port || !opt_max_conn 
+        if (!opt_odbc || !opt_db_id || !opt_db_pw || !opt_ip || !opt_port || !opt_max_conn
             || !opt_worker_size || !inter_ip || !inter_port)
         {
             throw StackTraceException(ExceptionType::kLogicError, "no data");
@@ -32,12 +33,13 @@ void ServerConstants::Initialize()
         db_id = *opt_db_id;
         db_pw = *opt_db_pw;
 #endif
+        ip = *opt_ip;
         port = *opt_port;
         max_connection = *opt_max_conn;
         num_io_worker_ = *opt_worker_size;
         intermediate_server_ip = *inter_ip;
         intermediate_server_port = *inter_port;
     }
-    TextFileLineReader reader;
-    reader.Initialize("ServerConstant.txt");
+    //TextFileLineReader reader;
+    //reader.Initialize("ServerConstant.txt");
 }

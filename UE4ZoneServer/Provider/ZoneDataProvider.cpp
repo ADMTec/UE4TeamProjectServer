@@ -45,10 +45,10 @@ void ZoneDataProvider::Initialize()
                     data.portal.location.z = map_data["Portal"]["z"];
                 }
                 for (const auto& sp : map_data["SpawnPoint"]) {
-                    data.spawn_point.emplace_back(
-                        sp["type"], sp["id"], sp["x"], sp["y"], sp["z"], sp["rx"], sp["ry"], sp["rz"]);
+                        data.spawn_point.emplace_back(
+                            sp["type"], sp["id"], sp["x"], sp["y"], sp["z"], sp["rx"], sp["ry"], sp["rz"]);
                 }
-
+                zone_data_.emplace(data.map_id, data);
             } catch (const std::exception & e) {
                 std::stringstream ss;
                 ss << path << ' - ' << e.what();

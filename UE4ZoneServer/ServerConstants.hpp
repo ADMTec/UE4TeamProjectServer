@@ -13,9 +13,11 @@ public:
 public:
     const char* data_root_dir = "Data";
     const char* map_data_root = "Map";
+    const char* csv_data_root = "Csv";
     std::wstring odbc_name;
     std::wstring db_id;
     std::wstring db_pw;
+    std::string ip;
     uint16_t port;
     int32_t max_connection;
     int32_t num_io_worker_;

@@ -40,6 +40,11 @@ public:
 public:
     const std::string& GetName() const;
     int32_t GetLevel() const;
+    int32_t GetMapId() const;
+    int32_t GetGender() const;
+    int32_t GetHair() const;
+    int32_t GetFace() const;
+    
 #undef GetJob
     int32_t GetJob() const;
     int32_t GetStr() const;
@@ -49,6 +54,7 @@ public:
     float GetStamina() const;
     float GetMaxStamina() const;
     const Equipment& GetEquipment() const;
+    const Inventory& GetInventory() const;
 public:
     virtual void Write(OutputStream& output) const override;
     virtual void Read(InputStream& input) override;
@@ -60,12 +66,12 @@ private:
     int32_t accid_;
     int32_t cid_;
     std::string name_;
-    int32_t zone_id_ = 0;
+    int32_t map_id_ = 0;
+    int64_t lv_ = 0;
     int32_t gender_ = 0;
     int32_t face_id_ = 0;
     int32_t hair_id_ = 0;
     int32_t job_ = 0;
-    int64_t lv_ = 0;
     int32_t str_ = 0;
     int32_t dex_ = 0;
     int32_t intel_ = 0;
@@ -73,7 +79,6 @@ private:
     float stamina_ = 0.0f;
     float max_stamina_ = 0.0f;
     float stamina_recovery_ = 0.0f;
-    CharacterSkill skill_;
 
     mutable std::shared_mutex equipment_guard_;
     Equipment equipment_;
@@ -81,5 +86,6 @@ private:
     mutable std::shared_mutex inventory_guard_;
     Inventory inventory_;
 
+    CharacterSkill skill_;
     CharacterQuickSlot quick_slot_;
 };

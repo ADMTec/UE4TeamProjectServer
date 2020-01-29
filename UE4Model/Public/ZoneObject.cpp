@@ -52,7 +52,17 @@ Location& ZoneObject::GetLocation()
     return location_;
 }
 
+const Location& ZoneObject::GetLocation() const
+{
+    return location_;
+}
+
 Rotation& ZoneObject::GetRotation()
+{
+    return rotation_;
+}
+
+const Rotation& ZoneObject::GetRotation() const
 {
     return rotation_;
 }

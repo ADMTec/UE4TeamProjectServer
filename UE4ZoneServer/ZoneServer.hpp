@@ -1,8 +1,8 @@
 #pragma once
 #include "UE4DevelopmentLibrary/Server.hpp"
 #include "UE4DevelopmentLibrary/Utility.hpp"
+#include <mutex>
 
-using std::shared_ptr;
 using std::unordered_map;
 
 class ZoneServer : public UE4BaseServer, public TSingleton<ZoneServer>
@@ -31,7 +31,7 @@ public:
 private:
     void HandleConfirmRequest(const shared_ptr<UE4Client>& client, NioInPacket& in_packet);
 private:
-    std::shared_mutex session_authority_guard_;
+    std::mutex session_authority_guard_;
     unordered_map<RemoteSessionInfo::id_t, RemoteSessionInfo> authority_map_;
 
     std::shared_ptr<class Zone> town_;

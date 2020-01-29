@@ -31,7 +31,7 @@ int main()
             //py_obj = boost::python::import("script.chr");
             //boost::python::import("imp").attr("reload")(py_obj);
             //py_obj.attr("Start")(boost::ref(chr));
-            Execute("script.chr", boost::ref(chr));
+            Execute("script.chr.StatUpdate", boost::ref(chr));
         } catch (boost::python::error_already_set&) {
             PyErr_Print();
         }

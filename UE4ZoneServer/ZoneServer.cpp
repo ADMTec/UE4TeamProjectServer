@@ -40,20 +40,9 @@ void ZoneServer::Initialize()
             input >> info;
 
             {
-                std::unique_lock lock(session_authority_guard_);
+                std::lock_guard lock(session_authority_guard_);
                 authority_map_.emplace(info.GetId(), info);
             }
-            GetNioServer()->CreateTimer(
-                [this, info]() {
-                    std::unique_lock lock(session_authority_guard_);
-                    auto iter = authority_map_.find(info.GetId());
-                    if (iter != authority_map_.end()) {
-                        if (iter->second.GetClock().to_int64_t() == info.GetClock().to_int64_t()) {
-                            authority_map_.erase(iter);
-                        }
-                    }
-                }, std::chrono::milliseconds(3000));
-
             UE4OutPacket out;
             out.WriteInt16(static_cast<int16_t>(
                 IntermediateServerReceivePacket::kReactSessionAuthorityInfo));
@@ -61,6 +50,17 @@ void ZoneServer::Initialize()
             out << user_uuid;
             out.MakePacketHead();
             session.AsyncSend(out, false, false);
+
+            GetNioServer()->CreateTimer(
+                [this, info]() {
+                    std::lock_guard lock(session_authority_guard_);
+                    auto iter = authority_map_.find(info.GetId());
+                    if (iter != authority_map_.end()) {
+                        if (iter->second.GetClock().to_int64_t() == info.GetClock().to_int64_t()) {
+                            authority_map_.erase(iter);
+                        }
+                    }
+                }, std::chrono::milliseconds(3000));
         }
     );
     town_ = ZoneSystem::CreateNewInstance(100);
@@ -71,6 +71,7 @@ void ZoneServer::Run()
     auto nio = GetNioServer();
     if (nio) {
         GetNioServer()->Run();
+        ConnectChannel();
         std::cout << "Input Command\n\
 [1] : PrintServerState\n\
 [2] : Retry connect IntermediateServer\n\
@@ -122,6 +123,19 @@ void ZoneServer::ConnectChannel()
             ss << '[' << Calendar::DateTime(clock) << "] connect to intermediate server(" 
                 << ServerConstant.intermediate_server_ip << ":" << ServerConstant.intermediate_server_port << ") fail \n";
             std::cout << ss.str();
+        } else {
+            RemoteServerInfo info;
+            info.SetServerType(ServerType::kZoneServer);
+            info.SetIP(ServerConstant.ip);
+            info.SetPort(ServerConstant.port);
+            info.SetCurrentConnection(0);
+            info.SetMaxConnection(ServerConstant.max_connection);
+
+            UE4OutPacket out;
+            out.WriteInt16(static_cast<int16_t>(IntermediateServerReceivePacket::kRegisterRemoteServer));
+            out << info;
+            out.MakePacketHead();
+            GetNioServer()->GetChannel().GetConnection(intermediate_server).Send(out);
         }
     }
 }
@@ -185,12 +199,21 @@ void ZoneServer::HandleConfirmRequest(const shared_ptr<UE4Client>& client, NioIn
     std::string id = in_packet.ReadString();
     const auto& ip = client->GetSession()->GetRemoteAddress();
     {
-        std::shared_lock lock(session_authority_guard_);
-        auto iter = authority_map_.find(id);
-        if (iter != authority_map_.end() && iter->second.GetIp() == ip) {
+        bool result{ false };
+        RemoteSessionInfo info;
+        {
+            std::lock_guard lock(session_authority_guard_);
+            auto iter = authority_map_.find(id);
+            if (iter != authority_map_.end() && iter->second.GetIp() == ip) {
+                result = true;
+                info = iter->second;
+                authority_map_.erase(iter);
+            }
+        }
+        if (result) {
             client->SetState(ClientState::kConfirm);
-            client->SetAccid(iter->second.GetAccid());
-            client->SetCid(iter->second.GetCid());
+            client->SetAccid(info.GetAccid());
+            client->SetCid(info.GetCid());
         } else {
             CloseClient(client->GetUUID().ToString());
             return;

@@ -32,7 +32,9 @@ public:
     oid_t GetObjectId() const;
     void SetObjectId(oid_t oid);
     Location& GetLocation();
+    const Location& GetLocation() const;
     Rotation& GetRotation();
+    const Rotation& GetRotation() const;
 public:
     virtual void Write(OutputStream& output) const override;
     virtual void Read(InputStream& input) override;

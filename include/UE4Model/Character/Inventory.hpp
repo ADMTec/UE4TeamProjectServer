@@ -30,6 +30,7 @@ public:
     const Inventory::Slot& Get(int32_t slot_index);
     Inventory::Slot Pop(int32_t slot_index);
     int32_t GetEmptySlotIndex() const;
+    const std::array<std::optional<Slot>, inventory_size>& GetData() const;
 public:
     virtual void Write(OutputStream& output) const override;
     virtual void Read(InputStream& input) override;

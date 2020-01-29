@@ -4,6 +4,9 @@
 
 BOOST_PYTHON_MODULE(UE4Model)
 {
+    FVector& (ZoneObject::*NonConstGetLocation)(void) = &ZoneObject::GetLocation;
+    FVector& (ZoneObject::*NonConstGetRotation)(void) = &ZoneObject::GetRotation;
+
     using namespace boost::python;
     class_<FVector>("FVector")
         .def_readwrite("x", &FVector::x)
@@ -13,9 +16,8 @@ BOOST_PYTHON_MODULE(UE4Model)
         .add_property("type", &ZoneObject::GetType)
         .add_property("template_id", &ZoneObject::GetTemplateId, &ZoneObject::SetTemplateId)
         .add_property("object_id", &ZoneObject::GetObjectId, &ZoneObject::SetObjectId)
-        .def("location", &ZoneObject::GetLocation, return_value_policy<reference_existing_object>())
-        .def("rotation", &ZoneObject::GetRotation, return_value_policy<reference_existing_object>())
-        ;
+        .def("location", NonConstGetLocation, return_value_policy<reference_existing_object>())
+        .def("rotation", NonConstGetRotation, return_value_policy<reference_existing_object>());
     class_<PawnObject, bases<ZoneObject>>("PawnObject", boost::python::no_init)
         .add_property("hp", &PawnObject::GetHP, &PawnObject::SetHP)
         .add_property("max_hp", &PawnObject::GetMaxHP, &PawnObject::SetMaxHP)

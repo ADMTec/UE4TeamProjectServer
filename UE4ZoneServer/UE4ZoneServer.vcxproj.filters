@@ -10,6 +10,9 @@
     <Filter Include="Provider\CSV">
       <UniqueIdentifier>{4090427e-4597-42fd-b898-7fe9a3c55e8c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{e6e1966f-ded7-4639-9426-823f8383d676}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="zone_server_main.cpp" />
@@ -28,9 +31,6 @@
     </ClCompile>
     <ClCompile Include="ServerConstants.cpp" />
     <ClCompile Include="System\ZoneSystem.cpp">
-      <Filter>System</Filter>
-    </ClCompile>
-    <ClCompile Include="System\PythonScriptSystem.cpp">
       <Filter>System</Filter>
     </ClCompile>
     <ClCompile Include="GameConstants.cpp">
@@ -62,9 +62,6 @@
     <ClInclude Include="System\ZoneSystem.hpp">
       <Filter>System</Filter>
     </ClInclude>
-    <ClInclude Include="System\PythonScriptSystem.hpp">
-      <Filter>System</Filter>
-    </ClInclude>
     <ClInclude Include="Provider\CSVDataProvider.hpp">
       <Filter>Provider</Filter>
     </ClInclude>
@@ -74,5 +71,18 @@
     <ClInclude Include="Provider\CSV\MonsterTableData.hpp">
       <Filter>Provider\CSV</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\icon.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="UE4ZoneServer.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

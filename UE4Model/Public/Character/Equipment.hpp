@@ -15,7 +15,6 @@ public:
         kHand = 1,
         kShoes = 2,
         kWeapon = 3,
-        kSubWeapon = 4,
         kCount = 5,
     };
 public:
@@ -26,6 +25,7 @@ public:
     int32_t GetTotalAddStr() const;
     int32_t GetTotalAddDex() const;
     int32_t GetTotalAddIntel() const;
+    const std::array<std::shared_ptr<EquipItem>, ToInt32(Position::kCount)>& GetData() const;
 private:
     std::array<std::shared_ptr<EquipItem>, ToInt32(Position::kCount)> equipments_;
 };

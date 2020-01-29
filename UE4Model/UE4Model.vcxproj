@@ -187,10 +187,11 @@ copy "Public\Monster\*.hpp" "..\include\$(ProjectName)\Monster\"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Private\PacketGenerator.cpp" />
+    <ClCompile Include="Private\PacketHelper.cpp" />
     <ClCompile Include="Private\PythonExport.cpp" />
     <ClCompile Include="Private\ZoneImpl.cpp" />
     <ClCompile Include="Public\Character\Character.cpp" />
-    <ClCompile Include="Public\Character\CharacterQuickSlot.cpp" />
     <ClCompile Include="Public\Character\CharacterSkill.cpp" />
     <ClCompile Include="Public\Character\Equipment.cpp" />
     <ClCompile Include="Public\Character\Inventory.cpp" />
@@ -203,9 +204,12 @@ copy "Public\Monster\*.hpp" "..\include\$(ProjectName)\Monster\"</Command>
     <ClCompile Include="Public\ZoneObject.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Private\PacketGenerator.hpp" />
+    <ClInclude Include="Private\PacketHelper.hpp" />
+    <ClInclude Include="Private\PythonScriptEngine.hpp" />
     <ClInclude Include="Private\ZoneImpl.hpp" />
     <ClInclude Include="Public\Character\Character.hpp" />
-    <ClInclude Include="Public\Character\CharacterQuickSlot.hpp" />
+    <ClInclude Include="Public\Character\QuickSlot.hpp" />
     <ClInclude Include="Public\Character\CharacterSkill.hpp" />
     <ClInclude Include="Public\Character\Equipment.hpp" />
     <ClInclude Include="Public\Character\Inventory.hpp" />

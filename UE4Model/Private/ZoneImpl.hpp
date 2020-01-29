@@ -1,4 +1,5 @@
 #pragma once
+#include "UE4DevelopmentLibrary/Stream.hpp"
 #include "Public/Zone.hpp"
 #include "Public/Character/Character.hpp"
 #include "Public/Monster/Monster.hpp"
@@ -32,6 +33,10 @@ public:
     void SetType(Zone::Type type);
     void SetPlayerSpawn(Location location);
 
+    std::vector<std::shared_ptr<Character>> GetCharactersCopy() const;
+    std::vector<Monster> GetMonsterCopy() const;
+
+public:
     int64_t GetNewObjectId();
 private:
     int64_t instance_id_;
