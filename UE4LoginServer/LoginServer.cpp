@@ -160,10 +160,10 @@ void LoginServer::OnProcessPacket(const std::shared_ptr<UE4Client>& client, cons
         int16_t opcode = in_packet->ReadInt16();
         switch (static_cast<ENetworkCSOpcode>(opcode)) {
             case ENetworkCSOpcode::kCreateAccountRequest:
-                HandleCreateAccountRquest(*client, *in_packet);
+                HandleCreateAccountRquest(client, *in_packet);
                 break;
             case ENetworkCSOpcode::kLoginRequest:
-                HandleLoginRequest(*client, *in_packet);
+                HandleLoginRequest(client, *in_packet);
                 break;
         }
     }
@@ -178,7 +178,7 @@ void LoginServer::OnProcessPacket(const std::shared_ptr<UE4Client>& client, cons
     }
 }
 
-void LoginServer::HandleCreateAccountRquest(UE4Client& client, NioInPacket& in_packet)
+void LoginServer::HandleCreateAccountRquest(const shared_ptr<UE4Client>& client, NioInPacket& in_packet)
 {
     std::string id, pw;
     in_packet >> id;
@@ -188,31 +188,35 @@ void LoginServer::HandleCreateAccountRquest(UE4Client& client, NioInPacket& in_p
     try {
         auto con = ODBCConnectionPool::Instance().GetConnection();
         auto ps = con->GetPreparedStatement();
-        ps->PrepareStatement(TEXT("select pw from account where id = ?"));
+        ps->PrepareStatement(TEXT("select pw from accounts where id = ?"));
         ps->SetString(1, id);
         auto rs = ps->Execute();
 
         char db_pw[100];
         rs->BindString(1, db_pw, 100);
-        if (!rs->Next()) {
-            rs->Close(); rs.reset();
+        bool result = !rs->Next();
+        if (result) {
+            rs->Close();
             ps->Close();
 
-            ps->PrepareStatement(TEXT("insert into account (id, pw) values (?, ?)"));
+            ps->PrepareStatement(TEXT("insert into accounts (id, pw) values (?, ?)"));
             ps->SetString(1, id);
             ps->SetString(2, pw);
             ps->ExecuteUpdate();
-            ps->Close(); ps.reset();
-
         }
-        if (rs) rs->Close();
-        if (ps) ps->Close();
+        rs->Close();
+        ps->Close();
+        UE4OutPacket out;
+        out.WriteInt16(static_cast<int16_t>(ENetworkSCOpcode::kCreateAccountResult));
+        out.WriteInt8(result);
+        out.MakePacketHead();
+        client->GetSession()->AsyncSend(out, false, true);
     } catch (const std::exception & e) {
-        throw e;
+        std::cout << e.what() << std::endl;
     }
 }
 
-void LoginServer::HandleLoginRequest(UE4Client& client, NioInPacket& in_packet)
+void LoginServer::HandleLoginRequest(const shared_ptr<UE4Client>& client, NioInPacket& in_packet)
 {
     std::string id, pw;
     in_packet >> id;
@@ -229,15 +233,15 @@ void LoginServer::HandleLoginRequest(UE4Client& client, NioInPacket& in_packet)
         auto rs = ps->Execute();
 
         int32_t accid;
-        char db_id[100];
-        char db_pw[100];
+        volatile char db_id[100] = {0, };
+        volatile char db_pw[100] = { 0, };
         int32_t loggedin;
         rs->BindInt32(1, &accid);
-        rs->BindString(2, db_id, 100);
-        rs->BindString(3, db_pw, 100);
+        rs->BindString(2, (char*)db_id, 50);
+        rs->BindString(3, (char*)db_pw, 50);
         rs->BindInt32(4, &loggedin);
         if (rs->Next()) {
-            if (!pw.compare(db_pw)) {
+            if (!pw.compare((char*)db_pw)) {
                 login_ok = true;
             }
         }
@@ -252,13 +256,13 @@ void LoginServer::HandleLoginRequest(UE4Client& client, NioInPacket& in_packet)
 
                 RemoteSessionInfo info;
                 info.SetAccid(accid);
-                info.SetId(db_id);
-                info.SetIp(client.GetSession()->GetRemoteAddress());
+                info.SetId((char*)db_id);
+                info.SetIp(client->GetSession()->GetRemoteAddress()); // ¿©±â¼­ Á×À½
 
                 UE4OutPacket mig_noti;
                 mig_noti.WriteInt16(static_cast<int16_t>(IntermediateServerReceivePacket::kRequestUserMigration)); // opcode
                 mig_noti.WriteInt16(static_cast<int16_t>(ServerType::kLobbyServer));
-                mig_noti << client.GetUUID();
+                mig_noti << client->GetUUID();
                 mig_noti << info;
                 mig_noti.MakePacketHead();
                 GetNioServer()->GetChannel().GetConnection(intermediate_server).Send(mig_noti);
@@ -267,14 +271,14 @@ void LoginServer::HandleLoginRequest(UE4Client& client, NioInPacket& in_packet)
                 out.WriteInt16(static_cast<int16_t>(ENetworkSCOpcode::kLoginResult));
                 out.WriteInt8(2);
                 out.MakePacketHead();
-                client.GetSession()->AsyncSend(out, false, true);
+                client->GetSession()->AsyncSend(out, false, true);
             }
         } else { // wrong id or password
             UE4OutPacket out;
             out.WriteInt16(static_cast<int16_t>(ENetworkSCOpcode::kLoginResult));
             out.WriteInt8(login_ok);
             out.MakePacketHead();
-            client.GetSession()->AsyncSend(out, false, true);
+            client->GetSession()->AsyncSend(out, false, true);
         }
     } catch (const std::exception & e) {
         throw e;

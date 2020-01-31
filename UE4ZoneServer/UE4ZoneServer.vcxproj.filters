@@ -1,76 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="System">
-      <UniqueIdentifier>{4f570dca-b4a6-444f-aacd-bc2aa5497385}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Provider">
-      <UniqueIdentifier>{3f9feb4e-6e9f-482c-a56a-f51deabaedf0}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Provider\CSV">
-      <UniqueIdentifier>{4090427e-4597-42fd-b898-7fe9a3c55e8c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Resource Files">
       <UniqueIdentifier>{e6e1966f-ded7-4639-9426-823f8383d676}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="zone_server_main.cpp" />
-    <ClCompile Include="ZoneServer.cpp" />
-    <ClCompile Include="System\MatchingSystem.cpp">
-      <Filter>System</Filter>
-    </ClCompile>
-    <ClCompile Include="System\PartySystem.cpp">
-      <Filter>System</Filter>
-    </ClCompile>
-    <ClCompile Include="Provider\MonsterTemplateProvider.cpp">
-      <Filter>Provider</Filter>
-    </ClCompile>
-    <ClCompile Include="Provider\ZoneDataProvider.cpp">
-      <Filter>Provider</Filter>
-    </ClCompile>
-    <ClCompile Include="ServerConstants.cpp" />
-    <ClCompile Include="System\ZoneSystem.cpp">
-      <Filter>System</Filter>
-    </ClCompile>
-    <ClCompile Include="GameConstants.cpp">
-      <Filter>System</Filter>
-    </ClCompile>
-    <ClCompile Include="Provider\CSV\EquipTableData.cpp">
-      <Filter>Provider\CSV</Filter>
-    </ClCompile>
-    <ClCompile Include="Provider\CSV\MonsterTableData.cpp">
-      <Filter>Provider\CSV</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="ZoneServer.hpp" />
-    <ClInclude Include="System\MatchingSystem.hpp">
-      <Filter>System</Filter>
-    </ClInclude>
-    <ClInclude Include="System\PartySystem.hpp">
-      <Filter>System</Filter>
-    </ClInclude>
-    <ClInclude Include="Provider\MonsterTemplateProvider.hpp">
-      <Filter>Provider</Filter>
-    </ClInclude>
-    <ClInclude Include="Provider\ZoneDataProvider.hpp">
-      <Filter>Provider</Filter>
-    </ClInclude>
-    <ClInclude Include="GameConstants.hpp" />
-    <ClInclude Include="ServerConstants.hpp" />
-    <ClInclude Include="System\ZoneSystem.hpp">
-      <Filter>System</Filter>
-    </ClInclude>
-    <ClInclude Include="Provider\CSVDataProvider.hpp">
-      <Filter>Provider</Filter>
-    </ClInclude>
-    <ClInclude Include="Provider\CSV\EquipTableData.hpp">
-      <Filter>Provider\CSV</Filter>
-    </ClInclude>
-    <ClInclude Include="Provider\CSV\MonsterTableData.hpp">
-      <Filter>Provider\CSV</Filter>
-    </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Resource Files</Filter>
     </ClInclude>
@@ -84,5 +19,8 @@
     <ResourceCompile Include="UE4ZoneServer.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="zone_server_main.cpp" />
   </ItemGroup>
 </Project>

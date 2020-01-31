@@ -24,10 +24,10 @@ public:
     virtual void OnProcessPacket(const shared_ptr<UE4Client>& client, const shared_ptr<NioInPacket>& in_packet);
 private:
     void HandleRegisterServer(const shared_ptr<UE4Client>& client, NioInPacket& packet);
-    void UpdateServerConnection(UE4Client& client, NioInPacket& packet);
-    void HandleRequestUserMigration(UE4Client& client, NioInPacket& packet);
-    void HandleReactSessionAuthorityInfo(UE4Client& client, NioInPacket& packet);
-    void HandleNotifiyUserLogout(UE4Client& client, NioInPacket& packet);
+    void UpdateServerConnection(const shared_ptr<UE4Client>& client, NioInPacket& packet);
+    void HandleRequestUserMigration(const shared_ptr<UE4Client>& client, NioInPacket& packet);
+    void HandleReactSessionAuthorityInfo(const shared_ptr<UE4Client>& client, NioInPacket& packet);
+    void HandleNotifiyUserLogout(const shared_ptr<UE4Client>& client, NioInPacket& packet);
 private:
     TextFileLineReader reader_;
 

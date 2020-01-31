@@ -176,7 +176,7 @@ void LobbyServer::OnActiveClient(UE4Client& client)
 {
     client.SetState(ClientState::kNotConfirm);
     //GetNioServer()->CreateTimer(
-    //    [uuid = client.GetUUID(), this]() 
+    //    [uuid = client->GetUUID(), this]() 
     //    {
     //        auto client = this->GetClient(uuid.ToString());
     //        if (client && client->GetState() == ClientState::kNotConfirm) {
@@ -204,19 +204,19 @@ void LobbyServer::OnProcessPacket(const shared_ptr<UE4Client>& client, const sha
         switch (static_cast<ENetworkCSOpcode>(opcode))
         {
             case ENetworkCSOpcode::kLobbyConfirmRequest:
-                HandleConfirmRequest(*client, *in_packet);
+                HandleConfirmRequest(client, *in_packet);
                 break;
             case ENetworkCSOpcode::kCharacterListRequest:
-                HandleCharacterListRequest(*client, *in_packet);
+                HandleCharacterListRequest(client, *in_packet);
                 break;
             case ENetworkCSOpcode::kCharacterCreateRequest:
-                HandleCharacterCreateRequest(*client, *in_packet);
+                HandleCharacterCreateRequest(client, *in_packet);
                 break;
             case ENetworkCSOpcode::kCharacterDeleteRequest:
-                HandleCharacterDeleteRequest(*client, *in_packet);
+                HandleCharacterDeleteRequest(client, *in_packet);
                 break;
             case ENetworkCSOpcode::kCharacterSelectionRequest:
-                HandleCharacterSelectRequest(*client, *in_packet);
+                HandleCharacterSelectRequest(client, *in_packet);
                 break;
         }
     } catch (const std::exception & e) {
@@ -230,18 +230,18 @@ void LobbyServer::OnProcessPacket(const shared_ptr<UE4Client>& client, const sha
     }
 }
 
-void LobbyServer::HandleConfirmRequest(UE4Client& client, NioInPacket& in_packet)
+void LobbyServer::HandleConfirmRequest(const shared_ptr<UE4Client>& client, NioInPacket& in_packet)
 {
     bool result = false;
     std::string id = in_packet.ReadString();
-    const auto& ip = client.GetSession()->GetRemoteAddress();
+    const auto& ip = client->GetSession()->GetRemoteAddress();
     {
         std::shared_lock lock(session_authority_guard_);
         auto iter = authority_map_.find(id);
         if (iter != authority_map_.end() && iter->second.GetIp() == ip) {
-            client.SetState(LobbyServer::kConfirm);
-            client.SetAccid(iter->second.GetAccid());
-            client.SetContext(0, id);
+            client->SetState(LobbyServer::kConfirm);
+            client->SetAccid(iter->second.GetAccid());
+            client->SetContext(0, id);
             result = true;
         }
     }
@@ -252,28 +252,28 @@ void LobbyServer::HandleConfirmRequest(UE4Client& client, NioInPacket& in_packet
     }
 }
 
-void LobbyServer::HandleCharacterListRequest(UE4Client& client, NioInPacket& in_packet)
+void LobbyServer::HandleCharacterListRequest(const shared_ptr<UE4Client>& client, NioInPacket& in_packet)
 {
-    if (client.GetState() != ClientState::kConfirm)
+    if (client->GetState() != ClientState::kConfirm)
         return;
     SendCharacterList(client);
 }
 
-void LobbyServer::HandleCharacterCreateRequest(UE4Client& client, NioInPacket& in_packet)
+void LobbyServer::HandleCharacterCreateRequest(const shared_ptr<UE4Client>& client, NioInPacket& in_packet)
 {
-    if (client.GetState() != ClientState::kConfirm) // log 추가
+    if (client->GetState() != ClientState::kConfirm) // log 추가
         return;
-    int32_t accid = client.GetAccid();
+    int32_t accid = client->GetAccid();
     PacketGenerateHelper::LobbyCharacterInfo info;
     PacketGenerateHelper::ReadLobbyCharacterInfo(in_packet, info);
     if (info.slot < 0 || info.slot >= slot_size) { // log 추가
-        CloseClient(client.GetUUID().ToString());
+        CloseClient(client->GetUUID().ToString());
         return;
     }
     {
         std::shared_lock lock(slot_info_lock);
-        if (slot_info_[client.GetUUID()][info.slot] != -1) {
-            CloseClient(client.GetUUID().ToString());
+        if (slot_info_[client->GetUUID()][info.slot] != -1) {
+            CloseClient(client->GetUUID().ToString());
             return;
         }
     }
@@ -292,7 +292,6 @@ void LobbyServer::HandleCharacterCreateRequest(UE4Client& client, NioInPacket& i
     info.hand_itemid = 3100001;
     info.shoes_itemid = 3200001;
     info.weapon_itemid = 3300001;
-    info.sub_weapon_itemid = 3400001;
 
     std::string name = info.name;
     auto con = ODBCConnectionPool::Instance().GetConnection();
@@ -330,15 +329,14 @@ void LobbyServer::HandleCharacterCreateRequest(UE4Client& client, NioInPacket& i
     out.WriteInt16(static_cast<int16_t>(ENetworkSCOpcode::kCharacterCreateNotify));
     if (rs->Next()) {
         rs->Close();
-        static std::array<int32_t, 5> default_items = { 3000001 , 3100001 , 3200001 ,3300001 ,3400001 };
+        static std::array<int32_t, 5> default_items = { 3000001 , 3100001 , 3200001 ,3300001 };
         info.armor_itemid = 3000001;
         info.hand_itemid = 3100001;
         info.shoes_itemid = 3200001;
         info.weapon_itemid = 3300001;
-        info.sub_weapon_itemid = 3400001;
         std::shared_lock lock(slot_info_lock);
-        slot_info_[client.GetUUID()][info.slot] = cid;
-        for (int i = 0; i < 5; ++i)
+        slot_info_[client->GetUUID()][info.slot] = cid;
+        for (int i = 0; i < default_items.size(); ++i)
         {
             ps->Close();
             ps->PrepareStatement(L"insert into inventoryitems\
@@ -355,27 +353,27 @@ void LobbyServer::HandleCharacterCreateRequest(UE4Client& client, NioInPacket& i
     }
     ps->Close();
     out.MakePacketHead();
-    client.GetSession()->AsyncSend(out, false, true);
+    client->GetSession()->AsyncSend(out, false, true);
     // 실패
 }
 
-void LobbyServer::HandleCharacterDeleteRequest(UE4Client& client, NioInPacket& in_packet)
+void LobbyServer::HandleCharacterDeleteRequest(const shared_ptr<UE4Client>& client, NioInPacket& in_packet)
 {
-    if (client.GetState() != ClientState::kConfirm)
+    if (client->GetState() != ClientState::kConfirm)
         return;
 
     int32_t slot = in_packet.ReadInt32();
     if (slot < 0 || slot > slot_size) { // log 추가
-        CloseClient(client.GetUUID().ToString());
+        CloseClient(client->GetUUID().ToString());
         return;
     }
     int32_t cid = 0;
     {
         std::shared_lock lock(slot_info_lock);
-        cid = slot_info_[client.GetUUID()][slot];
+        cid = slot_info_[client->GetUUID()][slot];
     }
     if (cid == -1) {
-        CloseClient(client.GetUUID().ToString());
+        CloseClient(client->GetUUID().ToString());
         return;
     }
     auto con = ODBCConnectionPool::Instance().GetConnection();
@@ -386,25 +384,25 @@ void LobbyServer::HandleCharacterDeleteRequest(UE4Client& client, NioInPacket& i
 
     {
         std::unique_lock lock(slot_info_lock);
-        slot_info_[client.GetUUID()][slot] = -1;
+        slot_info_[client->GetUUID()][slot] = -1;
     }
 
     UE4OutPacket out;
     out.WriteInt16(static_cast<int16_t>(ENetworkSCOpcode::kCharacterDeleteNotify));
     out.WriteInt32(slot);
     out.MakePacketHead();
-    client.GetSession()->AsyncSend(out, false, true);
+    client->GetSession()->AsyncSend(out, false, true);
 }
 
-void LobbyServer::HandleCharacterSelectRequest(UE4Client& client, NioInPacket& in_packet)
+void LobbyServer::HandleCharacterSelectRequest(const shared_ptr<UE4Client>& client, NioInPacket& in_packet)
 {
-    if (client.GetState() != ClientState::kConfirm)
+    if (client->GetState() != ClientState::kConfirm)
         return;
-    client.SetState(ClientState::kReserveToMigrate);
+    client->SetState(ClientState::kReserveToMigrate);
 
     int32_t slot = in_packet.ReadInt32();
     std::shared_lock lock(slot_info_lock);
-    if (slot < 0 || slot >= slot_size || slot_info_[client.GetUUID()][slot] == -1) {
+    if (slot < 0 || slot >= slot_size || slot_info_[client->GetUUID()][slot] == -1) {
         Clock clock;
         std::stringstream ss;
         ss << "[" << Calendar::DateTime(clock) << "] Invalid Character Select Reqeust... slot: " << slot;
@@ -412,24 +410,24 @@ void LobbyServer::HandleCharacterSelectRequest(UE4Client& client, NioInPacket& i
     }
 
     RemoteSessionInfo info;
-    info.SetAccid(client.GetAccid());
-    info.SetCid(slot_info_[client.GetUUID()][slot]);
-    auto opt_any_id = client.GetContext(0);
+    info.SetAccid(client->GetAccid());
+    info.SetCid(slot_info_[client->GetUUID()][slot]);
+    auto opt_any_id = client->GetContext(0);
     info.SetId(std::any_cast<std::string>(*opt_any_id));
-    info.SetIp(client.GetSession()->GetRemoteAddress());
+    info.SetIp(client->GetSession()->GetRemoteAddress());
 
     UE4OutPacket out;
     out.WriteInt16(static_cast<int16_t>(IntermediateServerReceivePacket::kRequestUserMigration)); // opcode
     out << static_cast<int16_t>(ServerType::kZoneServer);
-    out << client.GetUUID();
+    out << client->GetUUID();
     out << info;
     out.MakePacketHead();
     GetNioServer()->GetChannel().GetConnection(intermediate_server).Send(out);
 }
 
-void LobbyServer::SendCharacterList(UE4Client& client)
+void LobbyServer::SendCharacterList(const shared_ptr<UE4Client>& client)
 {
-    int accid = client.GetAccid();
+    int accid = client->GetAccid();
     auto con = ODBCConnectionPool::Instance().GetConnection();
 
     auto ps = con->GetPreparedStatement();
@@ -505,9 +503,6 @@ void LobbyServer::SendCharacterList(UE4Client& client)
                         case 3:
                             info.weapon_itemid = itemid;
                             break;
-                        case 4:
-                            info.sub_weapon_itemid = itemid;
-                            break;
                     }
                 }
                 PacketGenerateHelper::WriteLobbyCharacterInfo(out, info);
@@ -520,8 +515,8 @@ void LobbyServer::SendCharacterList(UE4Client& client)
         }
     }
     out.MakePacketHead();
-    client.GetSession()->AsyncSend(out, false, true);
+    client->GetSession()->AsyncSend(out, false, true);
 
     std::unique_lock lock(slot_info_lock);
-    slot_info_[client.GetUUID()] = slot_cid;
+    slot_info_[client->GetUUID()] = slot_cid;
 }

@@ -25,6 +25,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UE4IntermediateServer", "UE
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UE4Model", "UE4Model\UE4Model.vcxproj", "{61272D3E-F769-4020-A924-2D1C42169A08}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UE4Connection", "UE4Connection\UE4Connection.vcxproj", "{B0A8A7F4-E699-429F-84FE-B8D1EFBA8A2D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -97,6 +99,14 @@ Global
 		{61272D3E-F769-4020-A924-2D1C42169A08}.Release|x64.Build.0 = Release|x64
 		{61272D3E-F769-4020-A924-2D1C42169A08}.Release|x86.ActiveCfg = Release|Win32
 		{61272D3E-F769-4020-A924-2D1C42169A08}.Release|x86.Build.0 = Release|Win32
+		{B0A8A7F4-E699-429F-84FE-B8D1EFBA8A2D}.Debug|x64.ActiveCfg = Debug|x64
+		{B0A8A7F4-E699-429F-84FE-B8D1EFBA8A2D}.Debug|x64.Build.0 = Debug|x64
+		{B0A8A7F4-E699-429F-84FE-B8D1EFBA8A2D}.Debug|x86.ActiveCfg = Debug|Win32
+		{B0A8A7F4-E699-429F-84FE-B8D1EFBA8A2D}.Debug|x86.Build.0 = Debug|Win32
+		{B0A8A7F4-E699-429F-84FE-B8D1EFBA8A2D}.Release|x64.ActiveCfg = Release|x64
+		{B0A8A7F4-E699-429F-84FE-B8D1EFBA8A2D}.Release|x64.Build.0 = Release|x64
+		{B0A8A7F4-E699-429F-84FE-B8D1EFBA8A2D}.Release|x86.ActiveCfg = Release|Win32
+		{B0A8A7F4-E699-429F-84FE-B8D1EFBA8A2D}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

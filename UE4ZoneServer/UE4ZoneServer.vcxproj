@@ -159,37 +159,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="GameConstants.cpp" />
-    <ClCompile Include="Provider\CSV\EquipTableData.cpp" />
-    <ClCompile Include="Provider\CSV\MonsterTableData.cpp" />
-    <ClCompile Include="Provider\MonsterTemplateProvider.cpp" />
-    <ClCompile Include="Provider\ZoneDataProvider.cpp" />
-    <ClCompile Include="ServerConstants.cpp" />
-    <ClCompile Include="System\MatchingSystem.cpp" />
-    <ClCompile Include="System\PartySystem.cpp" />
-    <ClCompile Include="System\ZoneSystem.cpp" />
-    <ClCompile Include="ZoneServer.cpp" />
-    <ClCompile Include="zone_server_main.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="GameConstants.hpp" />
-    <ClInclude Include="Provider\CSVDataProvider.hpp" />
-    <ClInclude Include="Provider\CSV\EquipTableData.hpp" />
-    <ClInclude Include="Provider\CSV\MonsterTableData.hpp" />
-    <ClInclude Include="Provider\MonsterTemplateProvider.hpp" />
-    <ClInclude Include="Provider\ZoneDataProvider.hpp" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="ServerConstants.hpp" />
-    <ClInclude Include="System\MatchingSystem.hpp" />
-    <ClInclude Include="System\PartySystem.hpp" />
-    <ClInclude Include="System\ZoneSystem.hpp" />
-    <ClInclude Include="ZoneServer.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="UE4ZoneServer.rc" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\icon.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="zone_server_main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

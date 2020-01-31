@@ -1,125 +1,175 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Private">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
-    </Filter>
-    <Filter Include="Public">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="Public\Character">
-      <UniqueIdentifier>{9cbc2de8-10bf-4ebf-b7ed-601157cff96b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Public\Item">
-      <UniqueIdentifier>{86e7cd00-99b4-488f-b8ad-9bbeeec46588}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Public\Monster">
-      <UniqueIdentifier>{3170691a-5405-408f-8679-6562d6f76d60}</UniqueIdentifier>
-    </Filter>
+    <ClCompile Include="GameConstants.cpp" />
+    <ClCompile Include="PythonExport.cpp" />
+    <ClCompile Include="ServerConstants.cpp" />
+    <ClCompile Include="ZoneServer.cpp" />
+    <ClCompile Include="System\MatchingSystem.cpp">
+      <Filter>System</Filter>
+    </ClCompile>
+    <ClCompile Include="System\PartySystem.cpp">
+      <Filter>System</Filter>
+    </ClCompile>
+    <ClCompile Include="System\ZoneSystem.cpp">
+      <Filter>System</Filter>
+    </ClCompile>
+    <ClCompile Include="Provider\MonsterTemplateProvider.cpp">
+      <Filter>Provider</Filter>
+    </ClCompile>
+    <ClCompile Include="Provider\ZoneDataProvider.cpp">
+      <Filter>Provider</Filter>
+    </ClCompile>
+    <ClCompile Include="Provider\CSV\EquipTableData.cpp">
+      <Filter>Provider\CSV</Filter>
+    </ClCompile>
+    <ClCompile Include="Provider\CSV\MonsterTableData.cpp">
+      <Filter>Provider\CSV</Filter>
+    </ClCompile>
+    <ClCompile Include="Packet\PacketGenerator.cpp">
+      <Filter>Packet</Filter>
+    </ClCompile>
+    <ClCompile Include="Packet\PacketHelper.cpp">
+      <Filter>Packet</Filter>
+    </ClCompile>
+    <ClCompile Include="Model\PawnObject.cpp">
+      <Filter>Model</Filter>
+    </ClCompile>
+    <ClCompile Include="Model\ZoneObject.cpp">
+      <Filter>Model</Filter>
+    </ClCompile>
+    <ClCompile Include="Model\Character\Character.cpp">
+      <Filter>Model\Character</Filter>
+    </ClCompile>
+    <ClCompile Include="Model\Character\CharacterSkill.cpp">
+      <Filter>Model\Character</Filter>
+    </ClCompile>
+    <ClCompile Include="Model\Character\Equipment.cpp">
+      <Filter>Model\Character</Filter>
+    </ClCompile>
+    <ClCompile Include="Model\Character\Inventory.cpp">
+      <Filter>Model\Character</Filter>
+    </ClCompile>
+    <ClCompile Include="Model\Item\ConsumeItem.cpp">
+      <Filter>Model\Item</Filter>
+    </ClCompile>
+    <ClCompile Include="Model\Item\EquipItem.cpp">
+      <Filter>Model\Item</Filter>
+    </ClCompile>
+    <ClCompile Include="Model\Item\Item.cpp">
+      <Filter>Model\Item</Filter>
+    </ClCompile>
+    <ClCompile Include="Model\Monster\Monster.cpp">
+      <Filter>Model\Monster</Filter>
+    </ClCompile>
+    <ClCompile Include="Model\Zone.cpp">
+      <Filter>Model</Filter>
+    </ClCompile>
+    <ClCompile Include="ExportZoneServer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Public\PawnObject.cpp">
-      <Filter>Public</Filter>
-    </ClCompile>
-    <ClCompile Include="Public\ZoneObject.cpp">
-      <Filter>Public</Filter>
-    </ClCompile>
-    <ClCompile Include="Public\Character\CharacterSkill.cpp">
-      <Filter>Public\Character</Filter>
-    </ClCompile>
-    <ClCompile Include="Public\Character\Equipment.cpp">
-      <Filter>Public\Character</Filter>
-    </ClCompile>
-    <ClCompile Include="Public\Character\Inventory.cpp">
-      <Filter>Public\Character</Filter>
-    </ClCompile>
-    <ClCompile Include="Public\Item\ConsumeItem.cpp">
-      <Filter>Public\Item</Filter>
-    </ClCompile>
-    <ClCompile Include="Public\Item\EquipItem.cpp">
-      <Filter>Public\Item</Filter>
-    </ClCompile>
-    <ClCompile Include="Public\Item\Item.cpp">
-      <Filter>Public\Item</Filter>
-    </ClCompile>
-    <ClCompile Include="Public\Character\Character.cpp">
-      <Filter>Public\Character</Filter>
-    </ClCompile>
-    <ClCompile Include="Private\PythonExport.cpp">
-      <Filter>Private</Filter>
-    </ClCompile>
-    <ClCompile Include="Public\Monster\Monster.cpp">
-      <Filter>Public\Monster</Filter>
-    </ClCompile>
-    <ClCompile Include="Public\Zone.cpp">
-      <Filter>Public</Filter>
-    </ClCompile>
-    <ClCompile Include="Private\ZoneImpl.cpp">
-      <Filter>Private</Filter>
-    </ClCompile>
-    <ClCompile Include="Private\PacketHelper.cpp">
-      <Filter>Private</Filter>
-    </ClCompile>
-    <ClCompile Include="Private\PacketGenerator.cpp">
-      <Filter>Private</Filter>
-    </ClCompile>
+    <ClInclude Include="GameConstants.hpp" />
+    <ClInclude Include="ServerConstants.hpp" />
+    <ClInclude Include="ZoneServer.hpp" />
+    <ClInclude Include="System\MatchingSystem.hpp">
+      <Filter>System</Filter>
+    </ClInclude>
+    <ClInclude Include="System\PartySystem.hpp">
+      <Filter>System</Filter>
+    </ClInclude>
+    <ClInclude Include="System\PythonScriptEngine.hpp">
+      <Filter>System</Filter>
+    </ClInclude>
+    <ClInclude Include="System\ZoneSystem.hpp">
+      <Filter>System</Filter>
+    </ClInclude>
+    <ClInclude Include="Provider\CSVDataProvider.hpp">
+      <Filter>Provider</Filter>
+    </ClInclude>
+    <ClInclude Include="Provider\MonsterTemplateProvider.hpp">
+      <Filter>Provider</Filter>
+    </ClInclude>
+    <ClInclude Include="Provider\ZoneDataProvider.hpp">
+      <Filter>Provider</Filter>
+    </ClInclude>
+    <ClInclude Include="Provider\CSV\EquipTableData.hpp">
+      <Filter>Provider\CSV</Filter>
+    </ClInclude>
+    <ClInclude Include="Provider\CSV\MonsterTableData.hpp">
+      <Filter>Provider\CSV</Filter>
+    </ClInclude>
+    <ClInclude Include="Packet\PacketGenerator.hpp">
+      <Filter>Packet</Filter>
+    </ClInclude>
+    <ClInclude Include="Packet\PacketHelper.hpp">
+      <Filter>Packet</Filter>
+    </ClInclude>
+    <ClInclude Include="Model\FVector.hpp">
+      <Filter>Model</Filter>
+    </ClInclude>
+    <ClInclude Include="Model\PawnObject.hpp">
+      <Filter>Model</Filter>
+    </ClInclude>
+    <ClInclude Include="Model\ZoneObject.hpp">
+      <Filter>Model</Filter>
+    </ClInclude>
+    <ClInclude Include="Model\Character\Character.hpp">
+      <Filter>Model\Character</Filter>
+    </ClInclude>
+    <ClInclude Include="Model\Character\CharacterSkill.hpp">
+      <Filter>Model\Character</Filter>
+    </ClInclude>
+    <ClInclude Include="Model\Character\Equipment.hpp">
+      <Filter>Model\Character</Filter>
+    </ClInclude>
+    <ClInclude Include="Model\Character\Inventory.hpp">
+      <Filter>Model\Character</Filter>
+    </ClInclude>
+    <ClInclude Include="Model\Character\QuickSlot.hpp">
+      <Filter>Model\Character</Filter>
+    </ClInclude>
+    <ClInclude Include="Model\Item\ConsumeItem.hpp">
+      <Filter>Model\Item</Filter>
+    </ClInclude>
+    <ClInclude Include="Model\Item\EquipItem.hpp">
+      <Filter>Model\Item</Filter>
+    </ClInclude>
+    <ClInclude Include="Model\Item\Item.hpp">
+      <Filter>Model\Item</Filter>
+    </ClInclude>
+    <ClInclude Include="Model\Monster\Monster.hpp">
+      <Filter>Model\Monster</Filter>
+    </ClInclude>
+    <ClInclude Include="EnumClassHelper.hpp" />
+    <ClInclude Include="Model\Zone.hpp">
+      <Filter>Model</Filter>
+    </ClInclude>
+    <ClInclude Include="ExportZoneServer.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Public\PawnObject.hpp">
-      <Filter>Public</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\UE4Model.hpp">
-      <Filter>Public</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\ZoneObject.hpp">
-      <Filter>Public</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\FVector.hpp">
-      <Filter>Public</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\Character\CharacterSkill.hpp">
-      <Filter>Public\Character</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\Character\Equipment.hpp">
-      <Filter>Public\Character</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\Character\Inventory.hpp">
-      <Filter>Public\Character</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\Item\ConsumeItem.hpp">
-      <Filter>Public\Item</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\Item\EquipItem.hpp">
-      <Filter>Public\Item</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\Item\Item.hpp">
-      <Filter>Public\Item</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\Character\Character.hpp">
-      <Filter>Public\Character</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\Monster\Monster.hpp">
-      <Filter>Public\Monster</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\Zone.hpp">
-      <Filter>Public</Filter>
-    </ClInclude>
-    <ClInclude Include="Private\ZoneImpl.hpp">
-      <Filter>Private</Filter>
-    </ClInclude>
-    <ClInclude Include="Private\PacketHelper.hpp">
-      <Filter>Private</Filter>
-    </ClInclude>
-    <ClInclude Include="Private\PythonScriptEngine.hpp">
-      <Filter>Private</Filter>
-    </ClInclude>
-    <ClInclude Include="Private\PacketGenerator.hpp">
-      <Filter>Private</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\Character\QuickSlot.hpp">
-      <Filter>Public\Character</Filter>
-    </ClInclude>
+    <Filter Include="Model">
+      <UniqueIdentifier>{b81e7173-4fea-4f37-81b7-c04b254765d0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Packet">
+      <UniqueIdentifier>{640180f6-33b6-419f-ad71-da112eedf4e3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Provider">
+      <UniqueIdentifier>{23ef3554-66b6-4715-8311-946b3abf6b24}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System">
+      <UniqueIdentifier>{0f59a081-4cef-49b3-9215-33d1940250ff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Provider\CSV">
+      <UniqueIdentifier>{bcc451c8-d898-4ea8-881d-5f462d4a7fa3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Model\Character">
+      <UniqueIdentifier>{80a5d128-0000-440a-a5ea-806bf3b5ee23}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Model\Item">
+      <UniqueIdentifier>{d1fdd0f9-9d38-46ee-9c69-0164ed40901c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Model\Monster">
+      <UniqueIdentifier>{698bf736-a115-40bf-bcb9-8b867ac19432}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>

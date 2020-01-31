@@ -1,4 +1,4 @@
 #pragma once
-#include "Stream/Interface.hpp"
+#include "Stream/ISerializable.hpp"
 #include "Stream/InputStream.hpp"
 #include "Stream/OutputStream.hpp"

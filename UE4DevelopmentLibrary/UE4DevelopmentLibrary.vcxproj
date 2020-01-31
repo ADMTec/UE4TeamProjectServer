@@ -233,9 +233,8 @@ copy "Utility\*.hpp" "..\include\$(ProjectName)\Utility\"</Command>
     <ClInclude Include="Stream.hpp" />
     <ClInclude Include="Stream\ByteStream.hpp" />
     <ClInclude Include="Stream\InputStream.hpp" />
-    <ClInclude Include="Stream\Interface.hpp" />
+    <ClInclude Include="Stream\ISerializable.hpp" />
     <ClInclude Include="Stream\OutputStream.hpp" />
-    <ClInclude Include="Stream\StreamBase.hpp" />
     <ClInclude Include="Thread.hpp" />
     <ClInclude Include="Thread\Barrier.hpp" />
     <ClInclude Include="Thread\JoinThread.hpp" />

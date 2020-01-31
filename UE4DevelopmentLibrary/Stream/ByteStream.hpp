@@ -1,6 +1,7 @@
 #pragma once
-#include "StreamBase.hpp"
-#include "Interface.hpp"
+#include <cstdint>
+#include <string>
+#include "ISerializable.hpp"
 
 class ByteStream
 {

@@ -33,13 +33,13 @@ public:
     virtual void OnCloseClient(UE4Client& client);
     virtual void OnProcessPacket(const shared_ptr<UE4Client>& client, const shared_ptr<NioInPacket>& in_packet);
 private:
-    void HandleConfirmRequest(UE4Client& client, NioInPacket& in_packet);
-    void HandleCharacterListRequest(UE4Client& client, NioInPacket& in_packet);
-    void HandleCharacterCreateRequest(UE4Client& client, NioInPacket& in_packet);
-    void HandleCharacterDeleteRequest(UE4Client& client, NioInPacket& in_packet);
-    void HandleCharacterSelectRequest(UE4Client& client, NioInPacket& in_packet);
+    void HandleConfirmRequest(const shared_ptr<UE4Client>& client, NioInPacket& in_packet);
+    void HandleCharacterListRequest(const shared_ptr<UE4Client>& client, NioInPacket& in_packet);
+    void HandleCharacterCreateRequest(const shared_ptr<UE4Client>& client, NioInPacket& in_packet);
+    void HandleCharacterDeleteRequest(const shared_ptr<UE4Client>& client, NioInPacket& in_packet);
+    void HandleCharacterSelectRequest(const shared_ptr<UE4Client>& client, NioInPacket& in_packet);
 private:
-    void SendCharacterList(UE4Client& client);
+    void SendCharacterList(const shared_ptr<UE4Client>& client);
 private:
     TextFileLineReader reader_;
     RemoteServerInfo this_info_;

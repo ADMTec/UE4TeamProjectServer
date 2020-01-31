@@ -18,6 +18,64 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="ExportZoneServer.cpp" />
+    <ClCompile Include="GameConstants.cpp" />
+    <ClCompile Include="Model\Character\Character.cpp" />
+    <ClCompile Include="Model\Character\CharacterSkill.cpp" />
+    <ClCompile Include="Model\Character\Equipment.cpp" />
+    <ClCompile Include="Model\Character\Inventory.cpp" />
+    <ClCompile Include="Model\Item\ConsumeItem.cpp" />
+    <ClCompile Include="Model\Item\EquipItem.cpp" />
+    <ClCompile Include="Model\Item\Item.cpp" />
+    <ClCompile Include="Model\Monster\Monster.cpp" />
+    <ClCompile Include="Model\PawnObject.cpp" />
+    <ClCompile Include="Model\Zone.cpp" />
+    <ClCompile Include="Model\ZoneObject.cpp" />
+    <ClCompile Include="Packet\PacketGenerator.cpp" />
+    <ClCompile Include="Packet\PacketHelper.cpp" />
+    <ClCompile Include="Provider\CSV\EquipTableData.cpp" />
+    <ClCompile Include="Provider\CSV\MonsterTableData.cpp" />
+    <ClCompile Include="Provider\MonsterTemplateProvider.cpp" />
+    <ClCompile Include="Provider\ZoneDataProvider.cpp" />
+    <ClCompile Include="PythonExport.cpp" />
+    <ClCompile Include="ServerConstants.cpp" />
+    <ClCompile Include="System\MatchingSystem.cpp" />
+    <ClCompile Include="System\PartySystem.cpp" />
+    <ClCompile Include="System\ZoneSystem.cpp" />
+    <ClCompile Include="ZoneServer.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="EnumClassHelper.hpp" />
+    <ClInclude Include="ExportZoneServer.hpp" />
+    <ClInclude Include="GameConstants.hpp" />
+    <ClInclude Include="Model\Character\Character.hpp" />
+    <ClInclude Include="Model\Character\CharacterSkill.hpp" />
+    <ClInclude Include="Model\Character\Equipment.hpp" />
+    <ClInclude Include="Model\Character\Inventory.hpp" />
+    <ClInclude Include="Model\Character\QuickSlot.hpp" />
+    <ClInclude Include="Model\FVector.hpp" />
+    <ClInclude Include="Model\Item\ConsumeItem.hpp" />
+    <ClInclude Include="Model\Item\EquipItem.hpp" />
+    <ClInclude Include="Model\Item\Item.hpp" />
+    <ClInclude Include="Model\Monster\Monster.hpp" />
+    <ClInclude Include="Model\PawnObject.hpp" />
+    <ClInclude Include="Model\Zone.hpp" />
+    <ClInclude Include="Model\ZoneObject.hpp" />
+    <ClInclude Include="Packet\PacketGenerator.hpp" />
+    <ClInclude Include="Packet\PacketHelper.hpp" />
+    <ClInclude Include="Provider\CSVDataProvider.hpp" />
+    <ClInclude Include="Provider\CSV\EquipTableData.hpp" />
+    <ClInclude Include="Provider\CSV\MonsterTableData.hpp" />
+    <ClInclude Include="Provider\MonsterTemplateProvider.hpp" />
+    <ClInclude Include="Provider\ZoneDataProvider.hpp" />
+    <ClInclude Include="ServerConstants.hpp" />
+    <ClInclude Include="System\MatchingSystem.hpp" />
+    <ClInclude Include="System\PartySystem.hpp" />
+    <ClInclude Include="System\PythonScriptEngine.hpp" />
+    <ClInclude Include="System\ZoneSystem.hpp" />
+    <ClInclude Include="ZoneServer.hpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <ProjectGuid>{61272D3E-F769-4020-A924-2D1C42169A08}</ProjectGuid>
@@ -104,10 +162,7 @@
       <AdditionalDependencies>python37.lib;UE4DevelopmentLibrary.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>copy "Public\*.hpp" "..\include\$(ProjectName)\"
-copy "Public\Character\*.hpp" "..\include\$(ProjectName)\Character\"
-copy "Public\Item\*.hpp" "..\include\$(ProjectName)\Item\"
-copy "Public\Monster\*.hpp" "..\include\$(ProjectName)\Monster\"</Command>
+      <Command>copy "ExportZoneServer.hpp" "..\include\$(ProjectName)\"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -128,10 +183,7 @@ copy "Public\Monster\*.hpp" "..\include\$(ProjectName)\Monster\"</Command>
       <AdditionalDependencies>python37.lib;UE4DevelopmentLibrary.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>copy "Public\*.hpp" "..\include\$(ProjectName)\"
-copy "Public\Character\*.hpp" "..\include\$(ProjectName)\Character\"
-copy "Public\Item\*.hpp" "..\include\$(ProjectName)\Item\"
-copy "Public\Monster\*.hpp" "..\include\$(ProjectName)\Monster\"</Command>
+      <Command>copy "ExportZoneServer.hpp" "..\include\$(ProjectName)\"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -156,10 +208,7 @@ copy "Public\Monster\*.hpp" "..\include\$(ProjectName)\Monster\"</Command>
       <AdditionalDependencies>python37.lib;UE4DevelopmentLibrary.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>copy "Public\*.hpp" "..\include\$(ProjectName)\"
-copy "Public\Character\*.hpp" "..\include\$(ProjectName)\Character\"
-copy "Public\Item\*.hpp" "..\include\$(ProjectName)\Item\"
-copy "Public\Monster\*.hpp" "..\include\$(ProjectName)\Monster\"</Command>
+      <Command>copy "ExportZoneServer.hpp" "..\include\$(ProjectName)\"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -184,49 +233,9 @@ copy "Public\Monster\*.hpp" "..\include\$(ProjectName)\Monster\"</Command>
       <AdditionalDependencies>python37.lib;UE4DevelopmentLibrary.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>copy "Public\*.hpp" "..\include\$(ProjectName)\"
-copy "Public\Character\*.hpp" "..\include\$(ProjectName)\Character\"
-copy "Public\Item\*.hpp" "..\include\$(ProjectName)\Item\"
-copy "Public\Monster\*.hpp" "..\include\$(ProjectName)\Monster\"</Command>
+      <Command>copy "ExportZoneServer.hpp" "..\include\$(ProjectName)\"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="Private\PacketGenerator.cpp" />
-    <ClCompile Include="Private\PacketHelper.cpp" />
-    <ClCompile Include="Private\PythonExport.cpp" />
-    <ClCompile Include="Private\ZoneImpl.cpp" />
-    <ClCompile Include="Public\Character\Character.cpp" />
-    <ClCompile Include="Public\Character\CharacterSkill.cpp" />
-    <ClCompile Include="Public\Character\Equipment.cpp" />
-    <ClCompile Include="Public\Character\Inventory.cpp" />
-    <ClCompile Include="Public\Item\Item.cpp" />
-    <ClCompile Include="Public\Item\ConsumeItem.cpp" />
-    <ClCompile Include="Public\Item\EquipItem.cpp" />
-    <ClCompile Include="Public\Monster\Monster.cpp" />
-    <ClCompile Include="Public\PawnObject.cpp" />
-    <ClCompile Include="Public\Zone.cpp" />
-    <ClCompile Include="Public\ZoneObject.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Private\PacketGenerator.hpp" />
-    <ClInclude Include="Private\PacketHelper.hpp" />
-    <ClInclude Include="Private\PythonScriptEngine.hpp" />
-    <ClInclude Include="Private\ZoneImpl.hpp" />
-    <ClInclude Include="Public\Character\Character.hpp" />
-    <ClInclude Include="Public\Character\QuickSlot.hpp" />
-    <ClInclude Include="Public\Character\CharacterSkill.hpp" />
-    <ClInclude Include="Public\Character\Equipment.hpp" />
-    <ClInclude Include="Public\Character\Inventory.hpp" />
-    <ClInclude Include="Public\FVector.hpp" />
-    <ClInclude Include="Public\Item\Item.hpp" />
-    <ClInclude Include="Public\Item\ConsumeItem.hpp" />
-    <ClInclude Include="Public\Item\EquipItem.hpp" />
-    <ClInclude Include="Public\Monster\Monster.hpp" />
-    <ClInclude Include="Public\PawnObject.hpp" />
-    <ClInclude Include="Public\UE4Model.hpp" />
-    <ClInclude Include="Public\Zone.hpp" />
-    <ClInclude Include="Public\ZoneObject.hpp" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

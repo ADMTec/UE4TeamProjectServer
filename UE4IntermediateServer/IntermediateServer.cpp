@@ -110,16 +110,16 @@ void IntermediateServer::OnProcessPacket(const shared_ptr<UE4Client>& client, co
                 HandleRegisterServer(client, *in_packet);
                 break;
             case IntermediateServerReceivePacket::kUpdateServerConnection:
-                UpdateServerConnection(*client, *in_packet);
+                UpdateServerConnection(client, *in_packet);
                 break;
             case IntermediateServerReceivePacket::kRequestUserMigration:
-                HandleRequestUserMigration(*client, *in_packet);
+                HandleRequestUserMigration(client, *in_packet);
                 break;
             case IntermediateServerReceivePacket::kReactSessionAuthorityInfo:
-                HandleReactSessionAuthorityInfo(*client, *in_packet);
+                HandleReactSessionAuthorityInfo(client, *in_packet);
                 break;
             case IntermediateServerReceivePacket::kNotifyUserLogout:
-                HandleNotifiyUserLogout(*client, *in_packet);
+                HandleNotifiyUserLogout(client, *in_packet);
                 break;
         }
     } catch (const std::exception & e) {
@@ -142,17 +142,17 @@ void IntermediateServer::HandleRegisterServer(const shared_ptr<UE4Client>& clien
     server_map_.emplace(client->GetUUID().ToString(), info);
 }
 
-void IntermediateServer::UpdateServerConnection(UE4Client& client, NioInPacket& packet)
+void IntermediateServer::UpdateServerConnection(const shared_ptr<UE4Client>& client, NioInPacket& packet)
 {
     int64_t current_connection = packet.ReadInt64();
     std::shared_lock lock(data_guard_);
-    auto iter = server_map_.find(client.GetUUID().ToString());
+    auto iter = server_map_.find(client->GetUUID().ToString());
     if (iter != server_map_.end()) {
         iter->second.SetCurrentConnection(current_connection);
     }
 }
 
-void IntermediateServer::HandleRequestUserMigration(UE4Client& client, NioInPacket& packet)
+void IntermediateServer::HandleRequestUserMigration(const shared_ptr<UE4Client>& client, NioInPacket& packet)
 {
     int16_t type = packet.ReadInt16();
     std::string user_uuid = packet.ReadString();
@@ -181,7 +181,7 @@ void IntermediateServer::HandleRequestUserMigration(UE4Client& client, NioInPack
             UE4OutPacket out;
             out.WriteInt16(static_cast<int16_t>(
                 IntermediateServerSendPacket::kNotifySessionAuthorityInfo));
-            out << client.GetUUID().ToString();
+            out << client->GetUUID().ToString();
             out << user_uuid;
             out << authority_info;
             out.MakePacketHead();
@@ -191,14 +191,14 @@ void IntermediateServer::HandleRequestUserMigration(UE4Client& client, NioInPack
     }
 }
 
-void IntermediateServer::HandleReactSessionAuthorityInfo(UE4Client& client, NioInPacket& packet)
+void IntermediateServer::HandleReactSessionAuthorityInfo(const shared_ptr<UE4Client>& client, NioInPacket& packet)
 {
     std::string server_uuid = packet.ReadString();
     std::string user_uuid = packet.ReadString();
     {
         std::shared_lock lock(data_guard_);
         auto origin = server_map_.find(server_uuid);
-        auto dest = server_map_.find(client.GetUUID().ToString());
+        auto dest = server_map_.find(client->GetUUID().ToString());
         if(origin != server_map_.end() && dest != server_map_.end()) {
             auto client = origin->second.GetWeak().lock();
             if (client) {
@@ -214,7 +214,7 @@ void IntermediateServer::HandleReactSessionAuthorityInfo(UE4Client& client, NioI
     }
 }
 
-void IntermediateServer::HandleNotifiyUserLogout(UE4Client& client, NioInPacket& packet)
+void IntermediateServer::HandleNotifiyUserLogout(const shared_ptr<UE4Client>& client, NioInPacket& packet)
 {
     int32_t accid = packet.ReadInt32();
     auto con = ODBCConnectionPool::Instance().GetConnection();

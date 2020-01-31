@@ -25,7 +25,6 @@ public:
         int32_t hand_itemid = -1;
         int32_t shoes_itemid = -1;
         int32_t weapon_itemid = -1;
-        int32_t sub_weapon_itemid = -1;
     };
 public:
     static void WriteLobbyCharacterInfo(class OutputStream& output, const LobbyCharacterInfo& info);

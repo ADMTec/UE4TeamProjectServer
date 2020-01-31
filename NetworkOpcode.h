@@ -45,4 +45,6 @@ enum class ENetworkSCOpcode : uint16_t
 
     kInventoryUpdate,
     kQuickSlotUpdate,
+
+    kUserChatting,
 };

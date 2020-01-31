@@ -22,7 +22,6 @@ void PacketGenerateHelper::WriteLobbyCharacterInfo(OutputStream& output, const L
     output << info.hand_itemid;
     output << info.shoes_itemid;
     output << info.weapon_itemid;
-    output << info.sub_weapon_itemid;
     output << info.gender;
 }
 
@@ -48,7 +47,6 @@ void PacketGenerateHelper::ReadLobbyCharacterInfo(InputStream& input, LobbyChara
     input >> info.hand_itemid;
     input >> info.shoes_itemid;
     input >> info.weapon_itemid;
-    input >> info.sub_weapon_itemid;
     input >> info.gender;
 
     memset(info.name, 0, 100);

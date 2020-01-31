@@ -46,17 +46,11 @@
     <ClInclude Include="Stream\OutputStream.hpp">
       <Filter>Stream</Filter>
     </ClInclude>
-    <ClInclude Include="Stream\StreamBase.hpp">
-      <Filter>Stream</Filter>
-    </ClInclude>
     <ClInclude Include="Time\Calendar.hpp">
       <Filter>Time</Filter>
     </ClInclude>
     <ClInclude Include="Time\Clock.hpp">
       <Filter>Time</Filter>
-    </ClInclude>
-    <ClInclude Include="Stream\Interface.hpp">
-      <Filter>Stream</Filter>
     </ClInclude>
     <ClInclude Include="Nio\Private\NioContext.hpp">
       <Filter>Nio\Private</Filter>
@@ -166,6 +160,9 @@
     </ClInclude>
     <ClInclude Include="Server\UE4EventHandler.hpp">
       <Filter>Server</Filter>
+    </ClInclude>
+    <ClInclude Include="Stream\ISerializable.hpp">
+      <Filter>Stream</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

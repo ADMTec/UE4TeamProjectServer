@@ -24,8 +24,8 @@ public:
     virtual void OnCloseClient(UE4Client& client);
     virtual void OnProcessPacket(const shared_ptr<UE4Client>& client, const shared_ptr<NioInPacket>& in_packet);
 private:
-    void HandleCreateAccountRquest(UE4Client& client, NioInPacket& in_packet);
-    void HandleLoginRequest(UE4Client& client, NioInPacket& in_packet);
+    void HandleCreateAccountRquest(const shared_ptr<UE4Client>& client, NioInPacket& in_packet);
+    void HandleLoginRequest(const shared_ptr<UE4Client>& client, NioInPacket& in_packet);
 private:
     TextFileLineReader reader_;
     RemoteServerInfo this_info_;
