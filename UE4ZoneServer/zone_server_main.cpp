@@ -28,6 +28,7 @@ int main()
         ZoneServer::Instance().Initialize();
         ZoneServer::Instance().Run();
         ZoneServer::Instance().Stop();
+        ZoneSystem::Release();
     } catch (const std::exception & e) {
         std::cout << e.what();
     }

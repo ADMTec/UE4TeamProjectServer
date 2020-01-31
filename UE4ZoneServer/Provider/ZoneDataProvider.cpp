@@ -48,6 +48,9 @@ void ZoneDataProvider::Initialize()
                         data.spawn_point.emplace_back(
                             sp["type"], sp["id"], sp["x"], sp["y"], sp["z"], sp["rx"], sp["ry"], sp["rz"]);
                 }
+                data.player_spawn.x   = map_data["PlayerSpawn"]["x"];
+                data.player_spawn.y = map_data["PlayerSpawn"]["y"];
+                data.player_spawn.z = map_data["PlayerSpawn"]["z"];
                 zone_data_.emplace(data.map_id, data);
             } catch (const std::exception & e) {
                 std::stringstream ss;

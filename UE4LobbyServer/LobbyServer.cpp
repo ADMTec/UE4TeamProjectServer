@@ -384,6 +384,11 @@ void LobbyServer::HandleCharacterDeleteRequest(UE4Client& client, NioInPacket& i
     ps->SetInt32(1, &cid);
     ps->ExecuteUpdate();
 
+    {
+        std::unique_lock lock(slot_info_lock);
+        slot_info_[client.GetUUID()][slot] = -1;
+    }
+
     UE4OutPacket out;
     out.WriteInt16(static_cast<int16_t>(ENetworkSCOpcode::kCharacterDeleteNotify));
     out.WriteInt32(slot);

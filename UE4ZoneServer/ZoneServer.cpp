@@ -57,13 +57,14 @@ void ZoneServer::Initialize()
                     auto iter = authority_map_.find(info.GetId());
                     if (iter != authority_map_.end()) {
                         if (iter->second.GetClock().to_int64_t() == info.GetClock().to_int64_t()) {
-                            authority_map_.erase(iter);
+                            //authority_map_.erase(iter);
                         }
                     }
                 }, std::chrono::milliseconds(3000));
         }
     );
     town_ = ZoneSystem::CreateNewInstance(100);
+    town_->SetState(Zone::State::kActive);
 }
 
 void ZoneServer::Run()
@@ -143,12 +144,12 @@ void ZoneServer::ConnectChannel()
 void ZoneServer::OnActiveClient(UE4Client& client)
 {
     client.SetState(ClientState::kNotConfirm);
-    GetNioServer()->CreateTimer([uuid = client.GetUUID(), this]() {
-        auto client = this->GetClient(uuid.ToString());
-        if (client && client->GetState() == ClientState::kNotConfirm) {
-            this->CloseClient(uuid.ToString());
-        }
-    }, std::chrono::milliseconds(1000));
+    //GetNioServer()->CreateTimer([uuid = client.GetUUID(), this]() {
+    //    auto client = this->GetClient(uuid.ToString());
+    //    if (client && client->GetState() == ClientState::kNotConfirm) {
+    //        this->CloseClient(uuid.ToString());
+    //    }
+    //}, std::chrono::milliseconds(1000));
 }
 
 void ZoneServer::OnCloseClient(UE4Client& client)
@@ -156,7 +157,7 @@ void ZoneServer::OnCloseClient(UE4Client& client)
     if (client.GetState() == ClientState::kConfirm) {
         auto any_chr = client.GetContext(ToInt32(ClientContextKey::kCharacter));
         if (any_chr.has_value()) {
-            std::shared_ptr<Character> chr = std::any_cast<std::shared_ptr<Character>>(chr);
+            std::shared_ptr<Character> chr = std::any_cast<std::shared_ptr<Character>>(*any_chr);
             auto zone = chr->GetZone();
             // zone에 없애기
             chr->SetZone(nullptr);
@@ -181,6 +182,7 @@ void ZoneServer::OnProcessPacket(const shared_ptr<UE4Client>& client, const shar
                 HandleConfirmRequest(client, *in_packet);
                 break;
             case ENetworkCSOpcode::kNotifyCurrentChrPosition:
+                HandleChrPositionNotify(*client, *in_packet);
                 break;
         }
     } catch (const std::exception & e) {
@@ -223,7 +225,7 @@ void ZoneServer::HandleConfirmRequest(const shared_ptr<UE4Client>& client, NioIn
     bool result{ false };
     try {
         chr->Initialize(*ODBCConnectionPool::Instance().GetConnection());
-        chr->SetWeakClient(client);
+        chr->SetClient(client.get());
         client->SetContext(ToInt32(ClientContextKey::kCharacter), chr);
         result = true;
     }
@@ -234,6 +236,27 @@ void ZoneServer::HandleConfirmRequest(const shared_ptr<UE4Client>& client, NioIn
         CloseClient(client->GetUUID().ToString());
     } else {
         chr->SetZone(town_);
+        Location spawn = town_->GetPlayerSpawn();
+        chr->GetLocation().x = spawn.x + (rand() % 100);
+        chr->GetLocation().y = spawn.y + (rand() % 100);
+        chr->GetLocation().z = spawn.z;
+        chr->GetRotation().x = 0.0;
+        chr->GetRotation().y = 0.0;
+        chr->GetRotation().z = 0.0;
         town_->SpawnPlayer(chr);
+    }
+}
+
+void ZoneServer::HandleChrPositionNotify(UE4Client& client, NioInPacket& in_packet)
+{
+    if (client.GetState() != kConfirm) {
+        return;
+    }
+    auto chr = std::any_cast<std::shared_ptr<Character>>(*client.GetContext(ToInt32(ClientContextKey::kCharacter)));
+    if (chr) {
+        int value = in_packet.ReadInt32();
+        chr->GetLocation().Read(in_packet);
+        chr->GetRotation().Read(in_packet);
+        chr->GetZone()->BroadCast()
     }
 }

@@ -1,6 +1,39 @@
 #include "ZoneImpl.hpp"
 #include "UE4DevelopmentLibrary/Server.hpp"
+#include "UE4DevelopmentLibrary/Time.hpp"
+#include "PacketGenerator.hpp"
 
+
+ZoneImpl::ZoneImpl()
+    : state_(Zone::State::kPreparing), instance_id_(-1), map_id_(-1), type_(Zone::Type::kCount), last_object_id_(0)
+{
+}
+
+void ZoneImpl::StartUp()
+{
+}
+
+void ZoneImpl::Update()
+{
+    Clock clock;
+    int64_t clock_int64 = clock.to_int64_t();
+    time_sum_ += clock_int64 - last_update_time_;
+
+    if (time_sum_ >= 1000)
+    {
+        std::shared_lock lock(object_guard_[ToInt32(ZoneObject::Type::kCharacter)]);
+        for (const auto& chr_pair : chrs_) {
+            chr_pair.second->RecoveryPerSecond();
+        }
+
+        time_sum_ -= 1000;
+    }
+    last_update_time_ = clock_int64;
+}
+
+void ZoneImpl::Exit()
+{
+}
 
 void ZoneImpl::AddMonster(Monster& mob, Location location, Rotation rotation)
 {
@@ -20,22 +53,42 @@ void ZoneImpl::AddNPC(int32_t npc, Location location, Rotation rotation)
     std::unique_lock lock(object_guard_[ToInt32(ZoneObject::Type::kNpc)]);
 }
 
+void ZoneImpl::UpdateCharacterPosition(Character& chr, int32_t value)
+{
+    UE4OutPacket out(UE4OutPacket::AllocBufferLength::k64Bytes);
+    PacketGenerator::CharacterLocation(out, chr, value);
+    this->BroadCast(out, chr.GetObjectId());
+}
+
 void ZoneImpl::SpawnPlayer(const std::shared_ptr<class Character>& chr)
 {
     chr->SetObjectId(GetNewObjectId());
-    // chr에 location set;
-    std::unique_lock lock(object_guard_[ToInt32(ZoneObject::Type::kCharacter)]);
-
-    // broadcast - chr data
-    // chr의 clint에다가 map 데이터 전송
-    // map.emplace
-    chrs_.emplace(chr->GetObjectId(), chr);
+    UE4OutPacket out(UE4OutPacket::AllocBufferLength::k1024Bytes);
+    PacketGenerator::UserEnterTheMap(out, *this, *chr);
+    out.MakePacketHead();
+    auto client = chr->GetClient();
+    if (client) {
+        client->GetSession()->AsyncSend(out, false, true);
+    }
+    {
+        UE4OutPacket out(UE4OutPacket::AllocBufferLength::k512Bytes);
+        std::unique_lock lock(object_guard_[ToInt32(ZoneObject::Type::kCharacter)]);
+        PacketGenerator::SpawnCharacter(out, *chr);
+        this->BroadCastNoLock(out, chr->GetObjectId());
+        chrs_.emplace(chr->GetObjectId(), chr);
+    }
 }
 
 void ZoneImpl::SpawnMonster(Monster& mob, Location location, Rotation rotation)
 {
     AddMonster(mob, location, rotation);
     // notify
+
+    UE4OutPacket out;
+    PacketGenerator::SpawnMonster(out, mob);
+    out.MakePacketHead();
+
+    BroadCast(out);
 }
 
 void ZoneImpl::SpawnNPC(int32_t npc, Location location, Rotation rotation)
@@ -51,24 +104,26 @@ void ZoneImpl::AttackMonster(const Character& chr, int64_t mob_obj_id)
 void ZoneImpl::BroadCast(class NioOutPacket& outpacket)
 {
     std::shared_lock lock(object_guard_[ToInt32(ZoneObject::Type::kCharacter)]);
-    for (const auto& chr : chrs_) {
-        auto client = chr.second->GetClient();
-        if (client) {
-            client->GetSession()->AsyncSend(outpacket, false, true);
-        }
-    }
+    BroadCastNoLock(outpacket);
 }
 
 void ZoneImpl::BroadCast(class NioOutPacket& outpacket, int64_t except_chr_oid)
 {
     std::shared_lock lock(object_guard_[ToInt32(ZoneObject::Type::kCharacter)]);
-    for (const auto& chr : chrs_) {
-        if (chr.first == except_chr_oid)
-            continue;
-        auto client = chr.second->GetClient();
-        if (client) {
-            client->GetSession()->AsyncSend(outpacket, false, true);
-        }
+    BroadCastNoLock(outpacket, except_chr_oid);
+}
+
+Zone::State ZoneImpl::GetState() const
+{
+    return state_;
+}
+
+void ZoneImpl::SetState(Zone::State state)
+{
+    state_ = state;
+    if (state == Zone::State::kActive) {
+        Clock clock;
+        last_update_time_ = clock.to_int64_t();
     }
 }
 
@@ -102,6 +157,11 @@ void ZoneImpl::SetType(Zone::Type type)
     type_ = type;
 }
 
+Location ZoneImpl::GetPlayerSpawn() const
+{
+    return player_spawn_;
+}
+
 void ZoneImpl::SetPlayerSpawn(Location location)
 {
     player_spawn_ = location;
@@ -132,4 +192,26 @@ std::vector<Monster> ZoneImpl::GetMonsterCopy() const
 int64_t ZoneImpl::GetNewObjectId()
 {
     return last_object_id_.fetch_add(1);
+}
+
+void ZoneImpl::BroadCastNoLock(NioOutPacket& outpacket)
+{
+    for (const auto& chr : chrs_) {
+        auto client = chr.second->GetClient();
+        if (client) {
+            client->GetSession()->AsyncSend(outpacket, false, true);
+        }
+    }
+}
+
+void ZoneImpl::BroadCastNoLock(NioOutPacket& outpacket, int64_t except_chr_oid)
+{
+    for (const auto& chr : chrs_) {
+        if (chr.first == except_chr_oid)
+            continue;
+        auto client = chr.second->GetClient();
+        if (client) {
+            client->GetSession()->AsyncSend(outpacket, false, true);
+        }
+    }
 }

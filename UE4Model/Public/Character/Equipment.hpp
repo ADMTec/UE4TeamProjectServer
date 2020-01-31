@@ -15,7 +15,7 @@ public:
         kHand = 1,
         kShoes = 2,
         kWeapon = 3,
-        kCount = 5,
+        kCount = 4,
     };
 public:
     bool HasEquipItem(Equipment::Position pos);

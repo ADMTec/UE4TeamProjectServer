@@ -30,6 +30,7 @@ public:
     virtual void OnProcessPacket(const shared_ptr<UE4Client>& client, const shared_ptr<NioInPacket>& in_packet);
 private:
     void HandleConfirmRequest(const shared_ptr<UE4Client>& client, NioInPacket& in_packet);
+    void HandleChrPositionNotify(UE4Client& client, NioInPacket& in_packet);
 private:
     std::mutex session_authority_guard_;
     unordered_map<RemoteSessionInfo::id_t, RemoteSessionInfo> authority_map_;

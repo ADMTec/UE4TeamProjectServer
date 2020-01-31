@@ -5,15 +5,31 @@
 
 
 std::shared_mutex ZoneSystem::map_guard_;
-std::unordered_map<int64_t, std::shared_ptr<Zone>> ZoneSystem::map_;
-
+std::vector<std::shared_ptr<Zone>> ZoneSystem::maps_;
+std::thread ZoneSystem::zone_update_thread_;
+std::atomic<bool> ZoneSystem::zone_update_thread_exit_flag_ = false;
 
 void ZoneSystem::Initialize()
 {
+    zone_update_thread_ = std::thread(
+        []() {
+            while (zone_update_thread_exit_flag_.load() == false)
+            {
+                std::shared_lock lock(map_guard_);
+                size_t size = maps_.size();
+                for (size_t i = 0; i < size; ++i) {
+                    if (maps_[i]->GetState() == Zone::State::kActive) {
+                        maps_[i]->Update();
+                    }
+                }
+            }
+        });
 }
 
 void ZoneSystem::Release()
 {
+    zone_update_thread_exit_flag_.store(true);
+    zone_update_thread_.join();
 }
 
 std::shared_ptr<Zone> ZoneSystem::CreateNewInstance(int32_t mapid)
@@ -43,25 +59,40 @@ std::shared_ptr<Zone> ZoneSystem::CreateNewInstance(int32_t mapid)
             // ...
         }
     }
+    zone->StartUp();
     {
         std::unique_lock lock(map_guard_);
-        map_.emplace(zone->GetInstanceId(), zone);
+        maps_.emplace_back(zone);
     }
     return zone;
 }
 
 void ZoneSystem::DestoryInstance(int64_t instance_id)
 {
-    std::unique_lock lock(map_guard_);
-    map_.erase(instance_id);
+    std::shared_ptr<Zone> zone = nullptr;
+    {
+        std::unique_lock lock(map_guard_);
+        auto iter = std::find_if(maps_.begin(), maps_.end(),
+            [instance_id](const std::shared_ptr<Zone>& zone) {
+                return zone->GetInstanceId() == instance_id;
+            });
+        if (iter != maps_.end()) {
+            zone = *iter;
+            maps_.erase(iter);
+        }
+    }
+    zone->Exit();
 }
 
 std::shared_ptr<Zone> ZoneSystem::GetInstance(int64_t instance_id)
 {
     std::shared_lock lock(map_guard_);
-    auto iter = map_.find(instance_id);
-    if (iter != map_.end()) {
-        return iter->second;
+    auto iter = std::find_if(maps_.begin(), maps_.end(),
+        [instance_id](const std::shared_ptr<Zone>& zone) {
+            return zone->GetInstanceId() == instance_id;
+        });
+    if (iter != maps_.end()) {
+        return *iter;
     }
     return nullptr;
 }

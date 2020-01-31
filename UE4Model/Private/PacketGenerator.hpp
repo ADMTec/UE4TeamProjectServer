@@ -13,6 +13,10 @@ public:
     // kUserEnterTheMap
     static void UserEnterTheMap(OutputStream& out, ZoneImpl& zone, Character& chr);
 
+    // SpawnCharacter
+    static void SpawnCharacter(OutputStream& out, Character& chr);
+    static void CharacterLocation(OutputStream& out, Character& chr, int add);
+
     // kInventoryUpdate
     static void ItemAcquire(OutputStream& out, int32_t inventory_slot, Item* item, int32_t count);
     static void ItemDelete(OutputStream& out, int32_t inventory_slot);

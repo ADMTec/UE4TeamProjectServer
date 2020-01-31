@@ -12,9 +12,7 @@ void PacketGenerator::UserEnterTheMap(OutputStream& out, ZoneImpl& zone, Charact
     PacketHelper::WriteCharacterInventory(out, chr.GetInventory(), chr.GetGold());
     
     // QuickSlot
-    int i = 0;
     for (const auto& quick_slot : chr.GetQuickSlot()) {
-        out << i++;
         PacketHelper::WriteQuickSlot(out, quick_slot);
     }
 
@@ -22,6 +20,21 @@ void PacketGenerator::UserEnterTheMap(OutputStream& out, ZoneImpl& zone, Charact
     // Quest
 
     PacketHelper::WriteMapData(out, zone);
+}
+
+void PacketGenerator::SpawnCharacter(OutputStream& out, Character& chr)
+{
+    out.WriteInt16(static_cast<int16_t>(ENetworkSCOpcode::kSpawnCharacter));
+    PacketHelper::WriteBaseCharacter(out, chr);
+}
+
+void PacketGenerator::CharacterLocation(OutputStream& out, Character& chr, int add)
+{
+    out.WriteInt16(static_cast<int16_t>(ENetworkSCOpcode::kUpdateCharacterPosition));
+    out << chr.GetObjectId();
+    out << add;
+    out << chr.GetLocation();
+    out << chr.GetRotation();
 }
 
 enum InventoryUpdatetype {

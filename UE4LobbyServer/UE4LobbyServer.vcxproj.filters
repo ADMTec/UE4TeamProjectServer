@@ -14,7 +14,9 @@
   <ItemGroup>
     <ClInclude Include="LobbyServer.hpp" />
     <ClInclude Include="PacketGenerateHelper.hpp" />
-    <ClInclude Include="resource.h" />
+    <ClInclude Include="resource.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="UE4LobbyServer.rc">

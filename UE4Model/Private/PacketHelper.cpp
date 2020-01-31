@@ -22,9 +22,11 @@ void PacketHelper::WriteMapData(OutputStream& out, const ZoneImpl& zone)
 
     // NPC
     // out << npc.size();
+    //out << (int32_t)0;
 
     // Reactor
     // out << reactor.size();
+    //out << (int32_t)0;
 }
 
 void PacketHelper::WriteBaseCharacter(OutputStream& out, const Character& chr)

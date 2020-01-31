@@ -3,17 +3,17 @@
 #include "../PawnObject.hpp"
 #include "Inventory.hpp"
 #include "Equipment.hpp"
-#include "CharacterQuickSlot.hpp"
+#include "QuickSlot.hpp"
 #include "CharacterSkill.hpp"
 #include <shared_mutex>
 #include <memory>
 
+
 class UE4Client;
-
-//UE4MODEL_DLLEXPORT template class UE4MODEL_DLLCLASS std::weak_ptr<UE4Client>;
-UE4MODEL_DLLEXPORT class UE4MODEL_DLLCLASS std::shared_mutex;
-
 class Zone;
+
+UE4MODEL_DLLEXPORT class UE4MODEL_DLLCLASS std::shared_mutex;
+UE4MODEL_DLLEXPORT template class UE4MODEL_DLLCLASS std::shared_ptr<Zone>;
 
 class UE4MODEL_DLLCLASS Character : public PawnObject
 {
@@ -22,13 +22,15 @@ private:
     void operator=(const Character&);
 public:
     Character(int accid, int cid);
-    const std::shared_ptr<UE4Client>& GetClient() const;
-    void SetWeakClient(const std::weak_ptr<UE4Client>& client);
+    
+    UE4Client* GetClient() const;
+    void SetClient(UE4Client* client);
     std::shared_ptr<Zone> GetZone() const;
     void SetZone(const std::shared_ptr<Zone>& zone);
     void Initialize(class Connection& con);
-    void UpdatePawnStat();
 
+    void RecoveryPerSecond();
+    
     bool InventoryToEquipment(int32_t inventory_index, Equipment::Position pos);
     bool EquipmentToInventory(Equipment::Position pos);
     bool EquipmentToInventory(Equipment::Position pos, int32_t inventory_index);
@@ -37,6 +39,7 @@ public:
     bool ChangeInventoryItemPosition(int32_t prev_index, int32_t new_index);
     bool DestoryItem(int32_t inventory_index);
 
+    std::array<QuickSlot, 10> GetQuickSlot() const;
 public:
     const std::string& GetName() const;
     int32_t GetLevel() const;
@@ -59,10 +62,13 @@ public:
     virtual void Write(OutputStream& output) const override;
     virtual void Read(InputStream& input) override;
 private:
+    void UpdatePawnStat();
+private:
     mutable std::shared_mutex pointer_guard_;
-    std::weak_ptr<UE4Client> weak_client_;
+    UE4Client* client_ = nullptr;
     std::shared_ptr<Zone> zone_;
 
+    mutable std::shared_mutex stat_gaurd_;
     int32_t accid_;
     int32_t cid_;
     std::string name_;
@@ -86,6 +92,9 @@ private:
     mutable std::shared_mutex inventory_guard_;
     Inventory inventory_;
 
+    mutable std::shared_mutex quick_slot_guard_;
+    std::array<QuickSlot, 10> quick_slot_;
+
     CharacterSkill skill_;
-    CharacterQuickSlot quick_slot_;
+    
 };

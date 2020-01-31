@@ -6,6 +6,8 @@
 #include "../Item/ConsumeItem.hpp"
 #include "boost/python.hpp"
 #include "Private/PythonScriptEngine.hpp"
+#include <algorithm>
+
 
 struct CharacterTable
 {
@@ -92,12 +94,12 @@ void Character::operator=(const Character&)
 Character::Character(int accid, int cid)
     : PawnObject(ZoneObject::Type::kCharacter), accid_(accid), cid_(cid)
 {
+
 }
 
-
-void Character::SetWeakClient(const std::weak_ptr<class UE4Client>& client) {
+void Character::SetClient(UE4Client* client) {
     std::unique_lock lock(pointer_guard_);
-    weak_client_ = client;
+    client_ = client;
 }
 
 std::shared_ptr<Zone> Character::GetZone() const
@@ -112,9 +114,9 @@ void Character::SetZone(const std::shared_ptr<Zone>& zone)
     zone_ = zone;
 }
 
-const std::shared_ptr<class UE4Client>& Character::GetClient() const {
+UE4Client* Character::GetClient() const {
     std::shared_lock lock(pointer_guard_);
-    return weak_client_.lock();
+    return client_;
 }
 
 
@@ -211,6 +213,13 @@ void Character::Initialize(Connection& con)
         throw StackTraceException(ExceptionType::kSQLError, "CharacterTable no data");
     }
     UpdatePawnStat();
+}
+
+void Character::RecoveryPerSecond()
+{
+    std::unique_lock lock(stat_gaurd_);
+    SetHP(std::clamp(GetHP() + 3.0f, 0.0f, GetMaxHP()));
+    stamina_ = std::clamp(stamina_ + stamina_recovery_, 0.0f, max_stamina_);
 }
 
 void Character::UpdatePawnStat()

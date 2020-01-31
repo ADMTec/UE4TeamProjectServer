@@ -1,7 +1,7 @@
 #include "TestServer.hpp"
 #include "UE4DevelopmentLibrary/Database.hpp"
 #include <iostream>
-
+#include "UE4DevelopmentLibrary/Time.hpp"
 
 #include <boost/python.hpp>
 #include "UE4Model/Character/Character.hpp"
@@ -16,7 +16,13 @@ void Execute(const std::string& path, Args&&... args) {
 
 int main()
 {
-
+    Clock clock;
+    std::this_thread::sleep_for(std::chrono::seconds(3));
+    Clock clock2;
+    int64_t value1 = clock2.to_time_t() - clock.to_time_t();
+    int64_t value2 = clock2.to_int64_t() - clock.to_int64_t();
+    std::cout << "value1: " << value1 << std::endl;
+    std::cout << "value2: " << value2 << std::endl;
     try {
         int cid = 1;
         ODBCConnectionPool::Instance().Initialize(3, L"UE4", L"root", L"a123123");

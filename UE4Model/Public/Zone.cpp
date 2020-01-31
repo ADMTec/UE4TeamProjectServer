@@ -27,6 +27,26 @@ Zone::~Zone()
     delete impl_;
 }
 
+void Zone::StartUp()
+{
+    impl_->StartUp();
+}
+
+void Zone::Update()
+{
+    impl_->Update();
+}
+
+void Zone::Exit()
+{
+    impl_->Exit();
+}
+
+void Zone::UpdateCharacterPosition(Character& chr, int32_t value)
+{
+    impl_->UpdateCharacterPosition(chr, value);
+}
+
 void Zone::SpawnPlayer(const std::shared_ptr<class Character>& chr) 
 {
     impl_->SpawnPlayer(chr);
@@ -64,6 +84,16 @@ void Zone::BroadCast(class NioOutPacket& outpacket, int64_t except_chr_oid) {
     impl_->BroadCast(outpacket, except_chr_oid);
 }
 
+Zone::State Zone::GetState() const
+{
+    return impl_->GetState();
+}
+
+void Zone::SetState(Zone::State state)
+{
+    impl_->SetState(state);
+}
+
 int64_t Zone::GetInstanceId() const {
     return impl_->GetInstanceId();
 }
@@ -86,6 +116,11 @@ Zone::Type Zone::GetType() const {
 
 void Zone::SetType(Zone::Type type) {
     impl_->SetType(type);
+}
+
+Location Zone::GetPlayerSpawn() const
+{
+    return impl_->GetPlayerSpawn();
 }
 
 void Zone::SetPlayerSpawn(Location spawn)

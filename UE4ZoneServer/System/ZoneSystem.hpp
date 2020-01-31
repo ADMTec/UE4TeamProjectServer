@@ -4,6 +4,8 @@
 #include <shared_mutex>
 #include <cstdint>
 #include <memory>
+#include <thread>
+#include <atomic>
 
 
 class ZoneSystem
@@ -16,5 +18,7 @@ public:
     static std::shared_ptr<Zone> GetInstance(int64_t instance_id);
 private:
     static std::shared_mutex map_guard_;
-    static std::unordered_map<int64_t, std::shared_ptr<Zone>> map_;
+    static std::vector<std::shared_ptr<Zone>> maps_;
+    static std::thread zone_update_thread_;
+    static std::atomic<bool> zone_update_thread_exit_flag_;
 };

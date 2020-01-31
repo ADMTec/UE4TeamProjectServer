@@ -84,7 +84,7 @@ void ODBCPreparedStatement::SetString(int index, const std::string& string)
         SQL_PARAM_INPUT,
         SQL_C_CHAR,
         SQL_CHAR,
-        string.length(),
+        string.length() + 1,
         0,
         (SQLPOINTER)string.c_str(),
         0,
