@@ -1,0 +1,12 @@
+{
+  "Mapid": 100,
+  "Type": 0,
+  "Portal": null,
+  "PlayerSpawn": {
+    "x": -6480.0,
+    "y": 770.0,
+    "z": 150.0,
+    "rd": 10.5
+  },
+  "SpawnPoint": null
+}

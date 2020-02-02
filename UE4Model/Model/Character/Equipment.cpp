@@ -52,7 +52,7 @@ int32_t Equipment::GetTotalAddIntel() const
     return str;
 }
 
-const std::array<std::shared_ptr<EquipItem>, ToInt32(Equipment::Position::kCount)>& Equipment::GetData() const
+const Equipment::Data& Equipment::GetData() const
 {
     return equipments_;
 }

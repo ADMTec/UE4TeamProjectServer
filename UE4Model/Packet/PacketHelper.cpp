@@ -8,6 +8,7 @@
 
 void PacketHelper::WriteMapData(OutputStream& out, const Zone& zone, int64_t except_chr_oid)
 {
+    out << zone.GetMapId();
     const auto& chrs = zone.GetCharacterCopy();
     const auto& mobs = zone.GetMonsterCopy();
 
@@ -36,7 +37,7 @@ void PacketHelper::WriteBaseCharacter(OutputStream& out, const Character& chr)
     out << chr.GetObjectId();
     WriteCharacterPosition(out, chr);
     WriteCharacterStat(out, chr);
-    WriteCharacterEquipment(out, chr.GetEquipment());
+    WriteCharacterEquipment(out, chr);
 }
 
 void PacketHelper::WriteCharacterPosition(OutputStream& out, const Character& chr)
@@ -67,9 +68,9 @@ void PacketHelper::WriteCharacterStat(OutputStream& out, const Character& chr)
     out << chr.GetMaxStamina();
 }
 
-void PacketHelper::WriteCharacterEquipment(OutputStream& out, const Equipment& equipment)
+void PacketHelper::WriteCharacterEquipment(OutputStream& out, const Character& chr)
 {
-    const auto& data = equipment.GetData();
+    const auto& data = chr.GetEquipmentData();
     for (size_t i = 0; i < data.size(); ++i)
     {
         int32_t has_item = data[i].operator bool();
@@ -82,10 +83,10 @@ void PacketHelper::WriteCharacterEquipment(OutputStream& out, const Equipment& e
     }
 }
 
-void PacketHelper::WriteCharacterInventory(OutputStream& out, const Inventory& inven, int32_t gold)
+void PacketHelper::WriteCharacterInventory(OutputStream& out, const Character& chr)
 {
-    out << gold;
-    const auto& data = inven.GetData();
+    out << chr.GetGold();
+    const auto& data = chr.GetInventoryData();
     for (int i = 0; i < Inventory::inventory_size; ++i)
     {
         int32_t has_item = data[i].has_value();
@@ -119,7 +120,7 @@ void PacketHelper::WriteItem(OutputStream& out, const Item* item)
     out << static_cast<int32_t>(item->GetItemType());
     out << item->GetItemId();
     if (item->GetItemType() == Item::Type::kEquip) {
-        auto equip = dynamic_cast<const EquipItem*>(item);
+        auto equip = reinterpret_cast<const EquipItem*>(item);
         if (equip) {
             out << equip->GetAddATK();
             out << equip->GetAddDEF();

@@ -35,8 +35,8 @@ BOOST_PYTHON_MODULE(UE4Model)
         .add_property("intel", &Character::GetIntel)
         .add_property("gold", &Character::GetGold)
         .add_property("stamina", &Character::GetStamina)
-        .add_property("max_stamina", &Character::GetMaxStamina)
-        .def("equipment", &Character::GetEquipment, return_value_policy<reference_existing_object>());
+        .add_property("max_stamina", &Character::GetMaxStamina);
+        //.def("equipment", &Character::GetEquipment, return_value_policy<reference_existing_object>());
     class_<Equipment>("Equipment")
         .add_property("total_add_atk", &Equipment::GetTotalATK)
         .add_property("total_add_str", &Equipment::GetTotalAddStr)

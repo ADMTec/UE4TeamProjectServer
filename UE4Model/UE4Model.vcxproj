@@ -40,10 +40,10 @@
     <ClCompile Include="Provider\ZoneDataProvider.cpp" />
     <ClCompile Include="PythonExport.cpp" />
     <ClCompile Include="ServerConstants.cpp" />
+    <ClCompile Include="Server\ZoneServer.cpp" />
     <ClCompile Include="System\MatchingSystem.cpp" />
     <ClCompile Include="System\PartySystem.cpp" />
     <ClCompile Include="System\ZoneSystem.cpp" />
-    <ClCompile Include="ZoneServer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="EnumClassHelper.hpp" />
@@ -70,11 +70,13 @@
     <ClInclude Include="Provider\MonsterTemplateProvider.hpp" />
     <ClInclude Include="Provider\ZoneDataProvider.hpp" />
     <ClInclude Include="ServerConstants.hpp" />
+    <ClInclude Include="Server\Alias.hpp" />
+    <ClInclude Include="Server\ZoneClient.hpp" />
+    <ClInclude Include="Server\ZoneServer.hpp" />
     <ClInclude Include="System\MatchingSystem.hpp" />
     <ClInclude Include="System\PartySystem.hpp" />
     <ClInclude Include="System\PythonScriptEngine.hpp" />
     <ClInclude Include="System\ZoneSystem.hpp" />
-    <ClInclude Include="ZoneServer.hpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -153,6 +155,7 @@
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalIncludeDirectories>C:\Python\Python37\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -174,6 +177,7 @@
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalIncludeDirectories>C:\Python\Python37\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -197,6 +201,7 @@
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalIncludeDirectories>C:\Python\Python37\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -222,6 +227,7 @@
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalIncludeDirectories>C:\Python\Python37\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

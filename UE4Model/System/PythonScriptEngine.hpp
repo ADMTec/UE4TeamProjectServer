@@ -24,10 +24,16 @@ public:
     {
         friend class TSingleton<Engine>;
         Engine() {
-            Py_Initialize();
         }
     public:
-        ~Engine() {
+        ~Engine() {    
+        }
+        void Initialize() 
+        {
+            Py_Initialize();
+        }
+        void Release()
+        {
             Py_Exit(0);
         }
         template<typename... Args>
@@ -62,7 +68,6 @@ public:
             try {
                 std::string full_path = GetScriptPath(path);
                 full_path.append(file);
-                std::cout << "fullpath: " << full_path << std::endl;
 
                 PythonScript* script = nullptr;
                 {

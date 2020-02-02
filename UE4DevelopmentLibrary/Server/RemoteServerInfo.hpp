@@ -1,5 +1,4 @@
 #pragma once
-#include "UE4Client.hpp"
 #include "../Stream.hpp"
 
 
@@ -21,6 +20,7 @@ public:
     void SetIP(const std::string & ip);
 
     uint16_t GetPort() const;
+#undef SetPort;
     void SetPort(uint16_t port);
 
     void SetMaxConnection(int64_t max_connection);
@@ -30,8 +30,6 @@ public:
     int64_t GetCurrentConnection() const;
 
     double GetCurrentCapacityRatio() const;
-    const std::weak_ptr<UE4Client> GetWeak() const;
-    void SetWeak(const std::weak_ptr<UE4Client> & weak);
 public:
     virtual void Write(OutputStream& outpacket) const;
     virtual void Read(InputStream& inpacket);
@@ -41,5 +39,4 @@ private:
     uint16_t port_;
     int64_t max_connection_;
     int64_t current_connection_;
-    std::weak_ptr<UE4Client> mediator_;
 };

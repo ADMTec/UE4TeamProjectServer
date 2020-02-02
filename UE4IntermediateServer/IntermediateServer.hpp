@@ -1,36 +1,65 @@
 #pragma once
 #include "UE4DevelopmentLibrary/Server.hpp"
 #include "UE4DevelopmentLibrary/Utility.hpp"
-#include "UE4DevelopmentLibrary/Database.hpp"
+#include <optional>
 #include <shared_mutex>
 #include <unordered_map>
 #include <memory>
-#include <array>
 
-using std::array;
-using std::unordered_map;
 
-class IntermediateServer : public UE4BaseServer, public TSingleton<IntermediateServer>
+
+class IntermediateServer;
+template<typename session>
+struct ServerTemplateParameter
+{
+    using InPacket = NioInPacket;
+    using Buffer = NioBuffer<InPacket>;
+    using OutPacket = UE4OutPacket;
+
+    using Cipher = UE4PacketCipher<session, Buffer, InPacket, OutPacket>;
+    using Handler = UE4EventHandler<session, InPacket, IntermediateServer>;
+
+    constexpr static bool Strand = true;
+    constexpr static int InternalBufferLength = 1024;
+    constexpr static int RecvBufferLength = 1024;
+};
+
+using Session = TNioSession<ServerTemplateParameter>;
+using IoServer = TNioServer<Session>;
+using Client = UE4Client<Session>;
+
+
+class IntermediateServer : public TSingleton<IntermediateServer>
 {
     friend class TSingleton<IntermediateServer>;
     IntermediateServer();
 public:
-    virtual void Initialize();
-    virtual void Run();
-    virtual void Stop();
-    virtual void ConnectChannel();
-    virtual void OnActiveClient(UE4Client& client);
-    virtual void OnCloseClient(UE4Client& client);
-    virtual void OnProcessPacket(const shared_ptr<UE4Client>& client, const shared_ptr<NioInPacket>& in_packet);
+    void Initialize();
+    void Run();
+    void Stop();
+    void ConnectChannel();
+    void OnActive(Session& session);
+    void OnClose(Session& session);
+    void OnError(int ec, const char* msg);
+    void ProcessPacket(Session& session, const std::shared_ptr<Session::InPacket>& in_packet);
+
+    std::shared_ptr<Client> GetClient(const std::string& uuid) const;
 private:
-    void HandleRegisterServer(const shared_ptr<UE4Client>& client, NioInPacket& packet);
-    void UpdateServerConnection(const shared_ptr<UE4Client>& client, NioInPacket& packet);
-    void HandleRequestUserMigration(const shared_ptr<UE4Client>& client, NioInPacket& packet);
-    void HandleReactSessionAuthorityInfo(const shared_ptr<UE4Client>& client, NioInPacket& packet);
-    void HandleNotifiyUserLogout(const shared_ptr<UE4Client>& client, NioInPacket& packet);
+    void HandleRegisterServer(Client& client, Session::InPacket& packet);
+    void UpdateServerConnection(Client& client, Session::InPacket& packet);
+    void HandleRequestUserMigration(Client& client, Session::InPacket& packet);
+    void HandleReactSessionAuthorityInfo(Client& client, Session::InPacket& packet);
+    void HandleNotifiyUserLogout(Client& client, Session::InPacket& packet);
 private:
+    std::shared_ptr<Client> GetServerLoadBalance(ServerType type) const;
+private:
+    std::optional<IoServer> io_server_;
+
+    mutable std::shared_mutex client_storage_guard_;
+    std::unordered_map<std::string, std::shared_ptr<Client>> client_storage_;
+
     TextFileLineReader reader_;
 
-    std::shared_mutex data_guard_;
-    unordered_map<std::string, RemoteServerInfo> server_map_;
+    mutable std::shared_mutex server_map__guard_;
+    std::unordered_map<std::string, RemoteServerInfo> server_map_;
 };

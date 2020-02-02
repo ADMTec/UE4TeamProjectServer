@@ -1,18 +1,30 @@
 #pragma once
-#include "NioBase.hpp"
+#include <iostream>
 
 
-class NioSession;
-class NioInPacket;
-
+template<class T, class InPacket>
 class NioEventHandler
 {
 public:
-    NioEventHandler();
-    virtual ~NioEventHandler();
+    static void OnActive(T& session) {
+        std::cout << "sessionid: " << session.GetId() << " - Active" << std::endl;
+    }
+    static void OnError(int error_code, const char* message) {
+        std::cout
+            << ", error_code: " << error_code
+            << ", message: " << message << std::endl;
+    }
+    static void OnClose(T& session) {
 
-    virtual void OnSessionActive(NioSession& session);
-    virtual void OnSessionError(NioSession& session, int error_code, const char* message);
-    virtual void OnSessionClose(NioSession& session);
-    virtual void ProcessPacket(NioSession& session, const std::shared_ptr<NioInPacket>& in_packet);
+    }
+    static void ProcessPacket(T& session, const std::shared_ptr<InPacket>& in_packet) {
+        try
+        {
+            std::cout << "sessionid: " << session.GetId()
+                << " packet: " << in_packet->GetDebugString() << std::endl;
+        } catch (std::exception & e)
+        {
+            std::cout << e.what() << std::endl;
+        }
+    }
 };

@@ -13,9 +13,6 @@
     <Filter Include="Time">
       <UniqueIdentifier>{ba2a1ce6-ed07-470a-8762-d7981867c767}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Nio\Private">
-      <UniqueIdentifier>{cd1788a7-fefc-479f-8345-3da5669cd919}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Database">
       <UniqueIdentifier>{aa11dfff-29c0-4e20-b290-1ac1cf350a99}</UniqueIdentifier>
     </Filter>
@@ -52,48 +49,6 @@
     <ClInclude Include="Time\Clock.hpp">
       <Filter>Time</Filter>
     </ClInclude>
-    <ClInclude Include="Nio\Private\NioContext.hpp">
-      <Filter>Nio\Private</Filter>
-    </ClInclude>
-    <ClInclude Include="Nio\Private\NioSocket.hpp">
-      <Filter>Nio\Private</Filter>
-    </ClInclude>
-    <ClInclude Include="Nio\Private\NioSystemClockTimer.hpp">
-      <Filter>Nio\Private</Filter>
-    </ClInclude>
-    <ClInclude Include="Nio\NioBase.hpp">
-      <Filter>Nio</Filter>
-    </ClInclude>
-    <ClInclude Include="Nio\NioChannel.hpp">
-      <Filter>Nio</Filter>
-    </ClInclude>
-    <ClInclude Include="Nio\NioChannelHandler.hpp">
-      <Filter>Nio</Filter>
-    </ClInclude>
-    <ClInclude Include="Nio\NioCipher.hpp">
-      <Filter>Nio</Filter>
-    </ClInclude>
-    <ClInclude Include="Nio\NioEventHandler.hpp">
-      <Filter>Nio</Filter>
-    </ClInclude>
-    <ClInclude Include="Nio\NioInPacket.hpp">
-      <Filter>Nio</Filter>
-    </ClInclude>
-    <ClInclude Include="Nio\NioInternalBuffer.hpp">
-      <Filter>Nio</Filter>
-    </ClInclude>
-    <ClInclude Include="Nio\NioOutPacket.hpp">
-      <Filter>Nio</Filter>
-    </ClInclude>
-    <ClInclude Include="Nio\NioServer.hpp">
-      <Filter>Nio</Filter>
-    </ClInclude>
-    <ClInclude Include="Nio\NioSession.hpp">
-      <Filter>Nio</Filter>
-    </ClInclude>
-    <ClInclude Include="Nio\NioThreadGroup.hpp">
-      <Filter>Nio</Filter>
-    </ClInclude>
     <ClInclude Include="Database.hpp" />
     <ClInclude Include="Database\base.hpp">
       <Filter>Database</Filter>
@@ -113,9 +68,6 @@
     <ClInclude Include="Database\ResultSet.hpp">
       <Filter>Database</Filter>
     </ClInclude>
-    <ClInclude Include="Nio\NIoLogger.hpp">
-      <Filter>Nio</Filter>
-    </ClInclude>
     <ClInclude Include="Utility\TSingleton.hpp">
       <Filter>Utility</Filter>
     </ClInclude>
@@ -130,13 +82,7 @@
     <ClInclude Include="Thread\JoinThread.hpp">
       <Filter>Thread</Filter>
     </ClInclude>
-    <ClInclude Include="Server\ClientStorage.hpp">
-      <Filter>Server</Filter>
-    </ClInclude>
     <ClInclude Include="Server\UE4Client.hpp">
-      <Filter>Server</Filter>
-    </ClInclude>
-    <ClInclude Include="Server\UE4BaseServer.hpp">
       <Filter>Server</Filter>
     </ClInclude>
     <ClInclude Include="Server\UE4OutPacket.hpp">
@@ -158,11 +104,38 @@
     <ClInclude Include="Database\ODBCConnectionPool.hpp">
       <Filter>Database</Filter>
     </ClInclude>
+    <ClInclude Include="Stream\ISerializable.hpp">
+      <Filter>Stream</Filter>
+    </ClInclude>
+    <ClInclude Include="Nio\NioBase.hpp">
+      <Filter>Nio</Filter>
+    </ClInclude>
+    <ClInclude Include="Nio\NioBuffer.hpp">
+      <Filter>Nio</Filter>
+    </ClInclude>
+    <ClInclude Include="Nio\NioCipher.hpp">
+      <Filter>Nio</Filter>
+    </ClInclude>
+    <ClInclude Include="Nio\NioEventHandler.hpp">
+      <Filter>Nio</Filter>
+    </ClInclude>
+    <ClInclude Include="Nio\NioInPacket.hpp">
+      <Filter>Nio</Filter>
+    </ClInclude>
+    <ClInclude Include="Nio\NioOutPacket.hpp">
+      <Filter>Nio</Filter>
+    </ClInclude>
+    <ClInclude Include="Nio\NioServer.hpp">
+      <Filter>Nio</Filter>
+    </ClInclude>
+    <ClInclude Include="Nio\NioSession.hpp">
+      <Filter>Nio</Filter>
+    </ClInclude>
     <ClInclude Include="Server\UE4EventHandler.hpp">
       <Filter>Server</Filter>
     </ClInclude>
-    <ClInclude Include="Stream\ISerializable.hpp">
-      <Filter>Stream</Filter>
+    <ClInclude Include="Server\UE4IntermediateHandler.hpp">
+      <Filter>Server</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -184,45 +157,6 @@
     <ClCompile Include="Time\Clock.cpp">
       <Filter>Time</Filter>
     </ClCompile>
-    <ClCompile Include="Nio\Private\NioContext.cpp">
-      <Filter>Nio\Private</Filter>
-    </ClCompile>
-    <ClCompile Include="Nio\Private\NioSocket.cpp">
-      <Filter>Nio\Private</Filter>
-    </ClCompile>
-    <ClCompile Include="Nio\Private\NioSystemClockTimer.cpp">
-      <Filter>Nio\Private</Filter>
-    </ClCompile>
-    <ClCompile Include="Nio\NioChannel.cpp">
-      <Filter>Nio</Filter>
-    </ClCompile>
-    <ClCompile Include="Nio\NioChannelHandler.cpp">
-      <Filter>Nio</Filter>
-    </ClCompile>
-    <ClCompile Include="Nio\NioCipher.cpp">
-      <Filter>Nio</Filter>
-    </ClCompile>
-    <ClCompile Include="Nio\NioEventHandler.cpp">
-      <Filter>Nio</Filter>
-    </ClCompile>
-    <ClCompile Include="Nio\NioInPacket.cpp">
-      <Filter>Nio</Filter>
-    </ClCompile>
-    <ClCompile Include="Nio\NioInternalBuffer.cpp">
-      <Filter>Nio</Filter>
-    </ClCompile>
-    <ClCompile Include="Nio\NioOutPacket.cpp">
-      <Filter>Nio</Filter>
-    </ClCompile>
-    <ClCompile Include="Nio\NioServer.cpp">
-      <Filter>Nio</Filter>
-    </ClCompile>
-    <ClCompile Include="Nio\NioSession.cpp">
-      <Filter>Nio</Filter>
-    </ClCompile>
-    <ClCompile Include="Nio\NioThreadGroup.cpp">
-      <Filter>Nio</Filter>
-    </ClCompile>
     <ClCompile Include="Database\Connection.cpp">
       <Filter>Database</Filter>
     </ClCompile>
@@ -238,29 +172,11 @@
     <ClCompile Include="Database\ResultSet.cpp">
       <Filter>Database</Filter>
     </ClCompile>
-    <ClCompile Include="Nio\NioLogger.cpp">
-      <Filter>Nio</Filter>
-    </ClCompile>
     <ClCompile Include="Utility\UUID.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
     <ClCompile Include="Thread\Barrier.cpp">
       <Filter>Thread</Filter>
-    </ClCompile>
-    <ClCompile Include="Server\ClientStorage.cpp">
-      <Filter>Server</Filter>
-    </ClCompile>
-    <ClCompile Include="Server\UE4Client.cpp">
-      <Filter>Server</Filter>
-    </ClCompile>
-    <ClCompile Include="Server\UE4BaseServer.cpp">
-      <Filter>Server</Filter>
-    </ClCompile>
-    <ClCompile Include="Server\UE4OutPacket.cpp">
-      <Filter>Server</Filter>
-    </ClCompile>
-    <ClCompile Include="Server\UE4PacketCipher.cpp">
-      <Filter>Server</Filter>
     </ClCompile>
     <ClCompile Include="Utility\TextFileLineReader.cpp">
       <Filter>Utility</Filter>
@@ -273,6 +189,12 @@
     </ClCompile>
     <ClCompile Include="Database\ODBCConnectionPool.cpp">
       <Filter>Database</Filter>
+    </ClCompile>
+    <ClCompile Include="Nio\NioInPacket.cpp">
+      <Filter>Nio</Filter>
+    </ClCompile>
+    <ClCompile Include="Nio\NioOutPacket.cpp">
+      <Filter>Nio</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

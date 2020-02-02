@@ -5,9 +5,7 @@
 #include <optional>
 #include <vector>
 #include <memory>
-
-
-class UE4Client;
+#include "Server/Alias.hpp"
 
 class Party
 {
@@ -16,9 +14,9 @@ public:
     {
     public:
         // return party key
-        static std::optional<int64_t> CreateParty(const std::shared_ptr<UE4Client>& client);
+        static std::optional<int64_t> CreateParty(const std::shared_ptr<Client>& client);
         static void DisbandParty(int64_t party_id, int64_t chr_cid);
-        static bool JoinParty(int64_t party_id, const std::shared_ptr<UE4Client>& client);
+        static bool JoinParty(int64_t party_id, const std::shared_ptr<Client>& client);
         static bool LeaveParty(int64_t party_id, const std::string& uuid);
     private:
         static std::shared_ptr<Party> FindPartyFromPartyId(int64_t party_id);
@@ -28,14 +26,14 @@ public:
         static std::vector<std::shared_ptr<Party>> party_array_;
     };
 public:
-    Party(int64_t party_id, const std::shared_ptr<UE4Client>& client);
+    Party(int64_t party_id, const std::shared_ptr<Client>& client);
     Party();
-    void BraodCast(class NioOutPacket& out);
-    void BraodCast(class NioOutPacket& out, const __UUID& except_client_uuid);
+    void BraodCast(class UE4OutPacket& out);
+    void BraodCast(class UE4OutPacket& out, const __UUID& except_client_uuid);
     int64_t GetPartyId() const;
 private:
     std::shared_mutex party_guard_;
     int64_t party_id_;
     std::optional<__UUID> party_leader_uuid_;
-    std::vector<std::shared_ptr<UE4Client>> party_user_;
+    std::vector<std::shared_ptr<Client>> party_user_;
 };

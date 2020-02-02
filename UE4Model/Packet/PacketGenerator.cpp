@@ -3,13 +3,17 @@
 #include "UE4DevelopmentLibrary/nio.hpp"
 #include "PacketHelper.hpp"
 #include "Model/Character/Character.hpp"
+#include "Model/Monster/Monster.hpp"
+#include "Model/Zone.hpp"
 
 
-void PacketGenerator::UserEnterTheMap(OutputStream& out, Zone& zone, Character& chr)
+void PacketGenerator::UserEnterTheMap(OutputStream& out, Zone& zone, const Character& chr)
 {
     out.WriteInt16(static_cast<int16_t>(ENetworkSCOpcode::kUserEnterTheMap));
+    PacketHelper::WriteMapData(out, zone, chr.GetObjectId());
+
     PacketHelper::WriteBaseCharacter(out, chr);
-    PacketHelper::WriteCharacterInventory(out, chr.GetInventory(), chr.GetGold());
+    PacketHelper::WriteCharacterInventory(out, chr);
     
     // QuickSlot
     for (const auto& quick_slot : chr.GetQuickSlot()) {
@@ -18,23 +22,27 @@ void PacketGenerator::UserEnterTheMap(OutputStream& out, Zone& zone, Character& 
 
     // Skill
     // Quest
-
-    PacketHelper::WriteMapData(out, zone, chr.GetObjectId());
 }
 
-void PacketGenerator::SpawnCharacter(OutputStream& out, Character& chr)
+void PacketGenerator::SpawnCharacter(OutputStream& out, const Character& chr)
 {
     out.WriteInt16(static_cast<int16_t>(ENetworkSCOpcode::kSpawnCharacter));
     PacketHelper::WriteBaseCharacter(out, chr);
 }
 
-void PacketGenerator::CharacterLocation(OutputStream& out, Character& chr, int add)
+void PacketGenerator::CharacterLocation(OutputStream& out, const Character& chr, int add)
 {
     out.WriteInt16(static_cast<int16_t>(ENetworkSCOpcode::kUpdateCharacterPosition));
     out << chr.GetObjectId();
     out << add;
     out << chr.GetLocation();
     out << chr.GetRotation();
+}
+
+void PacketGenerator::SetMonsterController(OutputStream& out, bool value)
+{
+    out.WriteInt16(static_cast<int16_t>(ENetworkSCOpcode::kSetMonsterController));
+    out.WriteInt8(value);
 }
 
 enum InventoryUpdatetype {
@@ -70,8 +78,17 @@ void PacketGenerator::InventoryUpdate(OutputStream& out, bool is_equip1, int32_t
     out.WriteInt32(count2);
 }
 
-void PacketGenerator::SpawnMonster(OutputStream& out, Monster& mob)
+void PacketGenerator::SpawnMonster(OutputStream& out, const Monster& mob)
 {
     out.WriteInt16(static_cast<int16_t>(ENetworkSCOpcode::kSpawnMonster));
     PacketHelper::WriteMonsterData(out, mob);
+}
+
+void PacketGenerator::UpdateMonsterAction(OutputStream& out, const Monster& mob)
+{
+    out.WriteInt16(static_cast<int16_t>(ENetworkSCOpcode::kSpawnMonster));
+    out << mob.GetObjectId();
+    out << mob.GetState();
+    out << mob.GetLocation();
+    out << mob.GetRotation();
 }

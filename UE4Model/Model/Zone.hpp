@@ -39,6 +39,7 @@ public:
 
 
     void UpdateCharacterPosition(Character& chr, int32_t value);
+    void UpdateMonsterAction(int64_t sender, int64_t oid, int32_t state, Location lo, Rotation ro);
 
     void SpawnCharacter(const std::shared_ptr<class Character>& chr);
     void RemoveCharacter(int64_t object_id);
@@ -49,8 +50,8 @@ public:
 
     void AttackMonster(const Character& chr, int64_t mob_obj_id);
 
-    void BroadCast(class NioOutPacket& outpacket);
-    void BroadCast(class NioOutPacket& outpacket, int64_t except_chr_oid);
+    void BroadCast(class UE4OutPacket& outpacket);
+    void BroadCast(class UE4OutPacket& outpacket, int64_t except_chr_oid);
 
     Zone::State GetState() const;
     void SetState(Zone::State state);
@@ -70,8 +71,8 @@ public:
 public:
     int64_t GetNewObjectId();
 private:
-    void BroadCastNoLock(class NioOutPacket& outpacket);
-    void BroadCastNoLock(class NioOutPacket& outpacket, int64_t except_chr_oid);
+    void BroadCastNoLock(class UE4OutPacket& outpacket);
+    void BroadCastNoLock(class UE4OutPacket& outpacket, int64_t except_chr_oid);
 private:
     std::atomic<Zone::State> state_;
     int64_t instance_id_;
@@ -82,7 +83,11 @@ private:
     int64_t time_sum_;
     int64_t last_update_time_;
 
+    int64_t monster_controller_id_; // with Character Guard
+
     mutable std::array<std::shared_mutex, ToInt32(ZoneObject::Type::kCount)> object_guard_;
     std::unordered_map<ZoneObject::oid_t, std::shared_ptr<Character>> chrs_;
     std::unordered_map<ZoneObject::oid_t, Monster> mobs_;
+
+    static constexpr const int64_t monster_controller_null_value = -1;
 };

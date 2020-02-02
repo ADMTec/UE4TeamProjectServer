@@ -1,6 +1,5 @@
 #pragma once
-#include "NioBase.hpp"
-#include "../Stream.hpp"
+#include "../Stream/OutputStream.hpp"
 
 
 class NioOutPacket : public OutputStream

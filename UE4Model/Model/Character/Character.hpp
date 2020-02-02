@@ -6,9 +6,9 @@
 #include "CharacterSkill.hpp"
 #include <shared_mutex>
 #include <memory>
+#include "Server/Alias.hpp"
 
 
-class UE4Client;
 class Zone;
 
 class Character : public PawnObject
@@ -16,12 +16,12 @@ class Character : public PawnObject
 private:
     Character(const Character&);
     void operator=(const Character&);
-    Character(int accid, int cid);
 public:
-    static std::shared_ptr<Character> Create(int accid, int cid);
-    
-    UE4Client* GetClient() const;
-    void SetClient(UE4Client* client);
+    Character(int accid, int cid);
+    ~Character();
+
+    std::shared_ptr<Client> GetClientFromWeak() const;
+    void SetWeakClient(const std::shared_ptr<Client>& client);
     std::shared_ptr<Zone> GetZone() const;
     void SetZone(const std::shared_ptr<Zone>& zone);
     void Initialize(const std::shared_ptr<class Connection>& con);
@@ -53,8 +53,9 @@ public:
     int32_t GetGold() const;
     float GetStamina() const;
     float GetMaxStamina() const;
-    const Equipment& GetEquipment() const;
-    const Inventory& GetInventory() const;
+
+    Equipment::Data GetEquipmentData() const;
+    Inventory::Data GetInventoryData() const;
 public:
     virtual void Write(OutputStream& output) const override;
     virtual void Read(InputStream& input) override;
@@ -62,7 +63,7 @@ private:
     void UpdatePawnStat();
 private:
     mutable std::shared_mutex pointer_guard_;
-    UE4Client* client_ = nullptr;
+    std::weak_ptr<Client> client_;
     std::shared_ptr<Zone> zone_;
 
     mutable std::shared_mutex stat_gaurd_;

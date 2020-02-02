@@ -18,8 +18,8 @@ public:
     static void WriteBaseCharacter(OutputStream& out, const Character& chr);
     static void WriteCharacterPosition(OutputStream& out, const Character& chr);
     static void WriteCharacterStat(OutputStream& out, const Character& chr);
-    static void WriteCharacterEquipment(OutputStream& out, const Equipment& equipment);
-    static void WriteCharacterInventory(OutputStream& out, const Inventory& inven, int32_t gold);
+    static void WriteCharacterEquipment(OutputStream& out, const Character& chr);
+    static void WriteCharacterInventory(OutputStream& out, const Character& chr);
 
     // Monster
     static void WriteMonsterData(OutputStream& out, const Monster& mob);

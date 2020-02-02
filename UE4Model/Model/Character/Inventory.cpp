@@ -63,7 +63,7 @@ int32_t Inventory::GetEmptySlotIndex() const
     return index;
 }
 
-const std::array<std::optional<Inventory::Slot>, Inventory::inventory_size>& Inventory::GetData() const
+const Inventory::Data& Inventory::GetData() const
 {
     return inventory_;
 }

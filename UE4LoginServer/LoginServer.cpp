@@ -1,4 +1,5 @@
 #include "LoginServer.hpp"
+#include "UE4DevelopmentLibrary/Database.hpp"
 #include "UE4DevelopmentLibrary/Exception.hpp"
 #include "UE4DevelopmentLibrary/Time.hpp"
 #include "../InterServerOpcode.hpp"
@@ -44,19 +45,13 @@ void LoginServer::Initialize()
 #else
     ODBCConnectionPool::Instance().Initialize(3, *opt_odbc, *opt_db_id, *opt_db_pw);
 #endif
-    NioServerBuilder builder;
-    builder.SetPort(*opt_port)
-        .SetMaxConnection(*opt_max_conn)
-        .SetNioThreadCount(*opt_worker_size)
-        .SetNioInternalBufferSize(2048)
-        .SetNioPacketCipher(std::shared_ptr<NioCipher>(new UE4PacketCipher()))
-        .SetNioEventHandler(std::shared_ptr<NioEventHandler>(new UE4EventHandler<LoginServer>()));
-    this->SetNioServer(builder.Build());
+    io_server_.emplace(*opt_max_conn, *opt_port, *opt_worker_size);
+    io_server_->Initialize();
+    session_ = std::make_shared<IntermediateSession>(io_server_->GetContext());
 
-    GetNioServer()->GetChannel().MakeConnection(intermediate_server);
-    GetNioServer()->GetChannel().GetConnection(intermediate_server).BindFunction(
+    IntermediateSession::Handler::BindFunction(
         static_cast<int16_t>(IntermediateServerSendPacket::kReactUserMigation),
-        [this](NioSession& session, InputStream& stream) {
+        [this](IntermediateSession& session, IntermediateSession::InPacket& stream) {
             std::string user_uuid = stream.ReadString();
             std::string lobby_ip = stream.ReadString();
             uint16_t looby_port = stream.ReadInt16();
@@ -69,7 +64,7 @@ void LoginServer::Initialize()
                 out << lobby_ip;
                 out << looby_port;
                 out.MakePacketHead();
-                client->GetSession()->AsyncSend(out, false, true);
+                client->GetSession()->Send(out, true, false);
             }
         }
     );
@@ -77,9 +72,8 @@ void LoginServer::Initialize()
 
 void LoginServer::Run()
 {
-    auto nio = GetNioServer();
-    if (nio) {
-        GetNioServer()->Run();
+    if (io_server_) {
+        io_server_->Run();
         ConnectChannel();
         std::cout << "Input Command\n\
 [1] : PrintServerState\n\
@@ -97,7 +91,6 @@ void LoginServer::Run()
                 switch (command)
                 {
                     case 1:
-                        nio->PrintCurrentSessionQueue();
                         break;
                     case 2:
                         ConnectChannel();
@@ -114,9 +107,8 @@ void LoginServer::Run()
 
 void LoginServer::Stop()
 {
-    auto nio = GetNioServer();
-    if (nio) {
-        nio->Stop();
+    if (io_server_) {
+        io_server_->Stop();
     } else {
         throw StackTraceException(ExceptionType::kNullPointer, "nio server is nullptr");
     }
@@ -129,41 +121,90 @@ void LoginServer::ConnectChannel()
     if (!opt_ip || !opt_port) {
         throw StackTraceException(ExceptionType::kLogicError, "no data");
     }
-    auto conn = this->GetNioServer()->GetChannel().GetConnection(intermediate_server);
-    if (conn.IsValid() && conn.IsOpen() == false) {
-        if (conn.Connect(opt_ip->c_str(), *opt_port) == false) {
+    if (session_ && session_->IsOpen() == false) {
+        if (session_->SyncConnect(opt_ip->c_str(), *opt_port) == false) {
             std::stringstream ss;
             Clock clock;
             ss << '[' << Calendar::DateTime(clock) << "] connect to intermediate server(" << *opt_ip << ":" << *opt_port << ") fail \n";
             std::cout << ss.str();
         } else {
+            session_->OnConnect();
             UE4OutPacket out;
             out.WriteInt16(static_cast<int16_t>(IntermediateServerReceivePacket::kRegisterRemoteServer));
             out << this_info_;
             out.MakePacketHead();
-            GetNioServer()->GetChannel().GetConnection(intermediate_server).Send(out);
+            session_->Send(out, false, false);
         }
     }
 }
 
-void LoginServer::OnActiveClient(UE4Client& client)
+void LoginServer::OnActive(Session& session)
+{
+    auto client = std::make_shared<Client>(session.shared_from_this());
+    {
+        std::unique_lock lock(client_storage_guard_);
+        client_storage_.emplace(client->GetUUID().ToString(), client);
+        session.SetClientKey(client->GetUUID().ToString());
+    }
+    if (print_log_) {
+        std::stringstream ss;
+        Clock clock;
+        ss << "[" << Calendar::DateTime(clock) << "] "
+            << client->GetSession()->GetRemoteAddress() << " connect...\n";
+        std::cout << ss.str();
+    }
+}
+
+void LoginServer::OnClose(Session& session)
+{
+    std::shared_ptr<Client> client = nullptr;
+    {
+        std::unique_lock lock(client_storage_guard_);
+        auto iter = client_storage_.find(session.GetClientKey());
+        if (iter != client_storage_.end()) {
+            client = iter->second;
+            client_storage_.erase(iter);
+        }
+    }
+    if (client) {
+
+    }
+}
+
+void LoginServer::OnError(int ec, const char* message)
 {
 }
 
-void LoginServer::OnCloseClient(UE4Client& client)
+std::shared_ptr<Client> LoginServer::GetClient(const std::string& uuid) const
 {
+    std::shared_lock lock(client_storage_guard_);
+    auto iter = client_storage_.find(uuid);
+    if (iter != client_storage_.end()) {
+        return iter->second;
+    }
+    return nullptr;
 }
 
-void LoginServer::OnProcessPacket(const std::shared_ptr<UE4Client>& client, const shared_ptr<NioInPacket>& in_packet)
+void LoginServer::ProcessPacket(Session& session, const std::shared_ptr<Session::InPacket>& in_packet)
 {
+    auto client = this->GetClient(session.GetClientKey());
+    if (!client) {
+        throw StackTraceException(ExceptionType::kNullPointer, "client is nullptr");
+    }
+    if (print_log_) {
+        std::stringstream ss;
+        ss << "Packet Dump: " << in_packet->GetDebugString() << '\n';
+        std::cout << ss.str();
+    }
+    in_packet->SetAccesOffset(2);
     try {
         int16_t opcode = in_packet->ReadInt16();
         switch (static_cast<ENetworkCSOpcode>(opcode)) {
             case ENetworkCSOpcode::kCreateAccountRequest:
-                HandleCreateAccountRquest(client, *in_packet);
+                HandleCreateAccountRquest(*client, *in_packet);
                 break;
             case ENetworkCSOpcode::kLoginRequest:
-                HandleLoginRequest(client, *in_packet);
+                HandleLoginRequest(*client, *in_packet);
                 break;
         }
     }
@@ -174,11 +215,11 @@ void LoginServer::OnProcessPacket(const std::shared_ptr<UE4Client>& client, cons
         ss << "[" << date << "] Exception: " << e.what() << '\n';
         date = ss.str();
         std::cout << date;
-        CloseClient(client->GetUUID().ToString());
+        client->Close();
     }
 }
 
-void LoginServer::HandleCreateAccountRquest(const shared_ptr<UE4Client>& client, NioInPacket& in_packet)
+void LoginServer::HandleCreateAccountRquest(const Client& client, Session::InPacket& in_packet)
 {
     std::string id, pw;
     in_packet >> id;
@@ -210,13 +251,13 @@ void LoginServer::HandleCreateAccountRquest(const shared_ptr<UE4Client>& client,
         out.WriteInt16(static_cast<int16_t>(ENetworkSCOpcode::kCreateAccountResult));
         out.WriteInt8(result);
         out.MakePacketHead();
-        client->GetSession()->AsyncSend(out, false, true);
+        client.GetSession()->Send(out, true, false);
     } catch (const std::exception & e) {
         std::cout << e.what() << std::endl;
     }
 }
 
-void LoginServer::HandleLoginRequest(const shared_ptr<UE4Client>& client, NioInPacket& in_packet)
+void LoginServer::HandleLoginRequest(const Client& client, Session::InPacket& in_packet)
 {
     std::string id, pw;
     in_packet >> id;
@@ -257,28 +298,28 @@ void LoginServer::HandleLoginRequest(const shared_ptr<UE4Client>& client, NioInP
                 RemoteSessionInfo info;
                 info.SetAccid(accid);
                 info.SetId((char*)db_id);
-                info.SetIp(client->GetSession()->GetRemoteAddress()); // ¿©±â¼­ Á×À½
+                info.SetIp(client.GetSession()->GetRemoteAddress()); // ¿©±â¼­ Á×À½
 
                 UE4OutPacket mig_noti;
                 mig_noti.WriteInt16(static_cast<int16_t>(IntermediateServerReceivePacket::kRequestUserMigration)); // opcode
                 mig_noti.WriteInt16(static_cast<int16_t>(ServerType::kLobbyServer));
-                mig_noti << client->GetUUID();
+                mig_noti << client.GetUUID();
                 mig_noti << info;
                 mig_noti.MakePacketHead();
-                GetNioServer()->GetChannel().GetConnection(intermediate_server).Send(mig_noti);
+                session_->Send(mig_noti, true, false);
             } else { // current connected id
                 UE4OutPacket out;
                 out.WriteInt16(static_cast<int16_t>(ENetworkSCOpcode::kLoginResult));
                 out.WriteInt8(2);
                 out.MakePacketHead();
-                client->GetSession()->AsyncSend(out, false, true);
+                client.GetSession()->Send(out, true, false);
             }
         } else { // wrong id or password
             UE4OutPacket out;
             out.WriteInt16(static_cast<int16_t>(ENetworkSCOpcode::kLoginResult));
             out.WriteInt8(login_ok);
             out.MakePacketHead();
-            client->GetSession()->AsyncSend(out, false, true);
+            client.GetSession()->Send(out, true, false);
         }
     } catch (const std::exception & e) {
         throw e;
