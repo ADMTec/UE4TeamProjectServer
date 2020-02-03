@@ -5,6 +5,7 @@
 
 class Character;
 class ZoneServer;
+class Match;
 
 template<typename session>
 class ZoneClient : public std::enable_shared_from_this<ZoneClient<session>>
@@ -69,6 +70,14 @@ public:
         std::shared_lock lock(context_guard_);
         return character_;
     }
+    std::shared_ptr<Match> GetMatchFromWeak() const {
+        std::shared_lock lock(context_guard_);
+        return match_.lock();
+    }
+    void SetMatchWeak(const std::shared_ptr<Match>& match) {
+        std::unique_lock lock(context_guard_);
+        match_ = match;
+    }
 private:
     mutable std::shared_mutex context_guard_;
     int state_;
@@ -78,4 +87,5 @@ private:
     std::string account_;
     std::shared_ptr<session> session_;
     std::shared_ptr<Character> character_;
+    std::weak_ptr<Match> match_;
 };

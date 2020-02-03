@@ -36,6 +36,17 @@ private:
     void HandleConfirmRequest(Client& client, Session::InPacket& in_packet);
     void HandleChrPositionNotify(Client& client, Session::InPacket& in_packet);
     void HandleMonsterActionNotify(Client& client, Session::InPacket& in_packet);
+
+    // Match
+    void HandleMatchingRequest(Client& client, Session::InPacket& in_packet);
+    void HandleMatchingComfirmRequest(Client& client, Session::InPacket& in_packet);
+
+    // Character Attack
+    void HandleCharacterAttackMotion(Client& client, Session::InPacket& in_packet);
+    void HandleCharacterHitSuccess(Client& client, Session::InPacket& in_packet);
+
+    // Monster Attack
+    void HandleMonsterAttack(Client& client, Session::InPacket& in_packet);
 private:
     bool print_log_;
     std::optional<IoServer> io_server_;
@@ -46,8 +57,5 @@ private:
 
     mutable std::mutex session_authority_guard_;
     std::unordered_map<RemoteSessionInfo::id_t, RemoteSessionInfo> authority_map_;
-
-    std::shared_ptr<class Zone> town_;
-
     static ZoneServer* static_instance_;
 };

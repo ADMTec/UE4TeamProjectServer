@@ -17,24 +17,34 @@ void MonsterTemplateProvider::Initialize()
     map_path /= ServerConstant.data_root_dir;
     auto table_data = CSVDataProvider<MonsterTableData>::Instance().GetAll();
     for (const auto& data : table_data) {
-        Monster mob;
-        mob.SetTemplateId(data.GetID());
-        mob.SetAttackMax(data.GetATKMax());
-        mob.SetAttackMin(data.GetATKMin());
-        mob.SetAttackRange(data.GetATKRange());
-        mob.SetAttackSpeed(data.GetATKSpeed());
-        mob.SetDefence(data.GetDefence());
-        mob.SetHP(data.GetMaxHP());
-        mob.SetMaxHP(data.GetMaxHP());
-        mob_data_.emplace(mob.GetTemplateId(), mob);
+        MobData mob;
+        mob.template_id = data.GetID();
+        mob.attack_max = data.GetATKMax();
+        mob.attack_min = data.GetATKMin();
+        mob.attack_range = data.GetATKRange();
+        mob.attack_speed = data.GetATKSpeed();
+        mob.defence = data.GetDefence();
+        mob.hp = data.GetMaxHP();
+        mob_data_.emplace(mob.template_id, mob);
     }
 }
 
-std::optional<Monster> MonsterTemplateProvider::GetData(int32_t mobid) const
+std::shared_ptr<Monster> MonsterTemplateProvider::GetMonster(int32_t mobid) const
 {
     auto iter = mob_data_.find(mobid);
     if (iter != mob_data_.end()) {
-        return iter->second;
+        const auto& data = iter->second;
+        auto mob = std::make_shared<Monster>();
+        std::lock_guard lock(mob->mutex_);
+        mob->SetTemplateId(data.template_id);
+        mob->SetAttackMax(data.attack_max);
+        mob->SetAttackMin(data.attack_min);
+        mob->SetAttackRange(data.attack_range);
+        mob->SetAttackSpeed(data.attack_speed);
+        mob->SetDefence(data.defence);
+        mob->SetHP(data.hp);
+        mob->SetMaxHP(data.hp);
+        return mob;
     }
-    return std::nullopt;
+    return nullptr;
 }

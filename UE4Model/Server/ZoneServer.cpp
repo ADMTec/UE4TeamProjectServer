@@ -8,10 +8,12 @@
 #include "UE4DevelopmentLibrary/Server/RemoteServerInfo.hpp"
 #include "UE4DevelopmentLibrary/Server/UE4EventHandler.hpp"
 #include "Model/Character/Character.hpp"
+#include "Packet/PacketGenerator.hpp"
 #include "../InterServerOpcode.hpp"
 #include "../NetworkOpcode.h"
 #include "GameConstants.hpp"
 #include "System/ZoneSystem.hpp"
+#include "System/MatchingSystem.hpp"
 #include <iostream>
 #include <sstream>
 
@@ -66,8 +68,6 @@ void ZoneServer::Initialize()
             //    }, std::chrono::milliseconds(3000));
         }
     );
-    town_ = ZoneSystem::CreateNewInstance(100);
-    town_->SetState(Zone::State::kActive);
 }
 
 void ZoneServer::Run()
@@ -236,6 +236,21 @@ void ZoneServer::ProcessPacket(Session& session, const std::shared_ptr<Session::
             case ENetworkCSOpcode::kNotifyMonsterAction:
                 HandleMonsterActionNotify(*client, *in_packet);
                 break;
+            case ENetworkCSOpcode::kMatchingRequest:
+                HandleMatchingRequest(*client, *in_packet);
+                break;
+            case ENetworkCSOpcode::kMatchingConfirmRequest:
+                HandleMatchingComfirmRequest(*client, *in_packet);
+                break;
+            case ENetworkCSOpcode::kCharacterAttack:
+                HandleCharacterAttackMotion(*client, *in_packet);
+                break;
+            case ENetworkCSOpcode::kCharcterHitSuccess:
+                HandleCharacterHitSuccess(*client, *in_packet);
+                break;
+            case ENetworkCSOpcode::kMonsterHitCharacter:
+                HandleMonsterAttack(*client, *in_packet);
+                break;
         }
     } catch (const std::exception & e) {
         std::stringstream ss;
@@ -284,29 +299,14 @@ void ZoneServer::HandleConfirmRequest(Client& client, Session::InPacket& in_pack
         }
     }
     std::shared_ptr<Character> chr = std::make_shared<Character>(client.GetAccid(), client.GetCid());
-    bool result{ false };
-    try {
+    {
+        std::lock_guard chr_lock(chr->mutex_);
         chr->Initialize(ODBCConnectionPool::Instance().GetConnection());
-        chr->SetWeakClient(client.shared_from_this());
         client.SetCharacter(chr);
-        result = true;
+        chr->SetWeakClient(client.shared_from_this());
+
     }
-    catch (const std::exception & e) {
-        std::cout << e.what();
-    }
-    if (result == false) {
-        client.Close();
-    } else {
-        chr->SetZone(town_);
-        Location spawn = town_->GetPlayerSpawn();
-        chr->GetLocation().x = spawn.x;
-        chr->GetLocation().y = spawn.y;
-        chr->GetLocation().z = spawn.z;
-        chr->GetRotation().x = 0.0;
-        chr->GetRotation().y = 0.0;
-        chr->GetRotation().z = 0.0;
-        town_->SpawnCharacter(chr);
-    }
+    ZoneSystem::GetTown()->SpawnCharacter(chr);
 }
 
 void ZoneServer::HandleChrPositionNotify(Client& client, Session::InPacket& in_packet)
@@ -314,12 +314,26 @@ void ZoneServer::HandleChrPositionNotify(Client& client, Session::InPacket& in_p
     if (client.GetState() != kConfirm) {
         return;
     }
+    int state = in_packet.ReadInt32();
+    Location lo; lo.Read(in_packet);
+    Rotation ro; ro.Read(in_packet);
+    int64_t oid = -1;
     auto chr = client.GetCharacter();
     if (chr) {
-        int state = in_packet.ReadInt32();
-        chr->GetLocation().Read(in_packet);
-        chr->GetRotation().Read(in_packet);
-        chr->GetZone()->UpdateCharacterPosition(*chr, state);
+        std::shared_ptr<Zone> zone = nullptr;
+        {
+            std::lock_guard lock(chr->mutex_);
+            oid = chr->GetObjectId();
+            zone = chr->GetZone();
+            chr->GetLocation() = lo;
+            chr->GetRotation() = ro;
+        }
+        if (zone) {
+            UE4OutPacket out(UE4OutPacket::AllocBufferLength::k64Bytes);
+            PacketGenerator::CharacterLocation(out, *chr, state);
+            out.MakePacketHead();
+            zone->BroadCast(out, oid);
+        }
     }
 }
 
@@ -328,12 +342,106 @@ void ZoneServer::HandleMonsterActionNotify(Client& client, Session::InPacket& in
     if (client.GetState() != kConfirm) {
         return;
     }
+    int64_t mob_id = in_packet.ReadInt64();
+    int state = in_packet.ReadInt32();
+    Location lo; lo.Read(in_packet);
+    Rotation ro; ro.Read(in_packet);
+
     auto chr = client.GetCharacter();
     if (chr) {
-        int64_t object_id = in_packet.ReadInt64();
-        int state = in_packet.ReadInt32();
-        Location lo; lo.Read(in_packet);
-        Rotation ro; ro.Read(in_packet);
-        chr->GetZone()->UpdateMonsterAction(chr->GetObjectId(), object_id, state, lo, ro);
+        std::shared_ptr<Zone> zone = nullptr;
+        {
+            std::lock_guard lock(chr->mutex_);
+            zone = chr->GetZone();
+        }
+        if (zone) {
+            auto mob = zone->GetMonsterThreadSafe(mob_id);
+            if (mob && zone->GetMobControllerOid() != Zone::MobControllerNullValue) {
+                UE4OutPacket out;
+                {
+                    std::lock_guard lock(mob->mutex_);
+                    mob->SetState(state);
+                    mob->GetLocation() = lo;
+                    mob->GetRotation() = ro;
+                    PacketGenerator::UpdateMonsterAction(out, *mob);
+                }
+                out.MakePacketHead();
+                zone->BroadCast(out, chr->GetObjectId());
+            }
+        }
     }
+}
+
+void ZoneServer::HandleMatchingRequest(Client& client, Session::InPacket& in_packet)
+{
+    auto match = client.GetMatchFromWeak();
+    bool is_request = in_packet.ReadInt8();
+    if (is_request) {
+        int32_t mapid = in_packet.ReadInt32();
+        if (match) {
+            throw StackTraceException(ExceptionType::kRunTimeError, "Match Join) client already has matching instance");
+        }
+        match = MatchSystem::Instance().GetMatch(mapid);
+        client.SetMatchWeak(match);
+        match->Join(client.GetUUID().ToString());
+    } else {
+        if (!match) {
+            throw StackTraceException(ExceptionType::kNullPointer, "Match Cancel) client has no matching instance");
+        }
+        match->Remove(client.GetUUID().ToString());
+    }
+}
+
+void ZoneServer::HandleMatchingComfirmRequest(Client& client, Session::InPacket& in_packet)
+{
+    auto match = client.GetMatchFromWeak();
+    if (match) {
+        match->Confirm(client.GetUUID().ToString(), in_packet.ReadInt8());
+    }
+}
+
+void ZoneServer::HandleCharacterAttackMotion(Client& client, Session::InPacket& in_packet)
+{
+    int32_t motion_id = in_packet.ReadInt32();
+    FVector location; location.Read(in_packet);
+    FVector rotation; rotation.Read(in_packet);
+
+    auto chr = client.GetCharacter();
+    if (!chr) {
+        throw StackTraceException(ExceptionType::kNullPointer, "character is nullptr");
+    }
+    auto zone = chr->GetZone();
+    if (!zone) {
+        throw StackTraceException(ExceptionType::kNullPointer, "zone is nullptr");
+    }
+    
+}
+
+void ZoneServer::HandleCharacterHitSuccess(Client& client, Session::InPacket& in_packet)
+{
+    int64_t character_oid = in_packet.ReadInt64();
+    int64_t mob_oid = in_packet.ReadInt64();
+    FVector mob_lo; mob_lo.Read(in_packet);
+
+    auto chr = client.GetCharacter();
+    if (!chr) {
+        throw StackTraceException(ExceptionType::kNullPointer, "character is nullptr");
+    }
+    auto zone = chr->GetZone();
+    if (!zone) {
+        throw StackTraceException(ExceptionType::kNullPointer, "zone is nullptr");
+    }
+}
+
+void ZoneServer::HandleMonsterAttack(Client& client, Session::InPacket& in_packet)
+{
+    //auto chr = client.GetCharacter();
+    //if (!chr) {
+    //    throw StackTraceException(ExceptionType::kNullPointer, "character is nullptr");
+    //}
+    //auto zone = chr->GetZone();
+    //if (!zone) {
+    //    throw StackTraceException(ExceptionType::kNullPointer, "zone is nullptr");
+    //}
+
 }

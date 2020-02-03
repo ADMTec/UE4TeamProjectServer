@@ -8,6 +8,8 @@ std::shared_mutex ZoneSystem::map_guard_;
 std::vector<std::shared_ptr<Zone>> ZoneSystem::maps_;
 std::thread ZoneSystem::zone_update_thread_;
 std::atomic<bool> ZoneSystem::zone_update_thread_exit_flag_ = false;
+std::shared_ptr<Zone> ZoneSystem::town_ = nullptr;
+
 
 void ZoneSystem::Initialize()
 {
@@ -24,6 +26,8 @@ void ZoneSystem::Initialize()
                 }
             }
         });
+    town_ = ZoneSystem::CreateNewInstance(100);
+    town_->SetState(Zone::State::kActive);
 }
 
 void ZoneSystem::Release()
@@ -42,16 +46,21 @@ std::shared_ptr<Zone> ZoneSystem::CreateNewInstance(int32_t mapid)
     }
     const auto& data_ptr = *data;
 
-    std::shared_ptr<Zone> zone = std::make_shared<Zone>();
+    std::shared_ptr<Zone> zone = std::shared_ptr<Zone>(new Zone(), 
+        [new_id](Zone* zone) {
+            ZoneSystem::DestoryInstance(new_id);
+            delete zone;
+        });
+    zone->SetMapId(data_ptr->map_id);
     zone->SetInstanceId(new_id);
     zone->SetType(static_cast<Zone::Type>(data_ptr->type));
     zone->SetPlayerSpawn(data_ptr->player_spawn);
     for (const auto& spawn_point : data_ptr->spawn_point) {
         auto type = static_cast<ZoneData::SpawnPoint::Type>(spawn_point.type);
         if (type == ZoneData::SpawnPoint::Type::kMonster) {
-            auto opt_mob = MonsterTemplateProvider::Instance().GetData(spawn_point.id);
-            if (opt_mob) {
-                zone->AddMonster(*opt_mob, spawn_point.location, spawn_point.rotation);
+            auto mob = MonsterTemplateProvider::Instance().GetMonster(spawn_point.id);
+            if (mob) {
+                zone->AddMonster(mob, spawn_point.location, spawn_point.rotation);
             }
         } else if (type == ZoneData::SpawnPoint::Type::kNpc) {
             // ...
@@ -81,7 +90,9 @@ void ZoneSystem::DestoryInstance(int64_t instance_id)
             maps_.erase(iter);
         }
     }
-    zone->Exit();
+    if (zone) {
+        zone->Exit();
+    }
 }
 
 std::shared_ptr<Zone> ZoneSystem::GetInstance(int64_t instance_id)
@@ -95,4 +106,9 @@ std::shared_ptr<Zone> ZoneSystem::GetInstance(int64_t instance_id)
         return *iter;
     }
     return nullptr;
+}
+
+std::shared_ptr<Zone> ZoneSystem::GetTown()
+{
+    return town_;
 }

@@ -68,6 +68,7 @@ void LoginServer::Initialize()
             }
         }
     );
+    print_log_ = true;
 }
 
 void LoginServer::Run()

@@ -3,10 +3,12 @@
 #include "Packet/PacketGenerator.hpp"
 #include "Server/Alias.hpp"
 #include "Server/ZoneServer.hpp"
+#include "UE4DevelopmentLibrary/Database.hpp"
+
 
 
 Zone::Zone()
-    : state_(Zone::State::kPreparing), instance_id_(-1), map_id_(-1), type_(Zone::Type::kCount), last_object_id_(0), monster_controller_id_(monster_controller_null_value)
+    : state_(Zone::State::kPreparing), instance_id_(-1), map_id_(-1), type_(Zone::Type::kCount), last_object_id_(0), monster_controller_id_(MobControllerNullValue)
 {
 }
 
@@ -36,125 +38,110 @@ void Zone::Exit()
 {
 }
 
-void Zone::AddMonster(Monster& mob, Location location, Rotation rotation)
-{
-    mob.SetObjectId(GetNewObjectId());
-    mob.GetLocation().x = location.x;
-    mob.GetLocation().y = location.y;
-    mob.GetLocation().z = location.z;
-    mob.GetRotation().x = rotation.x;
-    mob.GetRotation().y = rotation.y;
-    mob.GetRotation().z = rotation.z;
-    std::unique_lock lock(object_guard_[ToInt32(ZoneObject::Type::kMonster)]);
-    mobs_.emplace(mob.GetObjectId(), mob);
-}
-
 void Zone::AddNPC(int32_t npc, Location location, Rotation rotation)
 {
     std::unique_lock lock(object_guard_[ToInt32(ZoneObject::Type::kNpc)]);
 }
 
-void Zone::UpdateCharacterPosition(Character& chr, int32_t value)
+void Zone::SpawnCharacter(const std::shared_ptr<Character>& chr)
 {
-    UE4OutPacket out(UE4OutPacket::AllocBufferLength::k64Bytes);
-    PacketGenerator::CharacterLocation(out, chr, value);
-    out.MakePacketHead();
-    this->BroadCast(out, chr.GetObjectId());
-}
-
-void Zone::UpdateMonsterAction(int64_t sender, int64_t oid, int32_t state, Location lo, Rotation ro)
-{
-    if (monster_controller_id_ != sender) {
-        return;
+    std::shared_ptr<Client> client = nullptr;
+    {
+        std::lock_guard lock(chr->mutex_);
+        chr->GetLocation() = this->GetPlayerSpawn();
+        chr->GetLocation().x += ((rand() % 5) * 50);
+        chr->GetLocation().y += ((rand() % 5) * 50);
+        chr->GetRotation() = { 0.0f, 0.0f, 0.0f };
+        chr->SetObjectId(this->GetNewObjectId());
+        chr->SetZone(this->shared_from_this());
+        client = chr->GetClientFromWeak();
     }
-    std::shared_lock lock(object_guard_[ToInt32(ZoneObject::Type::kMonster)]);
-    auto iter = mobs_.find(oid);
-    if (iter != mobs_.end()) {
-        iter->second.SetState(state);
-        iter->second.GetLocation() = lo;
-        iter->second.GetRotation() = ro;
-        UE4OutPacket out;
-        PacketGenerator::UpdateMonsterAction(out, iter->second);
-        out.MakePacketHead();
-        this->BroadCast(out, oid); // Monster -> Character 락 획득... 데드락 주의
-    }
-}
-
-void Zone::SpawnCharacter(const std::shared_ptr<class Character>& chr)
-{
-    chr->SetObjectId(GetNewObjectId());
     {
         std::unique_lock lock(object_guard_[ToInt32(ZoneObject::Type::kCharacter)]);
+
         UE4OutPacket map_init(UE4OutPacket::AllocBufferLength::k1024Bytes);
         PacketGenerator::UserEnterTheMap(map_init, *this, *chr);
         map_init.MakePacketHead();
-        std::shared_ptr<Client> client = chr->GetClientFromWeak();
         if (client) {
             client->GetSession()->Send(map_init, true, false);
         }
         chrs_.emplace(chr->GetObjectId(), chr);
-        if (monster_controller_id_ == monster_controller_null_value)
+        int64_t expected{ MobControllerNullValue };
+        if (monster_controller_id_.compare_exchange_strong(expected, chr->GetObjectId()))
         {
             UE4OutPacket out;
             PacketGenerator::SetMonsterController(out, true);
             out.MakePacketHead();
             client->GetSession()->Send(out, true, false);
-            monster_controller_id_ = chr->GetObjectId();
         }
+        // Remote
+        UE4OutPacket out(UE4OutPacket::AllocBufferLength::k256Bytes);
+        PacketGenerator::SpawnCharacter(out, *chr);
+        out.MakePacketHead();
+        this->BroadCastNoLock(out, chr->GetObjectId());
     }
-    // Remote
-    UE4OutPacket out(UE4OutPacket::AllocBufferLength::k256Bytes);
-    PacketGenerator::SpawnCharacter(out, *chr);
-    out.MakePacketHead();
-    this->BroadCastNoLock(out, chr->GetObjectId());
 }
 
 void Zone::RemoveCharacter(int64_t object_id)
 {
-    std::unique_lock lock(object_guard_[ToInt32(ZoneObject::Type::kCharacter)]);
-    chrs_.erase(object_id);
-    if (monster_controller_id_ == object_id) {
-        if (chrs_.empty()) {
-            monster_controller_id_ = monster_controller_null_value;
-            return;
+    bool controller_is_null{ false };
+    {
+        std::unique_lock lock(object_guard_[ToInt32(ZoneObject::Type::kCharacter)]);
+        chrs_.erase(object_id);
+        controller_is_null = (monster_controller_id_ == object_id);
+        if (controller_is_null) {
+            monster_controller_id_.store(MobControllerNullValue);
         }
-        bool result{ false };
-        for (const auto& chr_pair : chrs_) {
-            auto client = chr_pair.second->GetClientFromWeak();
-            if (client) {
-                monster_controller_id_ = chr_pair.second->GetObjectId();
-                UE4OutPacket out;
-                PacketGenerator::SetMonsterController(out, true);
-                out.MakePacketHead();
-                client->GetSession()->Send(out, true, false);
-                result = true;
+    }
+    if (controller_is_null)
+    {
+        auto chr_copy = GetCharacterCopyThreadSafe();
+        for (const auto& chr : chr_copy) {
+            std::lock_guard lock(chr->mutex_);
+            auto client = chr->GetClientFromWeak();
+            auto zone = chr->GetZone();
+            if (client && zone && zone->GetInstanceId() == this->GetInstanceId()) 
+            {
+                int64_t expected{ MobControllerNullValue };
+                if (monster_controller_id_.compare_exchange_strong(expected, chr->GetObjectId()))
+                {
+                    UE4OutPacket out;
+                    PacketGenerator::SetMonsterController(out, true);
+                    out.MakePacketHead();
+                    client->GetSession()->Send(out, true, false);
+
+                }
                 break;
             }
-        }
-        if (result == false) {
-            monster_controller_id_ = monster_controller_null_value;
-            return;
         }
     }
 }
 
-void Zone::UpdateCharacterPosition(const std::shared_ptr<Character>& chr, int state)
+void Zone::AddMonster(const std::shared_ptr<Monster>& mob, Location location, Rotation rotation)
 {
-    UE4OutPacket out;
-    PacketGenerator::CharacterLocation(out, *chr, state);
-    out.MakePacketHead();
-    this->BroadCast(out, chr->GetObjectId());
+    int64_t oid = GetNewObjectId();
+    {
+        std::lock_guard lock(mob->mutex_);
+        mob->SetObjectId(oid);
+        mob->GetLocation().x = location.x;
+        mob->GetLocation().y = location.y;
+        mob->GetLocation().z = location.z;
+        mob->GetRotation().x = rotation.x;
+        mob->GetRotation().y = rotation.y;
+        mob->GetRotation().z = rotation.z;
+    }
+    std::unique_lock lock(object_guard_[ToInt32(ZoneObject::Type::kMonster)]);
+    mobs_.emplace(oid, mob);
 }
 
-void Zone::SpawnMonster(Monster& mob, Location location, Rotation rotation)
+void Zone::SpawnMonster(const std::shared_ptr<Monster>& mob, Location location, Rotation rotation)
 {
     AddMonster(mob, location, rotation);
     // notify
 
     UE4OutPacket out;
-    PacketGenerator::SpawnMonster(out, mob);
+    PacketGenerator::SpawnMonster(out, *mob);
     out.MakePacketHead();
-
     BroadCast(out);
 }
 
@@ -163,10 +150,17 @@ void Zone::SpawnNPC(int32_t npc, Location location, Rotation rotation)
 
 }
 
-void Zone::AttackMonster(const Character& chr, int64_t mob_obj_id)
-{
-    std::unique_lock lock(object_guard_[ToInt32(ZoneObject::Type::kNpc)]);
-}
+//void Zone::CharacterAttackMob(int64_t attacker_oid, int64_t mob_oid, int32_t id)
+//{
+//    // 1, 2, 3, 4 일반 어택
+//    std::unique_lock lock(object_guard_[ToInt32(ZoneObject::Type::kNpc)]);
+//
+//}
+//
+//void Zone::MobAttackCharacter(int64_t attacker_oid, int64_t mob_oid, Location lo, Rotation ro)
+//{
+//
+//}
 
 void Zone::BroadCast(class UE4OutPacket& outpacket)
 {
@@ -234,7 +228,7 @@ void Zone::SetPlayerSpawn(Location location)
     player_spawn_ = location;
 }
 
-std::vector<std::shared_ptr<Character>> Zone::GetThreadSafeCharacterCopy() const
+std::vector<std::shared_ptr<Character>> Zone::GetCharacterCopyThreadSafe() const
 {
     std::vector<std::shared_ptr<Character>> chr;
     std::shared_lock lock(object_guard_[ToInt32(ZoneObject::Type::kCharacter)]);
@@ -255,10 +249,15 @@ std::vector<std::shared_ptr<Character>> Zone::GetCharacterCopy() const
     return chr;
 }
 
-std::vector<Monster> Zone::GetThreadSafeMonsterCopy() const
+std::vector<std::shared_ptr<Monster>> Zone::GetMonsterCopyThreadSafe() const
 {
-    std::vector<Monster> mob;
     std::shared_lock lock(object_guard_[ToInt32(ZoneObject::Type::kMonster)]);
+    return GetMonsterCopy();
+}
+
+std::vector<std::shared_ptr<Monster>> Zone::GetMonsterCopy() const
+{
+    std::vector<std::shared_ptr<Monster>> mob;
     mob.reserve(mobs_.size());
     for (const auto& element : mobs_) {
         mob.emplace_back(element.second);
@@ -266,14 +265,39 @@ std::vector<Monster> Zone::GetThreadSafeMonsterCopy() const
     return mob;
 }
 
-std::vector<Monster> Zone::GetMonsterCopy() const
+std::shared_ptr<Character> Zone::GetCharacterThreadSafe(int64_t oid) const
 {
-    std::vector<Monster> mob;
-    mob.reserve(mobs_.size());
-    for (const auto& element : mobs_) {
-        mob.emplace_back(element.second);
+    std::shared_lock lock(object_guard_[ToInt32(ZoneObject::Type::kCharacter)]);
+    return GetCharacter(oid);
+}
+
+std::shared_ptr<Character> Zone::GetCharacter(int64_t oid) const
+{
+    auto iter = chrs_.find(oid);
+    if (iter != chrs_.end()) {
+        return iter->second;
     }
-    return mob;
+    return nullptr;
+}
+
+std::shared_ptr<Monster> Zone::GetMonsterThreadSafe(int64_t oid) const
+{
+    std::shared_lock lock(object_guard_[ToInt32(ZoneObject::Type::kMonster)]);
+    return GetMonster(oid);
+}
+
+std::shared_ptr<Monster> Zone::GetMonster(int64_t oid) const
+{
+    auto iter = mobs_.find(oid);
+    if (iter != mobs_.end()) {
+        return iter->second;
+    }
+    return nullptr;
+}
+
+int64_t Zone::GetMobControllerOid() const
+{
+    return monster_controller_id_;
 }
 
 int64_t Zone::GetNewObjectId()

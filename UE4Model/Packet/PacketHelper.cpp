@@ -20,7 +20,7 @@ void PacketHelper::WriteMapData(OutputStream& out, const Zone& zone, int64_t exc
     }
     out << (int32_t)mobs.size();
     for (const auto& mob : mobs) {
-        WriteMonsterData(out, mob);
+        WriteMonsterData(out, *mob);
     }
 
     // NPC

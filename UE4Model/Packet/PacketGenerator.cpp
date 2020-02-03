@@ -86,9 +86,28 @@ void PacketGenerator::SpawnMonster(OutputStream& out, const Monster& mob)
 
 void PacketGenerator::UpdateMonsterAction(OutputStream& out, const Monster& mob)
 {
-    out.WriteInt16(static_cast<int16_t>(ENetworkSCOpcode::kSpawnMonster));
+    out.WriteInt16(static_cast<int16_t>(ENetworkSCOpcode::kUpdateMonsterAction));
     out << mob.GetObjectId();
     out << mob.GetState();
     out << mob.GetLocation();
     out << mob.GetRotation();
+}
+
+void PacketGenerator::CharacterAttack(OutputStream& out, const Character& chr, int32_t id)
+{
+    out.WriteInt16(static_cast<int16_t>(ENetworkSCOpcode::kNotifyCharacterAttack));
+    out << chr.GetObjectId();
+    out << id;
+    out << chr.GetLocation();
+    out << chr.GetRotation();
+}
+
+void PacketGenerator::NotifyMatchResult(OutputStream& out)
+{
+    out.WriteInt16(static_cast<int16_t>(ENetworkSCOpcode::kNotifyMatchResult));
+}
+
+void PacketGenerator::NotifyMatchCanceled(OutputStream& out)
+{
+    out.WriteInt16(static_cast<int16_t>(ENetworkSCOpcode::kNotifyMatchCanceled));
 }

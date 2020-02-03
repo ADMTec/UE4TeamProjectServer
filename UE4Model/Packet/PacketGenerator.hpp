@@ -32,4 +32,13 @@ public:
 
     // kUpdateMonsterAction
     static void UpdateMonsterAction(OutputStream& out, const Monster& mob);
+
+    // kNotifyCharacterAttack
+    static void CharacterAttack(OutputStream& out, const Character& chr, int32_t id);
+
+    // kNotifyMatchResult
+    static void NotifyMatchResult(OutputStream& out);
+
+    // kNotifyMatchCanceled
+    static void NotifyMatchCanceled(OutputStream& out);
 };

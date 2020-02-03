@@ -11,7 +11,7 @@
 #include <functional>
 
 
-class Zone
+class Zone : public std::enable_shared_from_this<Zone>
 {
 public:
     enum class Type : int32_t {
@@ -23,7 +23,7 @@ public:
         kPreparing,
         kActive,
     };
-    friend class ZoneSystemImpl;
+    static constexpr const int64_t MobControllerNullValue = -1;
 public:
     Zone();
 
@@ -32,23 +32,19 @@ public:
     void Exit();
 
     void RegisterTimer(const std::function<void(void)> func, int64_t deferred_time_milli);
-
     
-    void AddMonster(Monster& mob, Location location, Rotation rotation);
-    void AddNPC(int32_t npc, Location location, Rotation rotation);
+    
 
-
-    void UpdateCharacterPosition(Character& chr, int32_t value);
-    void UpdateMonsterAction(int64_t sender, int64_t oid, int32_t state, Location lo, Rotation ro);
-
-    void SpawnCharacter(const std::shared_ptr<class Character>& chr);
+    void SpawnCharacter(const std::shared_ptr<Character>& chr);
     void RemoveCharacter(int64_t object_id);
-    void UpdateCharacterPosition(const std::shared_ptr<Character>& chr, int state);
 
-    void SpawnMonster(Monster& mob, Location location, Rotation rotation);
+    void AddMonster(const std::shared_ptr<Monster>& mob, Location location, Rotation rotation);
+    void SpawnMonster(const std::shared_ptr<Monster>& mob, Location location, Rotation rotation);
+    void AddNPC(int32_t npc, Location location, Rotation rotation);
     void SpawnNPC(int32_t npc, Location location, Rotation rotation);
 
-    void AttackMonster(const Character& chr, int64_t mob_obj_id);
+    //void CharacterAttackMob(int64_t attacker_oid, int64_t mob_oid, int32_t id);
+    //void MobAttackCharacter(int64_t attacker_oid, int64_t chr_oid, Location lo, Rotation ro);
 
     void BroadCast(class UE4OutPacket& outpacket);
     void BroadCast(class UE4OutPacket& outpacket, int64_t except_chr_oid);
@@ -64,11 +60,18 @@ public:
     Location GetPlayerSpawn() const;
     void SetPlayerSpawn(Location location);
 
-    std::vector<std::shared_ptr<Character>> GetThreadSafeCharacterCopy() const;
+    std::vector<std::shared_ptr<Character>> GetCharacterCopyThreadSafe() const;
     std::vector<std::shared_ptr<Character>> GetCharacterCopy() const;
-    std::vector<Monster> GetThreadSafeMonsterCopy() const;
-    std::vector<Monster> GetMonsterCopy() const;
+    std::vector<std::shared_ptr<Monster>> GetMonsterCopyThreadSafe() const;
+    std::vector<std::shared_ptr<Monster>> GetMonsterCopy() const;
+
+    std::shared_ptr<Character> GetCharacterThreadSafe(int64_t oid) const;
+    std::shared_ptr<Character> GetCharacter(int64_t oid) const;
+
+    std::shared_ptr<Monster> GetMonsterThreadSafe(int64_t oid) const;
+    std::shared_ptr<Monster> GetMonster(int64_t oid) const;
 public:
+    int64_t GetMobControllerOid() const;
     int64_t GetNewObjectId();
 private:
     void BroadCastNoLock(class UE4OutPacket& outpacket);
@@ -83,11 +86,9 @@ private:
     int64_t time_sum_;
     int64_t last_update_time_;
 
-    int64_t monster_controller_id_; // with Character Guard
+    std::atomic<int64_t> monster_controller_id_; //
 
     mutable std::array<std::shared_mutex, ToInt32(ZoneObject::Type::kCount)> object_guard_;
     std::unordered_map<ZoneObject::oid_t, std::shared_ptr<Character>> chrs_;
-    std::unordered_map<ZoneObject::oid_t, Monster> mobs_;
-
-    static constexpr const int64_t monster_controller_null_value = -1;
+    std::unordered_map<ZoneObject::oid_t, std::shared_ptr<Monster>> mobs_;
 };

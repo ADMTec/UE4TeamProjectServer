@@ -75,6 +75,7 @@ private:
 private:
     void SendCharacterList(Client& client);
 private:
+    bool print_log_;
     std::optional<IoServer> io_server_;
     std::shared_ptr<IntermediateSession> session_;
 

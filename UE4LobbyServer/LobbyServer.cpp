@@ -58,6 +58,14 @@ void LobbyServer::Initialize()
             {
                 std::unique_lock lock(session_authority_guard_);
                 authority_map_.emplace(info.GetId(), info);
+                std::stringstream ss;
+                ss << "---------------------------------------------------\n";
+                ss << " Authority IP: " << info.GetIp() << '\n';
+                ss << " Authority ID: " << info.GetId() << '\n';
+                ss << " Authority AccID: " << info.GetAccid() << '\n';
+                ss << " Authority Clock: " << info.GetClock().to_int64_t() << '\n';
+                ss << "---------------------------------------------------\n";
+                std::cout << ss.str();
             }
             UE4OutPacket out;
             out.WriteInt16(static_cast<int16_t>(
@@ -96,6 +104,7 @@ void LobbyServer::Initialize()
             }
         }
     );
+    print_log_ = true;
 }
 
 void LobbyServer::Run()
@@ -214,6 +223,11 @@ void LobbyServer::ProcessPacket(Session& session, const std::shared_ptr<Session:
     if (!client) {
         throw StackTraceException(ExceptionType::kNullPointer, "client is nullptr");
     }
+    if (print_log_) {
+        std::stringstream ss;
+        ss << "Packet Dump: " << in_packet->GetDebugString() << '\n';
+        std::cout << ss.str();
+    }
     in_packet->SetAccesOffset(2);
     try {
         int16_t opcode = in_packet->ReadInt16();
@@ -262,13 +276,22 @@ void LobbyServer::HandleConfirmRequest(Client& client, Session::InPacket& in_pac
     std::string id = in_packet.ReadString();
     const auto& ip = client.GetSession()->GetRemoteAddress();
     {
-        std::shared_lock lock(session_authority_guard_);
+        std::unique_lock lock(session_authority_guard_);
         auto iter = authority_map_.find(id);
         if (iter != authority_map_.end() && iter->second.GetIp() == ip) {
             client.SetState(LobbyServer::kConfirm);
             client.SetAccid(iter->second.GetAccid());
             client.SetAccount(id);
+            authority_map_.erase(iter);
             result = true;
+        } else {
+            std::stringstream ss;
+            ss << "---------------------------------------------------\n";
+            ss << " Session Authority Fail!!!!\n";
+            ss << " Target ID: " << id << '\n';
+            ss << " Target IP: " << ip << '\n';
+            ss << "---------------------------------------------------\n";
+            std::cout << ss.str();
         }
     }
     if (result) {
@@ -355,7 +378,7 @@ void LobbyServer::HandleCharacterCreateRequest(Client& client, Session::InPacket
     out.WriteInt16(static_cast<int16_t>(ENetworkSCOpcode::kCharacterCreateNotify));
     if (rs->Next()) {
         rs->Close();
-        static std::array<int32_t, 5> default_items = { 3000001 , 3100001 , 3200001 ,3300001 };
+        static std::array<int32_t, 4> default_items = { 3000001 , 3100001 , 3200001 ,3300001 };
         info.armor_itemid = 3000001;
         info.hand_itemid = 3100001;
         info.shoes_itemid = 3200001;

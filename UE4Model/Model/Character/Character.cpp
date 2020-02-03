@@ -76,23 +76,19 @@ Character::~Character()
 
 std::shared_ptr<Zone> Character::GetZone() const
 {
-    std::shared_lock lock(pointer_guard_);
     return zone_;
 }
 
 void Character::SetZone(const std::shared_ptr<Zone>& zone)
 {
-    std::unique_lock lock(pointer_guard_);
     zone_ = zone;
 }
 
 std::shared_ptr<Client> Character::GetClientFromWeak() const {
-    std::shared_lock lock(pointer_guard_);
     return client_.lock();
 }
 
 void Character::SetWeakClient(const std::shared_ptr<Client>& client) {
-    std::unique_lock lock(pointer_guard_);
     client_ = client;
 }
 
@@ -168,12 +164,10 @@ void Character::Initialize(const std::shared_ptr<Connection>& con)
                 if (inven_data.equipped) {
                     auto equip_slot = (inven_data.itemid / 100000) % 10;
                     if (equip_slot >= ToInt32(Equipment::Position::kArmor) && equip_slot <= ToInt32(Equipment::Position::kWeapon)) {
-                        std::unique_lock lock(equipment_guard_);
                         equipment_.Equip(static_cast<Equipment::Position>(equip_slot), equip);
                     }
                 } else {
                     if (inven_data.slot >= 0 && inven_data.slot < inventory_.inventory_size) {
-                        std::unique_lock lock(inventory_guard_);
                         inventory_.Push(inven_data.slot, std::dynamic_pointer_cast<Item>(equip), 1);
                     }
                 }
@@ -202,7 +196,6 @@ void Character::Initialize(const std::shared_ptr<Connection>& con)
         rs->BindInt32(3, &id);
         while (rs->Next()) {
             if (type >= ToInt32(QuickSlot::Type::kNull) && type <= ToInt32(QuickSlot::Type::kItem) && slot >= 0 && slot < 10) {
-                std::lock_guard lock(quick_slot_guard_);
                 quick_slot_[slot].type = static_cast<QuickSlot::Type>(type);
                 quick_slot_[slot].id = id;
             }
@@ -216,7 +209,6 @@ void Character::Initialize(const std::shared_ptr<Connection>& con)
 
 void Character::RecoveryPerSecond()
 {
-    std::unique_lock lock(stat_gaurd_);
     SetHP(std::clamp(GetHP() + 3.0f, 0.0f, GetMaxHP()));
     stamina_ = std::clamp(stamina_ + stamina_recovery_, 0.0f, max_stamina_);
 }
@@ -232,7 +224,6 @@ void Character::UpdatePawnStat()
 
 bool Character::InventoryToEquipment(int32_t inventory_index, Equipment::Position pos)
 {
-    std::scoped_lock lock(equipment_guard_, inventory_guard_);
     if (inventory_index < 0 || inventory_index >= inventory_.inventory_size) {
         return false;
     }
@@ -252,7 +243,6 @@ bool Character::EquipmentToInventory(Equipment::Position pos)
 {
     int slot_index = -1;
     {
-        std::unique_lock lock(inventory_guard_);
         slot_index = inventory_.GetEmptySlotIndex();
     }
     return Character::EquipmentToInventory(pos, slot_index);
@@ -260,7 +250,6 @@ bool Character::EquipmentToInventory(Equipment::Position pos)
 
 bool Character::EquipmentToInventory(Equipment::Position pos, int32_t inventory_index)
 {
-    std::scoped_lock lock(equipment_guard_, inventory_guard_);
     if (inventory_index < 0 || inventory_index >= inventory_.inventory_size) {
         return false;
     }
@@ -281,7 +270,6 @@ bool Character::UseConsumeItem(int32_t inventory_index)
 
 bool Character::ChangeInventoryItemPosition(int32_t prev_index, int32_t new_index)
 {
-    std::unique_lock lock(inventory_guard_);
     if (prev_index < 0 || prev_index >= inventory_.inventory_size ||
         new_index < 0 || new_index >= inventory_.inventory_size) {
         return false;
@@ -304,7 +292,6 @@ bool Character::ChangeInventoryItemPosition(int32_t prev_index, int32_t new_inde
 
 bool Character::DestoryItem(int32_t inventory_index)
 {
-    std::unique_lock lock(inventory_guard_);
     if (inventory_index < 0 || inventory_index >= inventory_.inventory_size) {
         return false;
     }
@@ -317,7 +304,6 @@ bool Character::DestoryItem(int32_t inventory_index)
 
 std::array<QuickSlot, 10> Character::GetQuickSlot() const
 {
-    std::shared_lock lock(quick_slot_guard_);
     return quick_slot_;
 }
 
@@ -389,13 +375,11 @@ float Character::GetMaxStamina() const
 
 Equipment::Data Character::GetEquipmentData() const
 {
-    std::shared_lock lock(equipment_guard_);
     return equipment_.GetData();
 }
 
 Inventory::Data Character::GetInventoryData() const
 {
-    std::shared_lock lock(inventory_guard_);
     return inventory_.GetData();
 }
 
