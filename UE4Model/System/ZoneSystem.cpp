@@ -24,6 +24,7 @@ void ZoneSystem::Initialize()
                         maps_[i]->Update();
                     }
                 }
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
             }
         });
     town_ = ZoneSystem::CreateNewInstance(100);
@@ -55,6 +56,7 @@ std::shared_ptr<Zone> ZoneSystem::CreateNewInstance(int32_t mapid)
     zone->SetInstanceId(new_id);
     zone->SetType(static_cast<Zone::Type>(data_ptr->type));
     zone->SetPlayerSpawn(data_ptr->player_spawn);
+    zone->SetNextMapPortalInfo(data_ptr->portal.map_id, data_ptr->portal.range, data_ptr->portal.location);
     for (const auto& spawn_point : data_ptr->spawn_point) {
         auto type = static_cast<ZoneData::SpawnPoint::Type>(spawn_point.type);
         if (type == ZoneData::SpawnPoint::Type::kMonster) {
@@ -111,4 +113,28 @@ std::shared_ptr<Zone> ZoneSystem::GetInstance(int64_t instance_id)
 std::shared_ptr<Zone> ZoneSystem::GetTown()
 {
     return town_;
+}
+
+std::string ZoneSystem::GetDebugString()
+{
+    std::vector<std::shared_ptr<Zone>> copy;
+    {
+        std::shared_lock lock(map_guard_);
+        for (const auto& zone : maps_) {
+            copy.emplace_back(zone);
+        }
+    }
+    std::stringstream ss;
+    ss << "-----------------------------------------------" << '\n';
+    ss << "-----------------------------------------------" << '\n';
+    ss << " Debug State [ZoneSystem]" << '\n';
+    ss << town_->GetDebugString();
+    if (!copy.empty()) {
+        for (const auto& zone : copy) {
+            ss << zone->GetDebugString();
+        }
+    }
+    ss << "-----------------------------------------------" << '\n';
+    ss << "-----------------------------------------------" << '\n';
+    return ss.str();
 }

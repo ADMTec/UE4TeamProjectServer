@@ -1,9 +1,11 @@
 #pragma once
+#include "Model/FVector.hpp"
 #include <cstdint>
 
 class OutputStream;
 class Item;
 class Zone;
+class PawnObject;
 class Character;
 class Monster;
 
@@ -41,4 +43,13 @@ public:
 
     // kNotifyMatchCanceled
     static void NotifyMatchCanceled(OutputStream& out);
+
+    // kkActorDamaged
+    static void ActorDamaged(OutputStream& out, const PawnObject& attacker, const PawnObject& attacked, int attackid, float attacked_hp);
+
+    static void CharacterWait(OutputStream& out, const Character& chr);
+
+    static void CharacterSprint(OutputStream& out, const Character& chr);
+
+    static void SpawnPortal(OutputStream& out, FVector location);
 };

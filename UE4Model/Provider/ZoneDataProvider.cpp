@@ -40,6 +40,7 @@ void ZoneDataProvider::Initialize()
                 data.type = map_data["Type"];
                 if (map_data["Portal"].is_null() == false) {
                     data.portal.map_id = map_data["Portal"]["Mapid"];
+                    data.portal.range = map_data["Portal"]["rd"];
                     data.portal.location.x = map_data["Portal"]["x"];
                     data.portal.location.y = map_data["Portal"]["y"];
                     data.portal.location.z = map_data["Portal"]["z"];
@@ -48,7 +49,7 @@ void ZoneDataProvider::Initialize()
                         data.spawn_point.emplace_back(
                             sp["type"], sp["id"], sp["x"], sp["y"], sp["z"], sp["rx"], sp["ry"], sp["rz"]);
                 }
-                data.player_spawn.x   = map_data["PlayerSpawn"]["x"];
+                data.player_spawn.x = map_data["PlayerSpawn"]["x"];
                 data.player_spawn.y = map_data["PlayerSpawn"]["y"];
                 data.player_spawn.z = map_data["PlayerSpawn"]["z"];
                 zone_data_.emplace(data.map_id, data);

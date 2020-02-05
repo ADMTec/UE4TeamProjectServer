@@ -47,6 +47,11 @@ private:
 
     // Monster Attack
     void HandleMonsterAttack(Client& client, Session::InPacket& in_packet);
+
+    void HandleCharacterWait(Client& client, Session::InPacket& in_packet);
+    void HandleCharacterSprint(Client& client, Session::InPacket& in_packet);
+
+    void HandleZoneChangeRequest(Client& client, Session::InPacket& in_packet);
 private:
     bool print_log_;
     std::optional<IoServer> io_server_;

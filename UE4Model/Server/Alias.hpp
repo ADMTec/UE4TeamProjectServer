@@ -20,7 +20,7 @@ struct ServerTemplateParameter
 
     constexpr static bool Strand = true;
     constexpr static int InternalBufferLength = 1024;
-    constexpr static int RecvBufferLength = 1024;
+    constexpr static int RecvBufferLength = 2048;
 };
 
 using Session = TNioSession<ServerTemplateParameter>;

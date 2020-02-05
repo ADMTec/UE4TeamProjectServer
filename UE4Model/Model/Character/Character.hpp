@@ -21,7 +21,7 @@ public:
 
     std::shared_ptr<Client> GetClientFromWeak() const;
     void SetWeakClient(const std::shared_ptr<Client>& client);
-    std::shared_ptr<Zone> GetZone() const;
+    std::shared_ptr<Zone> GetZoneFromWeak() const;
     void SetZone(const std::shared_ptr<Zone>& zone);
     void Initialize(const std::shared_ptr<class Connection>& con);
 
@@ -64,7 +64,7 @@ private:
     void UpdatePawnStat();
 private:
     std::weak_ptr<Client> client_;
-    std::shared_ptr<Zone> zone_;
+    std::weak_ptr<Zone> zone_;
 
     int32_t accid_;
     int32_t cid_;

@@ -9,8 +9,8 @@
 
 class Match
 {
-    static constexpr int max_match_count = 4;
-    static constexpr int max_flag = 0b1111;
+    static constexpr int max_match_count = 1;
+    friend class MatchSystem;
 public:
     class System;
     enum class State {
@@ -31,6 +31,7 @@ public:
     void SetState(Match::State state);
     int32_t GetMapId() const;
     int64_t GetMatchInstanceId() const;
+    std::string GetDebugString() const;
 private:
     mutable std::shared_mutex context_guard_;
     State state_;
@@ -44,12 +45,13 @@ class MatchSystem : public TSingleton<MatchSystem>
     friend class TSingleton<MatchSystem>;
     MatchSystem();
 public:
-    std::shared_ptr<Match> GetMatch(int32_t mapid);
+    std::shared_ptr<Match> CreateOrFind(int32_t mapid);
     std::shared_ptr<Match> Find(int64_t match_instance_id);
     void RemoveMatch(int64_t match_instance_id);
     void Clear();
+    std::string GetDebugString() const;
 private:
     std::atomic<int64_t> match_id_;
-    std::shared_mutex match_guard_;
+    mutable std::shared_mutex match_guard_;
     std::vector<std::shared_ptr<Match>> match_queue_;
 };

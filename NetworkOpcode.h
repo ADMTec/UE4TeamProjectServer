@@ -30,6 +30,12 @@ enum class ENetworkCSOpcode : uint16_t
     kCharcterHitSuccess = 1009,
 
     kMonsterHitCharacter = 1010,
+    kSendChatRequest = 1011,
+
+    kRequestCharacterWait = 1020,
+    kRequestCharacterSprint = 1021,
+
+    kRequestChangeZone = 1022,
 };
 
 
@@ -48,23 +54,28 @@ enum class ENetworkSCOpcode : uint16_t
 
     // ZoneServer
     kUserEnterTheMap = 1000,
-    kSpawnCharacter,
-    kSetMonsterController,
+    kSpawnCharacter = 1001,
+    kSetMonsterController = 1002,
 
-    kNotifyCharacterAttack,
-    kNotifyCharacterRolling,
-    kActorDamaged,
+    kNotifyCharacterAttack = 1003,
+    kNotifyCharacterRolling = 1004,
+    kActorDamaged = 1005,
 
-    kExitCharacter,
-    kUpdateCharacterPosition,
-    kUpdateMonsterAction,
+    kExitCharacter = 1006,
+    kUpdateCharacterPosition = 1007,
+    kUpdateMonsterAction = 1008,
 
-    kSpawnMonster,
+    kSpawnMonster = 1009,
 
-    kInventoryUpdate,
-    kQuickSlotUpdate,
+    kInventoryUpdate = 1010,
+    kQuickSlotUpdate = 1011,
 
-    kNotifyMatchResult,
-    kNotifyMatchCanceled,
+    kNotifyMatchResult = 1012,
+    kNotifyMatchCanceled = 1013,
+    kNotifyChat = 1014,
 
+    kNotifyCharacterWait = 1020,
+    kNotifyCharacterSprint = 1021,
+
+    kNotifySpawnPotal = 1022,
 };

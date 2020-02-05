@@ -1,29 +1,33 @@
 #include "Monster.hpp"
+#include <sstream>
 
 
 Monster::Monster(const Monster& rhs)
     : PawnObject(rhs)
 {
-    is_dead_ = rhs.is_dead_;
     state_ = rhs.state_;
 }
 
 void Monster::operator=(const Monster& rhs)
 {
     PawnObject::operator=(rhs);
-    is_dead_ = rhs.is_dead_;
+
     state_ = rhs.state_;
 }
 
 Monster::Monster()
-    : PawnObject(ZoneObject::Type::kMonster), is_dead_(false)
+    : PawnObject(ZoneObject::Type::kMonster), state_(static_cast<int32_t>(Monster::State::kAlive))
 {
 
 }
 
-bool Monster::IsDead() const
+std::string Monster::GetDebugString() const
 {
-    return is_dead_;
+    auto lo = this->GetLocation();
+    std::stringstream ss;
+    ss << " Monster OID: " << this->GetObjectId() << ", HP: " << this->GetHP()
+        << " Location: [" << lo.x << ", " << lo.y << ", " << lo.z << "]" << '\n';
+    return ss.str();
 }
 
 int32_t Monster::GetState() const

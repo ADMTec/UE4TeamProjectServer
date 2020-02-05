@@ -13,6 +13,7 @@
 
 class Zone : public std::enable_shared_from_this<Zone>
 {
+    friend class ZoneSystem;
 public:
     enum class Type : int32_t {
         kTown,
@@ -27,6 +28,7 @@ public:
 public:
     Zone();
 
+    std::string GetDebugString() const;
     void StartUp();
     void Update();
     void Exit();
@@ -37,14 +39,13 @@ public:
 
     void SpawnCharacter(const std::shared_ptr<Character>& chr);
     void RemoveCharacter(int64_t object_id);
+    void TryChangeZone();
 
     void AddMonster(const std::shared_ptr<Monster>& mob, Location location, Rotation rotation);
     void SpawnMonster(const std::shared_ptr<Monster>& mob, Location location, Rotation rotation);
     void AddNPC(int32_t npc, Location location, Rotation rotation);
     void SpawnNPC(int32_t npc, Location location, Rotation rotation);
 
-    //void CharacterAttackMob(int64_t attacker_oid, int64_t mob_oid, int32_t id);
-    //void MobAttackCharacter(int64_t attacker_oid, int64_t chr_oid, Location lo, Rotation ro);
 
     void BroadCast(class UE4OutPacket& outpacket);
     void BroadCast(class UE4OutPacket& outpacket, int64_t except_chr_oid);
@@ -58,7 +59,9 @@ public:
     Zone::Type GetType() const;
     void SetType(Zone::Type type);
     Location GetPlayerSpawn() const;
-    void SetPlayerSpawn(Location location);
+    void SetPlayerSpawn(Location location); 
+    std::pair<int32_t, Location> GetNextMapPortal() const;
+    void SetNextMapPortalInfo(int32_t mapid, float range, Location location);
 
     std::vector<std::shared_ptr<Character>> GetCharacterCopyThreadSafe() const;
     std::vector<std::shared_ptr<Character>> GetCharacterCopy() const;
@@ -82,8 +85,12 @@ private:
     int32_t map_id_;
     Zone::Type type_;
     Location player_spawn_;
+    int32_t next_map_;
+    float next_map_portal_range_;
+    Location next_map_portal_;
     std::atomic<int64_t> last_object_id_;
     int64_t time_sum_;
+    int64_t time_second_;
     int64_t last_update_time_;
 
     std::atomic<int64_t> monster_controller_id_; //

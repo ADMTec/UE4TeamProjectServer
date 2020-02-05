@@ -111,3 +111,34 @@ void PacketGenerator::NotifyMatchCanceled(OutputStream& out)
 {
     out.WriteInt16(static_cast<int16_t>(ENetworkSCOpcode::kNotifyMatchCanceled));
 }
+
+void PacketGenerator::ActorDamaged(OutputStream& out, const PawnObject& attacker, const PawnObject& attacked, int attackid, float attacked_hp)
+{
+    out.WriteInt16(static_cast<int16_t>(ENetworkSCOpcode::kActorDamaged));
+    out.WriteInt32(static_cast<int32_t>(attacker.GetType()));
+    out.WriteInt64(attacker.GetObjectId());
+    out.WriteInt32(static_cast<int32_t>(attacked.GetType()));
+    out.WriteInt64(attacked.GetObjectId());
+    out.WriteInt32(attackid);
+    out.WriteFloat32(attacked_hp);
+}
+
+void PacketGenerator::CharacterWait(OutputStream& out, const Character& chr)
+{
+    out.WriteInt16(static_cast<int16_t>(ENetworkSCOpcode::kNotifyCharacterWait));
+    out.WriteInt64(chr.GetObjectId());
+    out << chr.GetLocation();
+}
+
+void PacketGenerator::CharacterSprint(OutputStream& out, const Character& chr)
+{
+    out.WriteInt16(static_cast<int16_t>(ENetworkSCOpcode::kNotifyCharacterSprint));
+    out << chr.GetObjectId();
+    out << chr.GetLocation();
+}
+
+void PacketGenerator::SpawnPortal(OutputStream& out, FVector location)
+{
+    out.WriteInt16(static_cast<int16_t>(ENetworkSCOpcode::kNotifySpawnPotal));
+    out << location;
+}

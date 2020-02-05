@@ -17,6 +17,8 @@ public:
     static void DestoryInstance(int64_t instance_id);
     static std::shared_ptr<Zone> GetInstance(int64_t instance_id);
     static std::shared_ptr<Zone> GetTown();
+
+    static std::string GetDebugString();
 private:
     static std::shared_mutex map_guard_;
     static std::vector<std::shared_ptr<Zone>> maps_;

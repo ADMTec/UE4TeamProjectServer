@@ -266,63 +266,58 @@ void LoginServer::HandleLoginRequest(const Client& client, Session::InPacket& in
 
     bool login_ok = false;
 
-    // DB 접속
-    try {
-        auto con = ODBCConnectionPool::Instance().GetConnection();
-        auto ps = con->GetPreparedStatement();
-        ps->PrepareStatement(TEXT("select accid, id, pw, loggedin from accounts where id = ?"));
-        ps->SetString(1, id);
-        auto rs = ps->Execute();
+    auto con = ODBCConnectionPool::Instance().GetConnection();
+    auto ps = con->GetPreparedStatement();
+    ps->PrepareStatement(TEXT("select accid, id, pw, loggedin from accounts where id = ?"));
+    ps->SetString(1, id);
+    auto rs = ps->Execute();
 
-        int32_t accid;
-        volatile char db_id[100] = {0, };
-        volatile char db_pw[100] = { 0, };
-        int32_t loggedin;
-        rs->BindInt32(1, &accid);
-        rs->BindString(2, (char*)db_id, 50);
-        rs->BindString(3, (char*)db_pw, 50);
-        rs->BindInt32(4, &loggedin);
-        if (rs->Next()) {
-            if (!pw.compare((char*)db_pw)) {
-                login_ok = true;
-            }
+    int32_t accid;
+    volatile char db_id[100] = {0, };
+    volatile char db_pw[100] = { 0, };
+    int32_t loggedin;
+    rs->BindInt32(1, &accid);
+    rs->BindString(2, (char*)db_id, 50);
+    rs->BindString(3, (char*)db_pw, 50);
+    rs->BindInt32(4, &loggedin);
+    if (rs->Next()) {
+        if (!pw.compare((char*)db_pw)) {
+            login_ok = true;
         }
-        if (login_ok) {
-            if (!loggedin) { // Success
-                rs->Close();
-                ps->Close();
-                /*ps->PrepareStatement(TEXT("update accounts set loggedin = 1 where accid = ?"));
-                ps->SetInt32(1, &accid);
-                ps->ExecuteUpdate();
-                ps->Close();*/
+    }
+    if (login_ok) {
+        if (!loggedin) { // Success
+            rs->Close();
+            ps->Close();
+            /*ps->PrepareStatement(TEXT("update accounts set loggedin = 1 where accid = ?"));
+            ps->SetInt32(1, &accid);
+            ps->ExecuteUpdate();
+            ps->Close();*/
 
-                RemoteSessionInfo info;
-                info.SetAccid(accid);
-                info.SetId((char*)db_id);
-                info.SetIp(client.GetSession()->GetRemoteAddress()); // 여기서 죽음
+            RemoteSessionInfo info;
+            info.SetAccid(accid);
+            info.SetId((char*)db_id);
+            info.SetIp(client.GetSession()->GetRemoteAddress()); // 여기서 죽음
 
-                UE4OutPacket mig_noti;
-                mig_noti.WriteInt16(static_cast<int16_t>(IntermediateServerReceivePacket::kRequestUserMigration)); // opcode
-                mig_noti.WriteInt16(static_cast<int16_t>(ServerType::kLobbyServer));
-                mig_noti << client.GetUUID();
-                mig_noti << info;
-                mig_noti.MakePacketHead();
-                session_->Send(mig_noti, true, false);
-            } else { // current connected id
-                UE4OutPacket out;
-                out.WriteInt16(static_cast<int16_t>(ENetworkSCOpcode::kLoginResult));
-                out.WriteInt8(2);
-                out.MakePacketHead();
-                client.GetSession()->Send(out, true, false);
-            }
-        } else { // wrong id or password
+            UE4OutPacket mig_noti;
+            mig_noti.WriteInt16(static_cast<int16_t>(IntermediateServerReceivePacket::kRequestUserMigration)); // opcode
+            mig_noti.WriteInt16(static_cast<int16_t>(ServerType::kLobbyServer));
+            mig_noti << client.GetUUID();
+            mig_noti << info;
+            mig_noti.MakePacketHead();
+            session_->Send(mig_noti, true, false);
+        } else { // current connected id
             UE4OutPacket out;
             out.WriteInt16(static_cast<int16_t>(ENetworkSCOpcode::kLoginResult));
-            out.WriteInt8(login_ok);
+            out.WriteInt8(2);
             out.MakePacketHead();
             client.GetSession()->Send(out, true, false);
         }
-    } catch (const std::exception & e) {
-        throw e;
+    } else { // wrong id or password
+        UE4OutPacket out;
+        out.WriteInt16(static_cast<int16_t>(ENetworkSCOpcode::kLoginResult));
+        out.WriteInt8(login_ok);
+        out.MakePacketHead();
+        client.GetSession()->Send(out, true, false);
     }
 }

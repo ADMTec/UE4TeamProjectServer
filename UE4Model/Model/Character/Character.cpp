@@ -74,9 +74,9 @@ Character::~Character()
 {
 }
 
-std::shared_ptr<Zone> Character::GetZone() const
+std::shared_ptr<Zone> Character::GetZoneFromWeak() const
 {
-    return zone_;
+    return zone_.lock();
 }
 
 void Character::SetZone(const std::shared_ptr<Zone>& zone)
@@ -205,6 +205,7 @@ void Character::Initialize(const std::shared_ptr<Connection>& con)
     } else {
         throw StackTraceException(ExceptionType::kSQLError, "CharacterTable no data");
     }
+    UpdatePawnStat();
 }
 
 void Character::RecoveryPerSecond()
@@ -220,6 +221,7 @@ void Character::UpdatePawnStat()
         "StatUpdate",
         "Start",
         PYTHON_PASSING_BY_REFERENCE(*this));
+    std::cout << "UpdatePawnStat chr->GetHP(): " << this->GetHP() << std::endl;
 }
 
 bool Character::InventoryToEquipment(int32_t inventory_index, Equipment::Position pos)

@@ -2,17 +2,8 @@
 #include "Server/ZoneServer.hpp"
 #include "Packet/PacketGenerator.hpp"
 #include "System/ZoneSystem.hpp"
+#include <sstream>
 
-
-namespace {
-    constexpr int64_t GetMatchFullBinary(int64_t max_match_count) {
-        int64_t binary = 0;
-        for (int64_t i = 0; i < max_match_count; ++i) {
-            binary |= (0b1 << i);
-        }
-        return binary;
-    }
-}
 
 Match::Match(int64_t match_id, int32_t mapid)
     : state_(State::kRecruiting), mapid_(mapid), match_instance_id_(match_id)
@@ -28,34 +19,32 @@ void Match::Join(const std::string& client_key)
     if (state_ != State::kRecruiting)
         return;
 
-    uint16_t is_full = 0b0000;
-    bool set_value{ false };
-    for (int i = 0; i < Match::max_match_count; ++i)
-    {
-        bool has_value = match_client_id_queue_[i].first.operator bool();
-        if (!has_value && set_value == false) {
-            match_client_id_queue_[i].first = client_key;
-            has_value = set_value = true;
-        }
-        is_full |= (has_value << i);
+    auto iter = std::find_if(match_client_id_queue_.begin(), match_client_id_queue_.end(),
+        [](const std::pair<opt_client_key, bool>& pair) {
+            return !pair.first.operator bool();
+        });
+    if (iter != match_client_id_queue_.end()) {
+        iter->first = client_key;
     }
-    if (is_full == max_flag) {
+
+    // 매칭 큐 꽉 참
+    iter = std::find_if(match_client_id_queue_.begin(), match_client_id_queue_.end(),
+        [](const std::pair<opt_client_key, bool>& pair) {
+            return pair.first.operator bool() == false;
+        });
+    if (iter == match_client_id_queue_.end()) {
         state_ = Match::State::kConfirming;
         UE4OutPacket out;
         PacketGenerator::NotifyMatchResult(out);
         out.MakePacketHead();
 
-        // client에 통지
-        for (int i = 0; i < Match::max_match_count; ++i)
-        {
-            auto client = ZoneServer::Instance().GetClient(*match_client_id_queue_[i].first);
-            if (client) {
-                // match = null 설정
-                client->SetMatchWeak(nullptr);
-                // 패킷 전송
-                client->GetSession()->Send(out, true, false);
-            }
-        }
+        std::for_each(match_client_id_queue_.begin(), match_client_id_queue_.end(),
+            [&out](const std::pair<opt_client_key, bool>& pair) {
+                auto client = ZoneServer::Instance().GetClient(*pair.first);
+                if (client) {
+                    client->GetSession()->Send(out, true, false);
+                }
+            });
     }
 }
 
@@ -63,13 +52,24 @@ void Match::Remove(const std::string& client_key)
 {
     std::unique_lock lock(context_guard_);
 
-    for (int i = 0; i < Match::max_match_count; ++i)
-    {
-        bool has_value = match_client_id_queue_[i].first.operator bool();
-        if (has_value && match_client_id_queue_[i].first == client_key) {
-            match_client_id_queue_[i].first.reset();
-            break;
-        }
+    auto iter = std::find_if(match_client_id_queue_.begin(), match_client_id_queue_.end(),
+        [client_key](const std::pair<opt_client_key, bool>& pair) {
+            if (pair.first) {
+                return pair.first == client_key;
+            }
+            return false;
+        });
+    if (iter != match_client_id_queue_.end()) {
+        iter->first.reset();
+        iter->second = false;
+    }
+
+    iter = std::find_if(match_client_id_queue_.begin(), match_client_id_queue_.end(),
+        [](const std::pair<opt_client_key, bool>& pair) {
+            return pair.first.operator bool() == true;
+        });
+    if (iter == match_client_id_queue_.end()) {
+        MatchSystem::Instance().RemoveMatch(this->match_instance_id_);
     }
 }
 
@@ -82,31 +82,34 @@ void Match::Confirm(const std::string& client_key, bool match_ok)
         UE4OutPacket out;
         PacketGenerator::NotifyMatchCanceled(out);
         out.MakePacketHead();
-        for (int i = 0; i < Match::max_match_count; ++i)
-        {
-            if (match_client_id_queue_[i].first.operator bool()) {
-                auto client = ZoneServer::Instance().GetClient(*match_client_id_queue_[i].first);
-                if (client) {
-                    // match = null 설정
-                    client->SetMatchWeak(nullptr);
-                    // 패킷 전송
-                    client->GetSession()->Send(out, true, false);
+        std::for_each(match_client_id_queue_.begin(), match_client_id_queue_.end(),
+            [&out](const std::pair<opt_client_key, bool>& pair) {
+                if (pair.first) {
+                    auto client = ZoneServer::Instance().GetClient(*pair.first);
+                    if (client) {
+                        // match = null 설정
+                        client->SetMatchWeak(nullptr);
+                        // 패킷 전송
+                        client->GetSession()->Send(out, true, false);
+                    }
                 }
-            }
-        }
+            });
         return;
     }
 
-    uint16_t is_full = 0b0000;
-    for (int i = 0; i < Match::max_match_count; ++i)
-    {
-        bool has_value = match_client_id_queue_[i].first.operator bool();
-        if (has_value) {
-            match_client_id_queue_[i].second = true;
-        }
-        is_full |= (match_client_id_queue_[i].second << i);
+    auto iter = std::find_if(match_client_id_queue_.begin(), match_client_id_queue_.end(),
+        [client_key](const std::pair<opt_client_key, bool>& pair) {
+            return pair.first == client_key;
+        });
+    if (iter != match_client_id_queue_.end()) {
+        iter->second = true;
     }
-    if (is_full == max_flag) {
+
+    iter = std::find_if(match_client_id_queue_.begin(), match_client_id_queue_.end(),
+        [](const std::pair<opt_client_key, bool>& pair) {
+            return pair.second == false;
+        });
+    if (iter == match_client_id_queue_.end()) {
         state_ = State::kCompleted;
         MatchSystem::Instance().RemoveMatch(match_instance_id_);
         
@@ -114,24 +117,25 @@ void Match::Confirm(const std::string& client_key, bool match_ok)
         auto zone = ZoneSystem::CreateNewInstance(this->mapid_);
         zone->SetState(Zone::State::kActive);
 
-        std::array<std::shared_ptr<Client>, Match::max_match_count> clients;
-        for (int i = 0; i < Match::max_match_count; ++i) {
-            clients[i] = ZoneServer::Instance().GetClient(*match_client_id_queue_[i].first);
-            if (clients[i]) {
-                auto chr = clients[i]->GetCharacter();
-                if (chr) {
-                    std::shared_ptr<Zone> prev_zone = nullptr;
+        std::for_each(match_client_id_queue_.begin(), match_client_id_queue_.end(),
+            [&zone](const std::pair<opt_client_key, bool>& pair) {
+                auto client = ZoneServer::Instance().GetClient(*pair.first);
+                if (client) {
+                    auto chr = client->GetCharacter();
+                    std::shared_ptr<Zone> prev = nullptr;
+                    int64_t oid = -1;
                     {
-                        std::lock_guard chr_lock(chr->mutex_);
-                        prev_zone = chr->GetZone();
+                        std::lock_guard lock(chr->mutex_);
+                        oid = chr->GetObjectId();
+                        prev = chr->GetZoneFromWeak();
+                        chr->SetZone(nullptr);
                     }
-                    if (prev_zone) {
-                        prev_zone->RemoveCharacter(chr->GetObjectId());
+                    if (prev) {
+                        prev->RemoveCharacter(oid);
                     }
                     zone->SpawnCharacter(chr);
                 }
-            }
-        }
+            });
     }
 }
 
@@ -145,6 +149,24 @@ int64_t Match::GetMatchInstanceId() const
 {
     std::shared_lock lock(context_guard_);
     return match_instance_id_;
+}
+
+std::string Match::GetDebugString() const
+{
+    std::unique_lock lock(context_guard_);
+    std::stringstream ss;
+    ss << "-----------------------------------------------" << '\n';
+    ss << " Debug State [Match] Instance ID: " << match_instance_id_  << '\n';
+    ss << " Mapid: " << mapid_ << '\n';
+    ss << " State: ";
+    switch (state_) {
+        case State::kRecruiting: ss << "kRecruiting"; break;
+        case State::kConfirming: ss << "kConfirming"; break;
+        case State::kCompleted: ss << "kCompleted"; break;
+    }
+    ss << '\n';
+    ss << "-----------------------------------------------" << '\n';
+    return ss.str();
 }
 
 Match::State Match::GetState() const
@@ -163,7 +185,7 @@ MatchSystem::MatchSystem()
 {
 }
 
-std::shared_ptr<Match> MatchSystem::GetMatch(int32_t mapid)
+std::shared_ptr<Match> MatchSystem::CreateOrFind(int32_t mapid)
 {
     std::shared_ptr<Match> match = nullptr;
     std::unique_lock lock(match_guard_);
@@ -199,7 +221,7 @@ void MatchSystem::RemoveMatch(int64_t match_instance_id)
     std::unique_lock lock(match_guard_);
     auto iter = std::find_if(match_queue_.begin(), match_queue_.end(),
         [match_instance_id](const std::shared_ptr<Match>& match) {
-            return match_instance_id == match->GetMatchInstanceId();
+            return match_instance_id == match->match_instance_id_;
         });
     if (iter != match_queue_.end()) {
         match_queue_.erase(iter);
@@ -210,4 +232,28 @@ void MatchSystem::Clear()
 {
     std::unique_lock lock(match_guard_);
     match_queue_.clear();
+}
+
+std::string MatchSystem::GetDebugString() const
+{
+    std::vector<std::shared_ptr<Match>> copy;
+    {
+        std::shared_lock lock(match_guard_);
+        copy = match_queue_;
+    }
+    std::unique_lock lock(match_guard_);
+    std::stringstream ss;
+    ss << "-----------------------------------------------" << '\n';
+    ss << "-----------------------------------------------" << '\n';
+    ss << " Debug State [MatchSystem]" << '\n';
+    if (copy.empty()) {
+        ss << " NONE" << '\n';
+    } else {
+        for (const auto& match : copy) {
+            ss << match->GetDebugString();
+        }
+    }
+    ss << "-----------------------------------------------" << '\n';
+    ss << "-----------------------------------------------" << '\n';
+    return ss.str();
 }
