@@ -9,7 +9,7 @@
 
 class Match
 {
-    static constexpr int max_match_count = 1;
+    static constexpr int max_match_count = 2;
     friend class MatchSystem;
 public:
     class System;

@@ -19,7 +19,7 @@ struct ServerTemplateParameter
     using Handler = UE4EventHandler<session, InPacket, ZoneServer>;
 
     constexpr static bool Strand = true;
-    constexpr static int InternalBufferLength = 1024;
+    constexpr static int InternalBufferLength = 4096;
     constexpr static int RecvBufferLength = 2048;
 };
 

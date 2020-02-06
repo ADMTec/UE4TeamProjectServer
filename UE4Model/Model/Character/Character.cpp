@@ -375,12 +375,22 @@ float Character::GetMaxStamina() const
     return max_stamina_;
 }
 
-Equipment::Data Character::GetEquipmentData() const
+Equipment::Data Character::GetEquipmentCopy() const
 {
     return equipment_.GetData();
 }
 
-Inventory::Data Character::GetInventoryData() const
+const Equipment::Data& Character::GetEquipment() const
+{
+    return equipment_.GetData();
+}
+
+Inventory::Data Character::GetInventoryCopy() const
+{
+    return inventory_.GetData();
+}
+
+const Inventory::Data& Character::GetInventory() const
 {
     return inventory_.GetData();
 }

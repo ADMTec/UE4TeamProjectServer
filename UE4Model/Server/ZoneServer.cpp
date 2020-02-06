@@ -77,8 +77,9 @@ void ZoneServer::Run()
         io_server_->Run();
         ConnectChannel();
         std::cout << "Input Command\n\
-[1] : Print MatchSystem Debug State\n\
-[2] : Print ZoneSystem Debug State\n\
+[1] : Print ZoneServer Debug State\n\
+[2] : Print MatchSystem Debug State\n\
+[3] : Print ZoneSystem Debug State\n\
 [q] : Server Stop\n";
         std::string line;
         while (true)
@@ -92,9 +93,12 @@ void ZoneServer::Run()
                 switch (command)
                 {
                     case 1:
-                        std::cout << MatchSystem::Instance().GetDebugString();
+                        std::cout << this->GetDebugString();
                         break;
                     case 2:
+                        std::cout << MatchSystem::Instance().GetDebugString();
+                        break;
+                    case 3:
                         std::cout << ZoneSystem::GetDebugString();
                         break;
                     default:
@@ -273,6 +277,9 @@ void ZoneServer::ProcessPacket(Session& session, const std::shared_ptr<Session::
             case ENetworkCSOpcode::kRequestChangeZone:
                 HandleZoneChangeRequest(*client, *in_packet);
                 break;
+            case ENetworkCSOpcode::kInventoryUpdateRequest:
+                HandleInventoryUpdate(*client, *in_packet);
+                break;
         }
     } catch (const std::exception & e) {
         std::stringstream ss;
@@ -293,6 +300,36 @@ std::shared_ptr<Client> ZoneServer::GetClient(const std::string& uuid) const
         return iter->second;
     }
     return nullptr;
+}
+
+std::string ZoneServer::GetDebugString() const
+{
+    std::unique_lock lock(client_storage_guard_);
+    std::stringstream ss;
+    ss << "-----------------------------------------------" << '\n';
+    ss << "-----------------------------------------------" << '\n';
+    ss << " Debug State [ZoneServer]" << '\n';
+    for (const auto& client : client_storage_) {
+        auto session = client.second->GetSession();
+        auto chr = client.second->GetCharacter();
+        ss << " Connected Client[";
+        if (session) {
+            ss << session->GetRemoteAddress();
+        } else {
+            ss << "NULL";
+        }
+        ss << "] Character Name[";
+        if (chr) {
+            std::lock_guard lock(chr->mutex_);
+            ss << chr->GetName();
+        } else {
+            ss << "NULL";
+        }
+        ss << "] UUID: " << client.second->GetUUID().ToString() << '\n';
+    }
+    ss << "-----------------------------------------------" << '\n';
+    ss << "-----------------------------------------------" << '\n';
+    return ss.str();
 }
 
 void ZoneServer::HandleConfirmRequest(Client& client, Session::InPacket& in_packet)
@@ -371,10 +408,12 @@ void ZoneServer::HandleMonsterActionNotify(Client& client, Session::InPacket& in
 
     auto chr = client.GetCharacter();
     if (chr) {
+        int64_t chr_oid = -1;
         std::shared_ptr<Zone> zone = nullptr;
         {
             std::lock_guard lock(chr->mutex_);
             zone = chr->GetZoneFromWeak();
+            chr_oid = chr->GetObjectId();
         }
         if (zone) {
             auto mob = zone->GetMonsterThreadSafe(mob_id);
@@ -388,7 +427,7 @@ void ZoneServer::HandleMonsterActionNotify(Client& client, Session::InPacket& in
                     PacketGenerator::UpdateMonsterAction(out, *mob);
                 }
                 out.MakePacketHead();
-                zone->BroadCast(out, chr->GetObjectId());
+                zone->BroadCast(out, chr_oid);
             }
         }
     }
@@ -501,6 +540,9 @@ void ZoneServer::HandleMonsterAttack(Client& client, Session::InPacket& in_packe
     std::shared_ptr<Zone> zone = nullptr;
     if (chr) {
         std::lock_guard lock(chr->mutex_);
+        if (chr->GetHP() == 0.0f) {
+            return;
+        }
         zone = chr->GetZoneFromWeak();
     } else {
         throw StackTraceException(ExceptionType::kNullPointer, "character is nullptr");
@@ -510,6 +552,9 @@ void ZoneServer::HandleMonsterAttack(Client& client, Session::InPacket& in_packe
         if (mob)
         {
             std::scoped_lock double_lock(chr->mutex_, mob->mutex_);
+            std::stringstream ss;
+            ss << "damaged name: " << chr->GetName() << ", id: " << chr->GetObjectId() << '\n';
+            std::cout << ss.str();
             PythonScript::Engine::Instance().ReloadExecute(
                 PythonScript::Path::kMonster,
                 "AttackCharacter",
@@ -517,14 +562,19 @@ void ZoneServer::HandleMonsterAttack(Client& client, Session::InPacket& in_packe
                 PYTHON_PASSING_BY_REFERENCE(*chr),
                 PYTHON_PASSING_BY_REFERENCE(*mob),
                 attack_id);
-            if (chr->GetHP() == 0) {
-                // Set Dead State
-            }
             UE4OutPacket out;
             PacketGenerator::ActorDamaged(out, *mob, *chr, attack_id, chr->GetHP());
             out.MakePacketHead();
             auto session = client.GetSession();
             zone->BroadCast(out);
+
+            if (chr->GetHP() == 0) {
+                // Set Dead State
+
+                UE4OutPacket remote;
+                PacketGenerator::CharacterDead(remote, attacked_chr_oid);
+                zone->BroadCast(remote, attacked_chr_oid);
+            }
         }
     } else {
         throw StackTraceException(ExceptionType::kNullPointer, "zone is nullptr");
@@ -604,4 +654,35 @@ void ZoneServer::HandleZoneChangeRequest(Client& client, Session::InPacket& in_p
             zone->TryChangeZone();
         }
     }
+}
+
+// change two slot
+// max overlap count = 200
+void ZoneServer::HandleInventoryUpdate(Client& client, Session::InPacket& in_packet)
+{
+    // slot1 To slot2
+    int32_t slot1 = in_packet.ReadInt32();
+    int32_t slot2 = in_packet.ReadInt32();
+    if (slot1 < 0 || slot1 >= Inventory::inventory_size || slot2 < 0 || slot2 >= Inventory::inventory_size) {
+        throw StackTraceException(ExceptionType::kRunTimeError, " bad request");
+    }
+
+    auto chr = client.GetCharacter();
+    UE4OutPacket out;
+    if (chr) {
+        std::lock_guard lock(chr->mutex_);
+        chr->ChangeInventoryItemPosition(slot1, slot2);
+        const auto& inventory = chr->GetInventory();
+        bool slot1_has_item = inventory[slot1].operator bool();
+        bool slot2_has_item = inventory[slot2].operator bool();
+
+        PacketGenerator::InventoryUpdate(out,
+            false, slot1,
+            slot1_has_item ? inventory[slot1]->item.get() : nullptr,
+            slot1_has_item ? inventory[slot1]->count : 0,
+            false, slot2,
+            slot2_has_item ? inventory[slot2]->item.get() : nullptr,
+            slot2_has_item ? inventory[slot2]->count : 0);
+    }
+    client.GetSession()->Send(out, true, false);
 }

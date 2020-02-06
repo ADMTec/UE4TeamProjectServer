@@ -3,6 +3,7 @@
 #include <WinSock2.h>
 #include <Windows.h>
 #include "../Exception.hpp"
+#include <sstream>
 
 
 template<class InPacket>
@@ -24,7 +25,9 @@ public:
     void Append(const char* buffer, uint64_t length)
     {
         if (length + buffer_length_ > memory_block_size_) {
-            throw StackTraceException(ExceptionType::kOverflow, "Appending buffer -> bufferoverflow");
+            std::stringstream ss;
+            ss << "Appending buffer -> bufferoverflow.. current_buffer_length[" << buffer_length_ << "] additional[" << length << "] memory_block[" << memory_block_size_ << "]";
+            throw StackTraceException(ExceptionType::kOverflow, ss.str().c_str());
         }
         memcpy(buffer_ + buffer_length_, buffer, length);
         buffer_length_ += length;

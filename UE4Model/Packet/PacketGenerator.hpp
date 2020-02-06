@@ -52,4 +52,6 @@ public:
     static void CharacterSprint(OutputStream& out, const Character& chr);
 
     static void SpawnPortal(OutputStream& out, FVector location);
+
+    static void CharacterDead(OutputStream& out, int64_t oid);
 };

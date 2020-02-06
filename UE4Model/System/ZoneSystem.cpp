@@ -17,11 +17,27 @@ void ZoneSystem::Initialize()
         []() {
             while (zone_update_thread_exit_flag_.load() == false)
             {
-                std::shared_lock lock(map_guard_);
-                size_t size = maps_.size();
-                for (size_t i = 0; i < size; ++i) {
-                    if (maps_[i]->GetState() == Zone::State::kActive) {
-                        maps_[i]->Update();
+                {
+                    std::shared_lock lock(map_guard_);
+                    size_t size = maps_.size();
+                    for (size_t i = 0; i < size; ++i) {
+                        if (maps_[i]->GetState() == Zone::State::kActive) {
+                            maps_[i]->Update();
+                        }
+                    }
+                }
+                {
+                    std::unique_lock lock(map_guard_);
+                    size_t size = maps_.size();
+                    for (auto iter = maps_.begin(); iter != maps_.end(); ) {
+                        if ((*iter)->GetType() == Zone::Type::kDungeon) {
+                            std::shared_lock chr_lock((*iter)->object_guard_[ToInt32(ZoneObject::Type::kCharacter)]);
+                            if ((*iter)->chrs_.empty()) {
+                                iter = maps_.erase(iter);
+                                continue;
+                            }
+                        }
+                        ++iter;
                     }
                 }
                 std::this_thread::sleep_for(std::chrono::milliseconds(1));
@@ -47,11 +63,7 @@ std::shared_ptr<Zone> ZoneSystem::CreateNewInstance(int32_t mapid)
     }
     const auto& data_ptr = *data;
 
-    std::shared_ptr<Zone> zone = std::shared_ptr<Zone>(new Zone(), 
-        [new_id](Zone* zone) {
-            ZoneSystem::DestoryInstance(new_id);
-            delete zone;
-        });
+    std::shared_ptr<Zone> zone = std::make_shared<Zone>();
     zone->SetMapId(data_ptr->map_id);
     zone->SetInstanceId(new_id);
     zone->SetType(static_cast<Zone::Type>(data_ptr->type));
@@ -76,25 +88,6 @@ std::shared_ptr<Zone> ZoneSystem::CreateNewInstance(int32_t mapid)
         maps_.emplace_back(zone);
     }
     return zone;
-}
-
-void ZoneSystem::DestoryInstance(int64_t instance_id)
-{
-    std::shared_ptr<Zone> zone = nullptr;
-    {
-        std::unique_lock lock(map_guard_);
-        auto iter = std::find_if(maps_.begin(), maps_.end(),
-            [instance_id](const std::shared_ptr<Zone>& zone) {
-                return zone->GetInstanceId() == instance_id;
-            });
-        if (iter != maps_.end()) {
-            zone = *iter;
-            maps_.erase(iter);
-        }
-    }
-    if (zone) {
-        zone->Exit();
-    }
 }
 
 std::shared_ptr<Zone> ZoneSystem::GetInstance(int64_t instance_id)
@@ -128,7 +121,6 @@ std::string ZoneSystem::GetDebugString()
     ss << "-----------------------------------------------" << '\n';
     ss << "-----------------------------------------------" << '\n';
     ss << " Debug State [ZoneSystem]" << '\n';
-    ss << town_->GetDebugString();
     if (!copy.empty()) {
         for (const auto& zone : copy) {
             ss << zone->GetDebugString();

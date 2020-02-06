@@ -53,8 +53,10 @@ public:
     float GetStamina() const;
     float GetMaxStamina() const;
 
-    Equipment::Data GetEquipmentData() const;
-    Inventory::Data GetInventoryData() const;
+    Equipment::Data GetEquipmentCopy() const;
+    const Equipment::Data& GetEquipment() const;
+    Inventory::Data GetInventoryCopy() const;
+    const Inventory::Data& GetInventory() const;
 
     std::recursive_mutex mutex_;
 public:

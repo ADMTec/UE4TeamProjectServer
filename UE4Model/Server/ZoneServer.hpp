@@ -32,6 +32,7 @@ public:
     void ProcessPacket(Session& session, const std::shared_ptr<Session::InPacket>& in_packet);
 
     std::shared_ptr<Client> GetClient(const std::string& uuid) const;
+    std::string GetDebugString() const;
 private:
     void HandleConfirmRequest(Client& client, Session::InPacket& in_packet);
     void HandleChrPositionNotify(Client& client, Session::InPacket& in_packet);
@@ -52,6 +53,8 @@ private:
     void HandleCharacterSprint(Client& client, Session::InPacket& in_packet);
 
     void HandleZoneChangeRequest(Client& client, Session::InPacket& in_packet);
+
+    void HandleInventoryUpdate(Client& client, Session::InPacket& in_packet);
 private:
     bool print_log_;
     std::optional<IoServer> io_server_;

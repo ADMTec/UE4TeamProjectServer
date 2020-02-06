@@ -269,7 +269,8 @@ private:
             this->Send(out, true, true);
         }
     }
-
+#include <iostream>
+#include <sstream>
     template<bool Strand = Strand>
     void OnRead(const ERROR_CODE& ec, size_t bytes_transferred)
     {
@@ -284,6 +285,11 @@ private:
 
         try
         {
+            if (bytes_transferred > 1000) {
+                std::stringstream ss;
+                ss << "bytes_transferred: " << bytes_transferred << '\n';
+                std::cout << ss.str();
+            }
             buffer_.Append(recv_buffer_, bytes_transferred);
             while (true)
             {

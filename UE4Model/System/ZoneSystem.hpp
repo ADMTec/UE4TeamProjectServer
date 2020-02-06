@@ -14,7 +14,6 @@ public:
     static void Initialize();
     static void Release();
     static std::shared_ptr<Zone> CreateNewInstance(int32_t mapid);
-    static void DestoryInstance(int64_t instance_id);
     static std::shared_ptr<Zone> GetInstance(int64_t instance_id);
     static std::shared_ptr<Zone> GetTown();
 

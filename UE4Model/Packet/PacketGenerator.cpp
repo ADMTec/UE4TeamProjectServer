@@ -69,13 +69,21 @@ void PacketGenerator::InventoryUpdate(OutputStream& out, bool is_equip1, int32_t
     out.WriteInt8(InventoryUpdatetype::kSlotUpdate);
     out.WriteInt8(!is_equip1);
     out.WriteInt32(slot1);
-    PacketHelper::WriteItem(out, item1);
-    out.WriteInt32(count1);
+    if (item1 == nullptr) {
+        out.WriteInt32(static_cast<int32_t>(Item::Type::kNull));
+    } else {
+        PacketHelper::WriteItem(out, item1);
+        out.WriteInt32(count1);
+    }
 
     out.WriteInt8(!is_equip2);
     out.WriteInt32(slot2);
-    PacketHelper::WriteItem(out, item2);
-    out.WriteInt32(count2);
+    if (item1 == nullptr) {
+        out.WriteInt32(static_cast<int32_t>(Item::Type::kNull));
+    } else {
+        PacketHelper::WriteItem(out, item2);
+        out.WriteInt32(count2);
+    }
 }
 
 void PacketGenerator::SpawnMonster(OutputStream& out, const Monster& mob)
@@ -141,4 +149,10 @@ void PacketGenerator::SpawnPortal(OutputStream& out, FVector location)
 {
     out.WriteInt16(static_cast<int16_t>(ENetworkSCOpcode::kNotifySpawnPotal));
     out << location;
+}
+
+void PacketGenerator::CharacterDead(OutputStream& out, int64_t oid)
+{
+    out.WriteInt16(static_cast<int16_t>(ENetworkSCOpcode::kNotifyCharacterDead));
+    out << oid;
 }

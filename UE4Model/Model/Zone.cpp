@@ -39,7 +39,7 @@ std::string Zone::GetDebugString() const
     ss << " Controller: " << monster_controller_id_ << '\n';
     ss << " Runtime MilliSec: " << time_sum_ << '\n';
     if (chrs_copy.empty()) {
-        ss << "Character : NULL" << '\n';
+        ss << " Character : NULL" << '\n';
     } else {
         for (const auto chr : chrs_copy) {
             std::lock_guard lock(chr->mutex_);
@@ -143,6 +143,11 @@ void Zone::SpawnCharacter(const std::shared_ptr<Character>& chr)
 
 void Zone::RemoveCharacter(int64_t object_id)
 {
+    auto chr = this->GetCharacterThreadSafe(object_id);
+    if (chr) {
+        std::lock_guard lock(chr->mutex_);
+        chr->SetZone(nullptr);
+    }
     bool controller_is_null{ false };
     {
         std::unique_lock lock(object_guard_[ToInt32(ZoneObject::Type::kCharacter)]);
@@ -151,7 +156,6 @@ void Zone::RemoveCharacter(int64_t object_id)
         {
             if (monster_controller_id_.compare_exchange_strong(expected, MobControllerNullValue)) {
                 controller_is_null = true;
-                auto chr = this->GetCharacter(object_id);
                 if (chr) {
                     auto client = chr->GetClientFromWeak();
                     if (client) {
@@ -191,15 +195,15 @@ void Zone::RemoveCharacter(int64_t object_id)
 
 void Zone::TryChangeZone()
 {
-    auto mobs = GetMonsterCopyThreadSafe();
-    for (const auto& mob : mobs) {
-        if (mob) {
-            std::lock_guard lock(mob->mutex_);
-            if (mob->GetState() != static_cast<int32_t>(Monster::State::kDead)) {
-                return;
-            }
-        }
-    }
+    //auto mobs = GetMonsterCopyThreadSafe();
+    //for (const auto& mob : mobs) {
+    //    if (mob) {
+    //        std::lock_guard lock(mob->mutex_);
+    //        if (mob->GetState() != static_cast<int32_t>(Monster::State::kDead)) {
+    //            return;
+    //        }
+    //    }
+    //}
     auto chrs = GetCharacterCopyThreadSafe();
     for (const auto& chr : chrs) {
         if (chr) {
@@ -207,14 +211,22 @@ void Zone::TryChangeZone()
             {
                 std::lock_guard lock(chr->mutex_);
                 chr_location = chr->GetLocation();
+                std::stringstream ss;
+                ss << "location: [" << chr_location.x << ", " << chr_location.y << ", " << chr_location.z << "]\n";;
+                std::cout << ss.str();
             }
             float distance = DISTANCE(
                 next_map_portal_.x, next_map_portal_.y, next_map_portal_.z, chr_location.x, chr_location.y, chr_location.z);
-            if (distance > next_map_portal_range_)
+            if (distance > (next_map_portal_range_ + 200.0f))
                 return;
         }
     }
-    auto new_zone = ZoneSystem::CreateNewInstance(next_map_);
+    std::shared_ptr<Zone> new_zone = nullptr;
+    if (next_map_ == 100) {
+        new_zone = ZoneSystem::GetTown();
+    } else {
+        new_zone = ZoneSystem::CreateNewInstance(next_map_);
+    }
     new_zone->SetState(Zone::State::kActive);
 
     for (const auto& chr : chrs) {
@@ -232,7 +244,6 @@ void Zone::TryChangeZone()
             new_zone->SpawnCharacter(chr);
         }
     }
-    ZoneSystem::DestoryInstance(this->instance_id_);
 }
 
 
