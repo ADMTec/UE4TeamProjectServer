@@ -67,7 +67,7 @@ void PacketGenerator::InventoryUpdate(OutputStream& out, bool is_equip1, int32_t
 {
     out.WriteInt16(static_cast<int16_t>(ENetworkSCOpcode::kInventoryUpdate));
     out.WriteInt8(InventoryUpdatetype::kSlotUpdate);
-    out.WriteInt8(!is_equip1);
+    out.WriteInt8(is_equip1);
     out.WriteInt32(slot1);
     if (item1 == nullptr) {
         out.WriteInt32(static_cast<int32_t>(Item::Type::kNull));
@@ -76,7 +76,7 @@ void PacketGenerator::InventoryUpdate(OutputStream& out, bool is_equip1, int32_t
         out.WriteInt32(count1);
     }
 
-    out.WriteInt8(!is_equip2);
+    out.WriteInt8(is_equip2);
     out.WriteInt32(slot2);
     if (item1 == nullptr) {
         out.WriteInt32(static_cast<int32_t>(Item::Type::kNull));

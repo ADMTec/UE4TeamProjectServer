@@ -250,6 +250,9 @@ void ZoneServer::ProcessPacket(Session& session, const std::shared_ptr<Session::
             case ENetworkCSOpcode::kNotifyCurrentChrPosition:
                 HandleChrPositionNotify(*client, *in_packet);
                 break;
+            case ENetworkCSOpcode::kRequestCharacterRolling:
+                HandleRequestRolling(*client, *in_packet);
+                break;
             case ENetworkCSOpcode::kNotifyMonsterAction:
                 HandleMonsterActionNotify(*client, *in_packet);
                 break;
@@ -565,7 +568,6 @@ void ZoneServer::HandleMonsterAttack(Client& client, Session::InPacket& in_packe
             UE4OutPacket out;
             PacketGenerator::ActorDamaged(out, *mob, *chr, attack_id, chr->GetHP());
             out.MakePacketHead();
-            auto session = client.GetSession();
             zone->BroadCast(out);
 
             if (chr->GetHP() == 0) {
@@ -668,8 +670,8 @@ void ZoneServer::HandleInventoryUpdate(Client& client, Session::InPacket& in_pac
     }
 
     auto chr = client.GetCharacter();
-    UE4OutPacket out;
     if (chr) {
+        UE4OutPacket out;
         std::lock_guard lock(chr->mutex_);
         chr->ChangeInventoryItemPosition(slot1, slot2);
         const auto& inventory = chr->GetInventory();
@@ -683,6 +685,32 @@ void ZoneServer::HandleInventoryUpdate(Client& client, Session::InPacket& in_pac
             false, slot2,
             slot2_has_item ? inventory[slot2]->item.get() : nullptr,
             slot2_has_item ? inventory[slot2]->count : 0);
+        out.MakePacketHead();
+        client.GetSession()->Send(out, true, false);
     }
-    client.GetSession()->Send(out, true, false);
+}
+
+void ZoneServer::HandleRequestRolling(Client& client, Session::InPacket& in_packet)
+{
+    int64_t ccid = in_packet.ReadInt64();
+    Rotation ro; ro.Read(in_packet);
+
+    auto chr = client.GetCharacter();
+    if (chr) {
+        int64_t cid = -1;
+        std::shared_ptr<Zone> zone = nullptr;
+        {
+            std::lock_guard lock(chr->mutex_);
+            cid = chr->GetObjectId();
+            zone = chr->GetZoneFromWeak();
+        }
+        if ((ccid == cid) && zone) {
+            UE4OutPacket out;
+            out.WriteInt16(static_cast<int16_t>(ENetworkSCOpcode::kNotifyCharacterRolling));
+            out.WriteInt64(cid);
+            out.Write(ro);
+            out.MakePacketHead();
+            zone->BroadCast(out, cid);
+        }
+    }
 }
