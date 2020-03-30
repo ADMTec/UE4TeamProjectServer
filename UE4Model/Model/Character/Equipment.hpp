@@ -15,6 +15,7 @@ public:
         kWeapon = 3,
         kCount = 4,
     };
+    using Data = std::array<std::shared_ptr<EquipItem>, ToInt32(Position::kCount)>;
 public:
     bool HasEquipItem(Equipment::Position pos);
     void Equip(Equipment::Position pos, const std::shared_ptr<EquipItem>& item);
@@ -23,7 +24,7 @@ public:
     int32_t GetTotalAddStr() const;
     int32_t GetTotalAddDex() const;
     int32_t GetTotalAddIntel() const;
-    const std::array<std::shared_ptr<EquipItem>, ToInt32(Position::kCount)>& GetData() const;
+    const Data& GetData() const;
 private:
-    std::array<std::shared_ptr<EquipItem>, ToInt32(Position::kCount)> equipments_;
+    Data equipments_;
 };

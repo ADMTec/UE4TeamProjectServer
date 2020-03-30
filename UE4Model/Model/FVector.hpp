@@ -10,7 +10,7 @@ public:
     void operator=(const FVector& rhs) {
         x = rhs.x;
         y = rhs.y;
-        z = rhs.y;
+        z = rhs.z;
     }
     FVector(float _x, float _y, float _z)
         : x(_x), y(_y), z(_z)

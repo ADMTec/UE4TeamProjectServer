@@ -1,4 +1,5 @@
 #include "Model/Character/Character.hpp"
+#include "Model/Monster/Monster.hpp"
 #include "Model/Zone.hpp"
 #include "boost/python.hpp"
 
@@ -22,11 +23,13 @@ BOOST_PYTHON_MODULE(UE4Model)
         .add_property("hp", &PawnObject::GetHP, &PawnObject::SetHP)
         .add_property("max_hp", &PawnObject::GetMaxHP, &PawnObject::SetMaxHP)
         .add_property("attack_min", &PawnObject::GetAttackMin, &PawnObject::SetAttackMin)
-        .add_property("Attack_max", &PawnObject::GetAttackMax, &PawnObject::SetAttackMax)
-        .add_property("Attack_range", &PawnObject::GetAttackRange, &PawnObject::SetAttackRange)
-        .add_property("Attack_speed", &PawnObject::GetAttackSpeed, &PawnObject::SetAttackSpeed)
+        .add_property("attack_max", &PawnObject::GetAttackMax, &PawnObject::SetAttackMax)
+        .add_property("attack_range", &PawnObject::GetAttackRange, &PawnObject::SetAttackRange)
+        .add_property("attack_speed", &PawnObject::GetAttackSpeed, &PawnObject::SetAttackSpeed)
         .add_property("defence", &PawnObject::GetDefence, &PawnObject::SetDefence)
         .add_property("speed", &PawnObject::GetSpeed, &PawnObject::SetSpeed);
+    class_<Monster, bases<PawnObject>, boost::noncopyable>("Monster", boost::python::no_init)
+        .add_property("state_", &Monster::GetState, &Monster::SetState);
     class_<Character, bases<PawnObject>, boost::noncopyable>("Character", boost::python::no_init)
         .add_property("level", &Character::GetLevel)
         .add_property("job", &Character::GetJob)
@@ -35,8 +38,8 @@ BOOST_PYTHON_MODULE(UE4Model)
         .add_property("intel", &Character::GetIntel)
         .add_property("gold", &Character::GetGold)
         .add_property("stamina", &Character::GetStamina)
-        .add_property("max_stamina", &Character::GetMaxStamina)
-        .def("equipment", &Character::GetEquipment, return_value_policy<reference_existing_object>());
+        .add_property("max_stamina", &Character::GetMaxStamina);
+        //.def("equipment", &Character::GetEquipment, return_value_policy<reference_existing_object>());
     class_<Equipment>("Equipment")
         .add_property("total_add_atk", &Equipment::GetTotalATK)
         .add_property("total_add_str", &Equipment::GetTotalAddStr)

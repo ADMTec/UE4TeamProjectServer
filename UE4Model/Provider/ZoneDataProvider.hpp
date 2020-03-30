@@ -32,6 +32,7 @@ struct ZoneData
         }
         Portal() = default;
         int32_t map_id = -1;
+        float range = 0.0f;
         Location location;
     };
     ZoneData() = default;

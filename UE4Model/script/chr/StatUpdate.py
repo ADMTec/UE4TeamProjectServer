@@ -1,7 +1,7 @@
 import UE4Model
 
 def Start(chr): 
-    print("StatUpdate Python Script Start")
+    print("StatUpdate Python Script Start - UE4Model Project Folder")
     chr.hp = 500.0
     chr.max_hp = 500.0
     chr.attack_min = 100.0
@@ -12,4 +12,4 @@ def Start(chr):
     chr.speed = 300.0
     # chr.stamina = 100.0
     # chr.max_stamina = 100.0
-    print("StatUpdate Python Script End")
+    print("UE4Model folder StatUpdate Python Script End - UE4Model Project Folder")

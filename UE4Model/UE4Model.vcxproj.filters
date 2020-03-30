@@ -4,7 +4,6 @@
     <ClCompile Include="GameConstants.cpp" />
     <ClCompile Include="PythonExport.cpp" />
     <ClCompile Include="ServerConstants.cpp" />
-    <ClCompile Include="ZoneServer.cpp" />
     <ClCompile Include="System\MatchingSystem.cpp">
       <Filter>System</Filter>
     </ClCompile>
@@ -66,11 +65,13 @@
       <Filter>Model</Filter>
     </ClCompile>
     <ClCompile Include="ExportZoneServer.cpp" />
+    <ClCompile Include="Server\ZoneServer.cpp">
+      <Filter>Server</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameConstants.hpp" />
     <ClInclude Include="ServerConstants.hpp" />
-    <ClInclude Include="ZoneServer.hpp" />
     <ClInclude Include="System\MatchingSystem.hpp">
       <Filter>System</Filter>
     </ClInclude>
@@ -145,6 +146,15 @@
       <Filter>Model</Filter>
     </ClInclude>
     <ClInclude Include="ExportZoneServer.hpp" />
+    <ClInclude Include="Server\ZoneServer.hpp">
+      <Filter>Server</Filter>
+    </ClInclude>
+    <ClInclude Include="Server\ZoneClient.hpp">
+      <Filter>Server</Filter>
+    </ClInclude>
+    <ClInclude Include="Server\Alias.hpp">
+      <Filter>Server</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Model">
@@ -170,6 +180,9 @@
     </Filter>
     <Filter Include="Model\Monster">
       <UniqueIdentifier>{698bf736-a115-40bf-bcb9-8b867ac19432}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Server">
+      <UniqueIdentifier>{0ef4d3ae-aeed-4ec4-843c-428aa63b4ead}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

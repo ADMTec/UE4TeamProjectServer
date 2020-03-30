@@ -1,20 +1,20 @@
 #pragma once
-#include "../Nio.hpp"
+#include <memory>
 
-template<typename UE4Server>
-class UE4EventHandler : public NioEventHandler
+template<class Session, class InPacket, class Server>
+class UE4EventHandler
 {
 public:
-    virtual void OnSessionActive(NioSession& session) override {
-        UE4Server::Instance().ActiveClient(session);
+    static void OnActive(Session& session) {
+        Server::Instance().OnActive(session);
     }
-    virtual void OnSessionError(NioSession& session, int error_code, const char* message) override {
-        // later...
+    static void OnError(int ec, const char* message) {
+        Server::Instance().OnError(ec, message);
     }
-    virtual void OnSessionClose(NioSession& session) override {
-        UE4Server::Instance().CloseClient(session.GetClientKey());
+    static void OnClose(Session& session) {
+        Server::Instance().OnClose(session);
     }
-    virtual void ProcessPacket(NioSession& session, const std::shared_ptr<NioInPacket>& in_packet) override {
-        UE4Server::Instance().ProcessPacket(session, in_packet);
+    static void ProcessPacket(Session& session, const std::shared_ptr<InPacket>& in_packet) {
+        Server::Instance().ProcessPacket(session, in_packet);
     }
 };

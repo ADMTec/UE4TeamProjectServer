@@ -33,37 +33,42 @@ void ODBCResultSet::Close()
     closed_ = true;
 }
 
-void ODBCResultSet::BindInt32(int index, void* return_value)
+void ODBCResultSet::BindInt32(int index, int32_t* return_value)
 {
-    SQLLEN value = 0;
-    SQLRETURN result = SQLBindCol(statement_handle_, index, SQL_C_SLONG, return_value, 0, &value);
+    SQLRETURN result = SQLBindCol(statement_handle_, index, SQL_C_SLONG, return_value, 0, &length_);
     ODBC::CheckSQLError(result, statement_handle_, SQL_HANDLE_STMT);
 }
 
-void ODBCResultSet::BindInt64(int index, void* return_value)
+void ODBCResultSet::BindUInt32(int index, uint32_t* return_value)
 {
-    SQLLEN value = 0;
-    SQLRETURN result = SQLBindCol(statement_handle_, index, SQL_C_SBIGINT, return_value, 0, &value);
+    ODBCResultSet::BindInt32(index, (int32_t*)return_value);
+}
+
+void ODBCResultSet::BindInt64(int index, int64_t* return_value)
+{
+    SQLRETURN result = SQLBindCol(statement_handle_, index, SQL_C_SBIGINT, return_value, 0, &length_);
     ODBC::CheckSQLError(result, statement_handle_, SQL_HANDLE_STMT);
 }
 
-void ODBCResultSet::BindFloat32(int index, void* return_value)
+void ODBCResultSet::BindUInt64(int index, uint64_t* return_value)
 {
-    SQLLEN value = 0;
-    SQLRETURN result = SQLBindCol(statement_handle_, index, SQL_C_FLOAT, return_value, 0, &value);
+    ODBCResultSet::BindInt64(index, (int64_t*)return_value);
+}
+
+void ODBCResultSet::BindFloat32(int index, float* return_value)
+{
+    SQLRETURN result = SQLBindCol(statement_handle_, index, SQL_C_FLOAT, return_value, 0, &length_);
     ODBC::CheckSQLError(result, statement_handle_, SQL_HANDLE_STMT);
 }
 
-void ODBCResultSet::BindFloat64(int index, void* return_value)
+void ODBCResultSet::BindFloat64(int index, double* return_value)
 {
-    SQLLEN value = 0;
-    SQLRETURN result = SQLBindCol(statement_handle_, index, SQL_C_DOUBLE, return_value, 0, &value);
+    SQLRETURN result = SQLBindCol(statement_handle_, index, SQL_C_DOUBLE, return_value, 0, &length_);
     ODBC::CheckSQLError(result, statement_handle_, SQL_HANDLE_STMT);
 }
 
 void ODBCResultSet::BindString(int index, char* return_buffer, uint64_t size)
 {
-    SQLLEN value = 0;
-    SQLRETURN result = SQLBindCol(statement_handle_, index, SQL_C_CHAR, return_buffer, size, &value);
+    SQLRETURN result = SQLBindCol(statement_handle_, index, SQL_C_CHAR, return_buffer, size, &length_);
     ODBC::CheckSQLError(result, statement_handle_, SQL_HANDLE_STMT);
 }

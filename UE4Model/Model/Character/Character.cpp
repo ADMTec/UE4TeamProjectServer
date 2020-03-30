@@ -2,11 +2,11 @@
 #include "EnumClassHelper.hpp"
 #include "UE4DevelopmentLibrary/Database.hpp"
 #include "UE4DevelopmentLibrary/Exception.hpp"
-#include "UE4DevelopmentLibrary/Server/UE4Client.hpp"
 #include "../Item/EquipItem.hpp"
 #include "../Item/ConsumeItem.hpp"
 #include "boost/python.hpp"
 #include "System/PythonScriptEngine.hpp"
+#include "Server/Alias.hpp"
 #include <algorithm>
 
 
@@ -70,40 +70,36 @@ Character::Character(int accid, int cid)
 
 }
 
-std::shared_ptr<Character> Character::Create(int accid, int cid)
+Character::~Character()
 {
-    return std::shared_ptr<Character>(new Character(accid, cid), [](Character* ptr) { delete ptr; });
 }
 
-void Character::SetClient(UE4Client* client) {
-    std::unique_lock lock(pointer_guard_);
-    client_ = client;
-}
-
-std::shared_ptr<Zone> Character::GetZone() const
+std::shared_ptr<Zone> Character::GetZoneFromWeak() const
 {
-    std::shared_lock lock(pointer_guard_);
-    return zone_;
+    return zone_.lock();
 }
 
 void Character::SetZone(const std::shared_ptr<Zone>& zone)
 {
-    std::unique_lock lock(pointer_guard_);
     zone_ = zone;
 }
 
-UE4Client* Character::GetClient() const {
-    std::shared_lock lock(pointer_guard_);
-    return client_;
+std::shared_ptr<Client> Character::GetClientFromWeak() const {
+    return client_.lock();
+}
+
+void Character::SetWeakClient(const std::shared_ptr<Client>& client) {
+    client_ = client;
 }
 
 
-void Character::Initialize(const std::shared_ptr<class Connection>& con)
+void Character::Initialize(const std::shared_ptr<Connection>& con)
 {
     // DB에서 stat, skill, inventory, quick_slot 초기화하기.
     auto ps = con->GetPreparedStatement();
     ps->PrepareStatement(CharacterTable::GetSelectQueryFromCid());
-    ps->SetInt32(1, &cid_);
+    auto cid = cid_;
+    ps->SetInt32(1, &cid);
     auto rs = ps->Execute();
 
     CharacterTable chr_data;
@@ -122,25 +118,23 @@ void Character::Initialize(const std::shared_ptr<class Connection>& con)
     rs->BindFloat32(13, &chr_data.z);
     rs->BindInt32(14, &chr_data.gender);
     if (rs->Next()) {
-        ZoneObject::GetLocation().x = chr_data.x;
-        ZoneObject::GetLocation().y = chr_data.y;
-        ZoneObject::GetLocation().z = chr_data.z;
-        name_ = chr_data.name;
-        map_id_ = chr_data.zone_id;
-        gender_ = chr_data.gender;
-        face_id_ = chr_data.face;
-        hair_id_ = chr_data.hair;
+        name_ = std::string(chr_data.name);
         job_ = chr_data.job;
         lv_ = chr_data.level;
         str_ = chr_data.str;
         dex_ = chr_data.dex;
         intel_ = chr_data.intel;
+        face_id_ = chr_data.face;
+        hair_id_ = chr_data.hair;
         gold_ = chr_data.gold;
+        map_id_ = chr_data.zone_id;
+        ZoneObject::GetLocation().x = chr_data.x;
+        ZoneObject::GetLocation().y = chr_data.y;
+        ZoneObject::GetLocation().z = chr_data.z;
+        gender_ = chr_data.gender;
         rs->Close();
         ps->Close();
 
-        
-        ps = con->GetPreparedStatement();
         ps->PrepareStatement(InventoryItemTable::GetSelectQueryFromCid());
         ps->SetInt32(1, &cid_);
         rs = ps->Execute();
@@ -174,7 +168,7 @@ void Character::Initialize(const std::shared_ptr<class Connection>& con)
                     }
                 } else {
                     if (inven_data.slot >= 0 && inven_data.slot < inventory_.inventory_size) {
-                        inventory_.Push(inven_data.slot, equip, 1);
+                        inventory_.Push(inven_data.slot, std::dynamic_pointer_cast<Item>(equip), 1);
                     }
                 }
             } else if (item_type == Item::Type::kConsume || item_type == Item::Type::kETC) {
@@ -202,7 +196,6 @@ void Character::Initialize(const std::shared_ptr<class Connection>& con)
         rs->BindInt32(3, &id);
         while (rs->Next()) {
             if (type >= ToInt32(QuickSlot::Type::kNull) && type <= ToInt32(QuickSlot::Type::kItem) && slot >= 0 && slot < 10) {
-                std::lock_guard lock(quick_slot_guard_);
                 quick_slot_[slot].type = static_cast<QuickSlot::Type>(type);
                 quick_slot_[slot].id = id;
             }
@@ -217,7 +210,6 @@ void Character::Initialize(const std::shared_ptr<class Connection>& con)
 
 void Character::RecoveryPerSecond()
 {
-    std::unique_lock lock(stat_gaurd_);
     SetHP(std::clamp(GetHP() + 3.0f, 0.0f, GetMaxHP()));
     stamina_ = std::clamp(stamina_ + stamina_recovery_, 0.0f, max_stamina_);
 }
@@ -225,12 +217,15 @@ void Character::RecoveryPerSecond()
 void Character::UpdatePawnStat()
 {
     PythonScript::Engine::Instance().ReloadExecute(
-        PythonScript::Path::kCharacter, "StatUpdate", "Start", PYTHON_PASSING_BY_REFERENCE(*this));
+        PythonScript::Path::kCharacter,
+        "StatUpdate",
+        "Start",
+        PYTHON_PASSING_BY_REFERENCE(*this));
+    std::cout << "UpdatePawnStat chr->GetHP(): " << this->GetHP() << std::endl;
 }
 
 bool Character::InventoryToEquipment(int32_t inventory_index, Equipment::Position pos)
 {
-    std::scoped_lock lock(equipment_guard_, inventory_guard_);
     if (inventory_index < 0 || inventory_index >= inventory_.inventory_size) {
         return false;
     }
@@ -250,7 +245,6 @@ bool Character::EquipmentToInventory(Equipment::Position pos)
 {
     int slot_index = -1;
     {
-        std::unique_lock lock(inventory_guard_);
         slot_index = inventory_.GetEmptySlotIndex();
     }
     return Character::EquipmentToInventory(pos, slot_index);
@@ -258,7 +252,6 @@ bool Character::EquipmentToInventory(Equipment::Position pos)
 
 bool Character::EquipmentToInventory(Equipment::Position pos, int32_t inventory_index)
 {
-    std::scoped_lock lock(equipment_guard_, inventory_guard_);
     if (inventory_index < 0 || inventory_index >= inventory_.inventory_size) {
         return false;
     }
@@ -279,7 +272,6 @@ bool Character::UseConsumeItem(int32_t inventory_index)
 
 bool Character::ChangeInventoryItemPosition(int32_t prev_index, int32_t new_index)
 {
-    std::unique_lock lock(inventory_guard_);
     if (prev_index < 0 || prev_index >= inventory_.inventory_size ||
         new_index < 0 || new_index >= inventory_.inventory_size) {
         return false;
@@ -302,7 +294,6 @@ bool Character::ChangeInventoryItemPosition(int32_t prev_index, int32_t new_inde
 
 bool Character::DestoryItem(int32_t inventory_index)
 {
-    std::unique_lock lock(inventory_guard_);
     if (inventory_index < 0 || inventory_index >= inventory_.inventory_size) {
         return false;
     }
@@ -315,7 +306,6 @@ bool Character::DestoryItem(int32_t inventory_index)
 
 std::array<QuickSlot, 10> Character::GetQuickSlot() const
 {
-    std::shared_lock lock(quick_slot_guard_);
     return quick_slot_;
 }
 
@@ -385,14 +375,24 @@ float Character::GetMaxStamina() const
     return max_stamina_;
 }
 
-const Equipment& Character::GetEquipment() const
+Equipment::Data Character::GetEquipmentCopy() const
 {
-    return equipment_;
+    return equipment_.GetData();
 }
 
-const Inventory& Character::GetInventory() const
+const Equipment::Data& Character::GetEquipment() const
 {
-    return inventory_;
+    return equipment_.GetData();
+}
+
+Inventory::Data Character::GetInventoryCopy() const
+{
+    return inventory_.GetData();
+}
+
+const Inventory::Data& Character::GetInventory() const
+{
+    return inventory_.GetData();
 }
 
 void Character::Write(OutputStream& output) const

@@ -4,11 +4,10 @@
 #include "Equipment.hpp"
 #include "QuickSlot.hpp"
 #include "CharacterSkill.hpp"
-#include <shared_mutex>
 #include <memory>
+#include "Server/Alias.hpp"
+#include <mutex>
 
-
-class UE4Client;
 class Zone;
 
 class Character : public PawnObject
@@ -16,13 +15,13 @@ class Character : public PawnObject
 private:
     Character(const Character&);
     void operator=(const Character&);
-    Character(int accid, int cid);
 public:
-    static std::shared_ptr<Character> Create(int accid, int cid);
-    
-    UE4Client* GetClient() const;
-    void SetClient(UE4Client* client);
-    std::shared_ptr<Zone> GetZone() const;
+    Character(int accid, int cid);
+    ~Character();
+
+    std::shared_ptr<Client> GetClientFromWeak() const;
+    void SetWeakClient(const std::shared_ptr<Client>& client);
+    std::shared_ptr<Zone> GetZoneFromWeak() const;
     void SetZone(const std::shared_ptr<Zone>& zone);
     void Initialize(const std::shared_ptr<class Connection>& con);
 
@@ -53,19 +52,22 @@ public:
     int32_t GetGold() const;
     float GetStamina() const;
     float GetMaxStamina() const;
-    const Equipment& GetEquipment() const;
-    const Inventory& GetInventory() const;
+
+    Equipment::Data GetEquipmentCopy() const;
+    const Equipment::Data& GetEquipment() const;
+    Inventory::Data GetInventoryCopy() const;
+    const Inventory::Data& GetInventory() const;
+
+    std::recursive_mutex mutex_;
 public:
     virtual void Write(OutputStream& output) const override;
     virtual void Read(InputStream& input) override;
 private:
     void UpdatePawnStat();
 private:
-    mutable std::shared_mutex pointer_guard_;
-    UE4Client* client_ = nullptr;
-    std::shared_ptr<Zone> zone_;
+    std::weak_ptr<Client> client_;
+    std::weak_ptr<Zone> zone_;
 
-    mutable std::shared_mutex stat_gaurd_;
     int32_t accid_;
     int32_t cid_;
     std::string name_;
@@ -83,15 +85,11 @@ private:
     float max_stamina_ = 0.0f;
     float stamina_recovery_ = 0.0f;
 
-    mutable std::shared_mutex equipment_guard_;
     Equipment equipment_;
 
-    mutable std::shared_mutex inventory_guard_;
     Inventory inventory_;
 
-    mutable std::shared_mutex quick_slot_guard_;
     std::array<QuickSlot, 10> quick_slot_;
 
     CharacterSkill skill_;
-    
 };

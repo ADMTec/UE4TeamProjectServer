@@ -1,14 +1,14 @@
 #include "PartySystem.hpp"
-#include "UE4DevelopmentLibrary/Server/UE4Client.hpp"
 #include <algorithm>
 #include <atomic>
+#include "Server/ZoneServer.hpp"
 
 
 std::shared_mutex Party::System::party_array_garud_;
 std::vector<std::shared_ptr<Party>> Party::System::party_array_;
 
 
-std::optional<int64_t> Party::System::CreateParty(const std::shared_ptr<UE4Client>& client)
+std::optional<int64_t> Party::System::CreateParty(const std::shared_ptr<Client>& client)
 {
     int64_t party_id = Party::System::GetNewPartyId();
     auto party = std::make_shared<Party>(party_id, client);
@@ -27,7 +27,7 @@ void Party::System::DisbandParty(int64_t party_id, int64_t chr_cid)
 
 }
 
-bool Party::System::JoinParty(int64_t party_id, const std::shared_ptr<class UE4Client>& client)
+bool Party::System::JoinParty(int64_t party_id, const std::shared_ptr<Client>& client)
 {
     std::shared_ptr<Party> party = FindPartyFromPartyId(party_id);
     if (!party) {
@@ -51,7 +51,7 @@ bool Party::System::LeaveParty(int64_t party_id, const std::string& uuid)
     }
     std::unique_lock lock(party->party_guard_);
     auto iter = std::find_if(party->party_user_.begin(), party->party_user_.end(),
-        [uuid](const std::shared_ptr<UE4Client>& client) {
+        [uuid](const std::shared_ptr<Client>& client) {
             return client->GetUUID().ToString() == uuid;
         });
     if (iter == party->party_user_.end()) {
@@ -84,7 +84,7 @@ int64_t Party::System::GetNewPartyId()
 }
 
 // ----------------------------------------------------------------------------------------
-Party::Party(int64_t party_id, const std::shared_ptr<UE4Client>& client)
+Party::Party(int64_t party_id, const std::shared_ptr<Client>& client)
     : party_id_(party_id)
 {
     party_leader_uuid_ = client->GetUUID();
@@ -95,20 +95,20 @@ Party::Party()
 {
 }
 
-void Party::BraodCast(NioOutPacket& out)
+void Party::BraodCast(UE4OutPacket& out)
 {
     std::shared_lock lock(party_guard_);
     for (const auto& user : party_user_) {
-        user->GetSession()->AsyncSend(out, false, true);
+        user->GetSession()->Send(out, true ,false);
     }
 }
 
-void Party::BraodCast(NioOutPacket& out, const __UUID& except_client_uuid)
+void Party::BraodCast(UE4OutPacket& out, const __UUID& except_client_uuid)
 {
     std::shared_lock lock(party_guard_);
     for (const auto& user : party_user_) {
         if (user->GetUUID() != except_client_uuid) {
-            user->GetSession()->AsyncSend(out, false, true);
+            user->GetSession()->Send(out, true, false);
         }
     }
 }

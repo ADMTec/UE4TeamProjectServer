@@ -15,7 +15,6 @@ void RemoteServerInfo::operator=(const RemoteServerInfo& rhs)
     port_ = rhs.port_;
     max_connection_ = rhs.max_connection_;
     current_connection_ = rhs.current_connection_;
-    mediator_ = rhs.mediator_;
 }
 
 RemoteServerInfo::RemoteServerInfo(ServerType type, const std::string& ip, uint16_t port)
@@ -80,16 +79,6 @@ double RemoteServerInfo::GetCurrentCapacityRatio() const
         throw StackTraceException(ExceptionType::kLogicError, "max connection cannot be 0");
     }
     return static_cast<double>(current_connection_)/static_cast<double>(max_connection_);
-}
-
-const std::weak_ptr<UE4Client> RemoteServerInfo::GetWeak() const
-{
-    return mediator_;
-}
-
-void RemoteServerInfo::SetWeak(const std::weak_ptr<UE4Client>& weak)
-{
-    mediator_ = weak;
 }
 
 void RemoteServerInfo::Write(OutputStream& outpacket) const

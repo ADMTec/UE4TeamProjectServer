@@ -1,6 +1,5 @@
 #pragma once
-#include "NioBase.hpp"
-#include "../Stream.hpp"
+#include "../Stream/OutputStream.hpp"
 
 
 class NioOutPacket : public OutputStream
@@ -15,5 +14,5 @@ public:
 
     char* GetHeapData();
     uint64_t GetLength() const;
-    virtual void MakePacketHead();
+    void MakePacketHead();
 };

@@ -8,33 +8,94 @@
 #include <unordered_map>
 
 
+template<typename Session>
 class UE4Client
 {
 public:
     UE4Client(const UE4Client&) = delete;
     void operator=(const UE4Client&) = delete;
 public:
-    explicit UE4Client(const std::shared_ptr<NioSession>& session);
-    ~UE4Client();
+    explicit UE4Client(const std::shared_ptr<Session>& session)
+        : state_(-1), uuid_(__UUID::Generate()), session_(session)
+    {
+    }
 
-    void Close();
-    void SetState(int state);
-    int GetState() const;
-    const __UUID& GetUUID() const;
-    int32_t GetAccid() const;
-    void SetAccid(int32_t value);
-    int32_t GetCid() const;
-    void SetCid(int32_t value);
+    ~UE4Client()
+    {
+    }
 
-    std::shared_ptr<NioSession> GetSession() const;
-    void SetContext(int64_t key, const std::any& value);
-    std::optional<std::any> GetContext(int64_t key) const;
+    void Close()
+    {
+        if (session_) {
+            session_->Close();
+        }
+    }
+
+    void SetState(int state)
+    {
+        std::unique_lock lock(context_guard_);
+        state_ = state;
+    }
+
+    int GetState() const
+    {
+        std::shared_lock lock(context_guard_);
+        return state_;
+    }
+
+    const __UUID& GetUUID() const
+    {
+        std::shared_lock lock(context_guard_);
+        return uuid_;
+    }
+
+    int32_t GetAccid() const
+    {
+        std::shared_lock lock(context_guard_);
+        return accid_;
+    }
+
+    void SetAccid(int32_t value)
+    {
+        std::unique_lock lock(context_guard_);
+        accid_ = value;
+    }
+
+    int32_t GetCid() const
+    {
+        std::shared_lock lock(context_guard_);
+        return cid_;
+    }
+
+    void SetCid(int32_t value)
+    {
+        std::unique_lock lock(context_guard_);
+        cid_ = value;
+    }
+
+    void SetAccount(const std::string& account)
+    {
+        std::unique_lock lock(context_guard_);
+        account_ = account;
+    }
+
+    std::string GetAccount() const
+    {
+        std::shared_lock lock(context_guard_);
+        return account_;
+    }
+
+    std::shared_ptr<Session> GetSession() const
+    {
+        std::shared_lock lock(context_guard_);
+        return session_;
+    }
 private:
+    mutable std::shared_mutex context_guard_;
     int state_;
     __UUID uuid_;
     int32_t accid_;
     int32_t cid_;
-    std::shared_ptr<NioSession> session_;
-    mutable std::shared_mutex context_guard_;
-    std::unordered_map<int64_t, std::any> context_;
+    std::string account_;
+    std::shared_ptr<Session> session_;
 };

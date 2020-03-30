@@ -1,5 +1,5 @@
 #include "NioOutPacket.hpp"
-#include "Exception.hpp"
+#include "../Exception.hpp"
 
 
 NioOutPacket::NioOutPacket(const NioOutPacket& rhs)

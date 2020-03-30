@@ -1,5 +1,5 @@
 #include "ExportZoneServer.hpp"
-#include "ZoneServer.hpp"
+#include "Server/ZoneServer.hpp"
 #include "ServerConstants.hpp"
 #include "GameConstants.hpp"
 #include "Provider/CSVDataProvider.hpp"
@@ -7,7 +7,10 @@
 #include "Provider/MonsterTemplateProvider.hpp"
 #include "UE4DevelopmentLibrary/Database.hpp"
 #include "System/PythonScriptEngine.hpp"
+#include "System/ZoneSystem.hpp"
 
+
+#include "Model/Character/Character.hpp"
 
 void ExportZoneServer::Initialize()
 {
@@ -17,6 +20,8 @@ void ExportZoneServer::Initialize()
     const_cast<CSVDataProvider<MonsterTableData>&>(CSVDataProvider<MonsterTableData>::Instance()).Initialize();
     const_cast<ZoneDataProvider&>(ZoneDataProvider::Instance()).Initialize();
     const_cast<MonsterTemplateProvider&>(MonsterTemplateProvider::Instance()).Initialize();
+    PythonScript::Engine::Instance().Initialize();
+    ZoneSystem::Initialize();
     ODBCConnectionPool::Instance().Initialize(10,
         ServerConstant.odbc_name, ServerConstant.db_id, ServerConstant.db_pw);
     zone_server = new ZoneServer();
@@ -31,4 +36,5 @@ void ExportZoneServer::Run()
 void ExportZoneServer::Stop()
 {
     zone_server->Stop();
+    PythonScript::Engine::Instance().Release();
 }

@@ -166,8 +166,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="IoHandler.hpp" />
-    <ClInclude Include="NioServer.hpp" />
-    <ClInclude Include="NioSession.hpp" />
     <ClInclude Include="TestServer.hpp" />
     <ClInclude Include="UE4Client.hpp" />
   </ItemGroup>

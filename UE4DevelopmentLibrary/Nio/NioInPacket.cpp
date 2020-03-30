@@ -1,5 +1,6 @@
 #include "NioInPacket.hpp"
-#include "Exception.hpp"
+#include "../Exception.hpp"
+#include <tbb/scalable_allocator.h>
 
 
 NioInPacket::NioInPacket(const NioInPacket& rhs)
@@ -9,7 +10,7 @@ NioInPacket::NioInPacket(const NioInPacket& rhs)
 
 void NioInPacket::operator=(const NioInPacket& rhs)
 {
-    buffer_ = BUFFER_MALLOC(rhs.buffer_length_);
+    buffer_ = (char*)scalable_malloc(rhs.buffer_length_);
     alloc_buffer_length_ = rhs.buffer_length_;
     memcpy(buffer_, rhs.buffer_, rhs.buffer_length_);
     buffer_length_ = rhs.buffer_length_;
@@ -31,14 +32,14 @@ NioInPacket::NioInPacket()
 NioInPacket::NioInPacket(uint64_t default_buffer_length)
     : InputStream(), alloc_buffer_length_(default_buffer_length), has_data_(false)
 {
-    buffer_ = BUFFER_MALLOC(alloc_buffer_length_);
+    buffer_ = (char*)scalable_malloc(alloc_buffer_length_);
     buffer_length_ = alloc_buffer_length_;
 }
 
 NioInPacket::~NioInPacket()
 {
     if (buffer_ != nullptr) {
-        BUFFER_FREE(buffer_);
+        scalable_free(buffer_);
     }
 }
 

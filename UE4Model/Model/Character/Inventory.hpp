@@ -19,6 +19,7 @@ public:
         int32_t count;
     };
     static constexpr int inventory_size = 30;
+    using Data = std::array<std::optional<Slot>, inventory_size>;
 public:
     bool HasItem(int32_t slot_index);
     bool IsFull() const;
@@ -26,10 +27,10 @@ public:
     const Inventory::Slot& Get(int32_t slot_index);
     Inventory::Slot Pop(int32_t slot_index);
     int32_t GetEmptySlotIndex() const;
-    const std::array<std::optional<Slot>, inventory_size>& GetData() const;
+    const Data& GetData() const;
 public:
     virtual void Write(OutputStream& output) const override;
     virtual void Read(InputStream& input) override;
 private:
-    std::array<std::optional<Slot>, inventory_size> inventory_;
+    Data inventory_;
 };
